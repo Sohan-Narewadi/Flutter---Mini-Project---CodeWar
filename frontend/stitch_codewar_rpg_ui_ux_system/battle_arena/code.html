@@ -1,0 +1,420 @@
+<!DOCTYPE html><html class="dark" lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-error": "#690005", "secondary": "#7bd0ff", "on-primary-fixed": "#23005c", "primary-fixed-dim": "#d0bcff", "tertiary-container": "#ca8100", "on-tertiary": "#472a00", "surface-variant": "#31353c", "surface-container-highest": "#31353c", "on-error-container": "#ffdad6", "outline-variant": "#494454", "primary-container": "#a078ff", "on-surface": "#dfe2eb", "on-secondary-fixed": "#001e2c", "secondary-fixed": "#c4e7ff", "tertiary-fixed-dim": "#ffb95f", "on-surface-variant": "#cbc3d7", "tertiary-fixed": "#ffddb8", "error": "#ffb4ab", "background": "#10141a", "surface-container-low": "#181c22", "surface-container": "#1c2026", "on-background": "#dfe2eb", "secondary-fixed-dim": "#7bd0ff", "surface-tint": "#d0bcff", "primary": "#d0bcff", "surface-container-lowest": "#0a0e14", "on-tertiary-container": "#3e2400", "surface-dim": "#10141a", "on-primary-container": "#340080", "on-secondary-fixed-variant": "#004c69", "on-tertiary-fixed-variant": "#653e00", "outline": "#958ea0", "inverse-surface": "#dfe2eb", "on-tertiary-fixed": "#2a1700", "primary-fixed": "#e9ddff", "on-primary-fixed-variant": "#5516be", "tertiary": "#ffb95f", "on-primary": "#3c0091", "inverse-primary": "#6d3bd7", "secondary-container": "#00a6e0", "error-container": "#93000a", "surface-container-high": "#262a31", "surface-bright": "#353940", "on-secondary-container": "#00374d", "surface": "#10141a", "on-secondary": "#00354a", "inverse-on-surface": "#2d3137" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-sm": "0.5rem", "space-lg": "1.5rem", "gutter": "1rem", "space-md": "1rem", "space-xs": "0.25rem", "margin": "1rem", "space-xl": "2rem" }, fontFamily: { "headline-md": ["Inter"], "body-md": ["Inter"], "headline-sm": ["Inter"], "label-md": ["JetBrains Mono"], "code-md": ["JetBrains Mono"], "label-sm": ["JetBrains Mono"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "code-sm": ["JetBrains Mono"], "code-lg": ["JetBrains Mono"], "body-sm": ["Inter"] }, fontSize: { "headline-md": ["22px", { lineHeight: "28px", letterSpacing: "-0.015em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "headline-sm": ["18px", { lineHeight: "24px", letterSpacing: "-0.01em", fontWeight: "600" }], "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.04em", fontWeight: "600" }], "code-md": ["13px", { lineHeight: "18px", fontWeight: "400" }], "label-sm": ["10px", { lineHeight: "14px", letterSpacing: "0.06em", fontWeight: "600" }], "headline-lg": ["28px", { lineHeight: "34px", letterSpacing: "-0.02em", fontWeight: "700" }], "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }], "code-sm": ["11px", { lineHeight: "16px", fontWeight: "400" }], "code-lg": ["15px", { lineHeight: "22px", fontWeight: "500" }], "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }] } } } }</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface-container-low/90 backdrop-blur-xl shadow-[0_4px_16px_rgba(0,0,0,0.35)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="flex flex-col"><div class="flex items-center gap-space-xs"><span class="text-primary font-code-sm font-semibold tracking-wider uppercase">LVL 12</span><span class="text-outline font-code-sm">•</span><span class="text-on-surface font-code-sm font-medium">CodeKnight</span></div><div class="flex items-center gap-space-sm mt-0.5"><div class="flex items-center gap-space-xs bg-surface-container px-1.5 py-0.5 rounded"><span class="material-symbols-outlined text-tertiary text-[13px]">local_fire_department</span><span class="text-tertiary font-label-sm">7 STREAK</span></div><div class="flex items-center gap-space-xs bg-surface-container px-1.5 py-0.5 rounded"><span class="material-symbols-outlined text-secondary text-[13px]">monetization_on</span><span class="text-on-surface font-label-sm">1,240</span></div></div></div></div><div class="flex items-center gap-space-sm"><div class="flex flex-col items-end gap-1"><div class="flex items-center gap-1.5"><span class="text-outline font-label-sm">HP</span><div class="w-16 h-1.5 bg-surface-container-highest rounded-full overflow-hidden"><div class="h-full w-4/5 bg-secondary rounded-full"></div></div></div><div class="flex items-center gap-1.5"><span class="text-outline font-label-sm">XP</span><div class="w-16 h-1.5 bg-surface-container-highest rounded-full overflow-hidden"><div class="h-full w-3/5 bg-primary-container rounded-full"></div></div></div></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 bg-surface pb-24"><div class="flex flex-col w-full px-margin space-y-space-md pb-6">
+<!-- Sector Progress Telemetry Panel -->
+<div class="w-full bg-surface-container-low rounded-xl p-space-md shadow-md">
+<div class="flex items-center justify-between gap-space-xs mb-space-sm">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="material-symbols-outlined text-primary text-[18px]">explore</span>
+<span class="font-label-sm text-outline uppercase tracking-wider">Sector Telemetry</span>
+</div>
+<div class="flex items-center gap-1 bg-surface-container px-2 py-0.5 rounded">
+<span class="font-code-sm text-secondary font-semibold">50%</span>
+<span class="font-label-sm text-outline">CLEARED</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-baseline justify-between">
+<h2 class="font-headline-sm text-on-surface truncate">World 2 · Array Ruins</h2>
+<span class="font-code-md text-primary font-semibold">4/8 DEFEATED</span>
+</div>
+<p class="font-body-sm text-on-surface-variant">Algorithmic anomalies detected in contiguous memory blocks.</p>
+</div>
+<!-- Sector Progress Meter -->
+<div class="w-full bg-surface-container-highest h-2 rounded-full mt-3 overflow-hidden flex">
+<div class="h-full bg-primary rounded-full transition-all duration-500" style="width: 50%;"></div>
+</div>
+<!-- Navigation Quick-Link -->
+<button class="mt-space-md w-full bg-surface-container hover:bg-surface-bright transition-colors rounded-lg py-2 px-space-md flex items-center justify-between group" type="button">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-[18px]">map</span>
+<span class="font-label-md text-on-surface tracking-wide">VIEW WORLD MAP</span>
+</div>
+<div class="flex items-center gap-1 text-outline group-hover:text-primary transition-colors">
+<span class="font-code-sm">SECTOR OVERVIEW</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</div>
+</button>
+</div>
+<!-- Header Section & Difficulty Filters -->
+<div class="flex flex-col space-y-space-sm">
+<div class="flex items-center justify-between">
+<div>
+<h1 class="font-headline-md text-on-surface tracking-tight">Battle Arena</h1>
+<p class="font-body-sm text-outline">Engage compile-time entities &amp; secure runtime rewards</p>
+</div>
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">swords</span>
+</div>
+</div>
+<!-- Filter Pills (Vanilla Filter Interaction) -->
+<div class="flex items-center gap-space-xs overflow-x-auto py-1 scrollbar-none" id="tier-filter-bar">
+<button class="filter-chip px-3 py-1.5 rounded-lg font-label-md transition-all shrink-0 bg-primary text-on-primary shadow-sm" data-filter="all" type="button">
+        ALL (6)
+      </button>
+<button class="filter-chip px-3 py-1.5 rounded-lg font-label-md transition-all shrink-0 bg-surface-container text-on-surface-variant hover:text-on-surface" data-filter="easy" type="button">
+        EASY
+      </button>
+<button class="filter-chip px-3 py-1.5 rounded-lg font-label-md transition-all shrink-0 bg-surface-container text-on-surface-variant hover:text-on-surface" data-filter="medium" type="button">
+        MEDIUM
+      </button>
+<button class="filter-chip px-3 py-1.5 rounded-lg font-label-md transition-all shrink-0 bg-surface-container text-on-surface-variant hover:text-on-surface" data-filter="hard" type="button">
+        HARD
+      </button>
+<button class="filter-chip px-3 py-1.5 rounded-lg font-label-md transition-all shrink-0 bg-surface-container text-on-surface-variant hover:text-on-surface" data-filter="boss" type="button">
+        BOSS
+      </button>
+</div>
+</div>
+<!-- Encounter Feed -->
+<div class="flex flex-col space-y-space-md" id="encounter-card-list">
+<!-- 1. Array Beast (Active Target) -->
+<div class="encounter-card w-full bg-surface-container-low rounded-xl p-space-md shadow-md relative overflow-hidden transition-transform active:scale-[0.99]" data-tier="medium">
+<div class="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-primary-container via-primary to-transparent opacity-80"></div>
+<div class="flex items-start justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[22px]">data_array</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5">
+<h3 class="font-headline-sm text-on-surface truncate">Array Beast</h3>
+<span class="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-label-sm">TARGET</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5 font-code-sm text-on-surface-variant">
+<span class="text-secondary font-semibold">LV. 10</span>
+<span>•</span>
+<span class="text-tertiary">MEDIUM</span>
+</div>
+</div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-label-sm text-outline block uppercase">Vulnerability</span>
+<span class="font-code-sm text-secondary font-semibold">ARRAYS</span>
+</div>
+</div>
+<!-- Enemy Visual Slice -->
+<div class="w-full h-24 rounded-lg overflow-hidden relative mb-space-sm bg-surface-container-highest">
+<img class="w-full h-full object-cover opacity-85" data-alt="Cybernetic creature forged of floating glowing matrix indices and glowing neon purple syntax blocks inside a dark obsidian dungeon chamber, isometric tactical RPG concept art, cinematic rim lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQqoGTKgXnBX7g2zIwf2GSbQ8fV8b1A3YKbAuRVZl9udTR897YMSDRAoUzZdti-ZH0ulBAbjvPFvHA0zt_xemZ36_ZQs8GU3y0koaymasr2uQEAW_W4cxqm1yt5h6XiOpNp9W-jHZ8dkF7_1wZFsEeU0ricPTCQr3qWQ_HKlHawhQj7ENzxlgTZkwsA9oGAscCyp4r9oqrQjkv6FhPuCkqB3BdTFLghDwJoRWOhFhd1T2-SOEgANON">
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-surface-container-low/40 to-transparent"></div>
+<div class="absolute bottom-2 left-2 flex items-center gap-1.5 bg-surface-container-lowest/80 backdrop-blur-md px-2 py-0.5 rounded">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
+<span class="font-code-sm text-error">ENGAGED</span>
+</div>
+</div>
+<!-- HP Telemetry -->
+<div class="space-y-1 mb-space-md">
+<div class="flex justify-between items-center font-code-sm">
+<span class="text-outline uppercase text-[10px] tracking-wider">Health Points</span>
+<span class="text-error font-semibold">720 / 1,000 HP</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="h-full bg-error rounded-full transition-all duration-300" style="width: 72%;"></div>
+</div>
+</div>
+<!-- Rewards & Combat CTA -->
+<div class="flex items-center justify-between pt-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center gap-1 bg-surface-container px-2 py-1 rounded">
+<span class="material-symbols-outlined text-primary text-[14px]">bolt</span>
+<span class="font-code-sm text-primary">+250 XP</span>
+</div>
+<div class="flex items-center gap-1 bg-surface-container px-2 py-1 rounded">
+<span class="material-symbols-outlined text-tertiary text-[14px]">paid</span>
+<span class="font-code-sm text-tertiary">100 G</span>
+</div>
+</div>
+<button class="h-10 px-5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-headline-sm text-body-md font-semibold flex items-center gap-1.5 shadow-md active:scale-95 transition-transform" type="button">
+<span>Fight</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- 2. Syntax Snake (Completed / Farmable) -->
+<div class="encounter-card w-full bg-surface-container-low rounded-xl p-space-md shadow-md relative transition-transform active:scale-[0.99]" data-tier="easy">
+<div class="flex items-start justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary text-[22px]">pest_control</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5">
+<h3 class="font-headline-sm text-on-surface truncate">Syntax Snake</h3>
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-secondary font-label-sm">FARMABLE</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5 font-code-sm text-on-surface-variant">
+<span class="text-secondary font-semibold">LV. 4</span>
+<span>•</span>
+<span class="text-on-surface-variant">EASY</span>
+</div>
+</div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-label-sm text-outline block uppercase">Vulnerability</span>
+<span class="font-code-sm text-secondary font-semibold">STRINGS</span>
+</div>
+</div>
+<!-- HP Telemetry -->
+<div class="space-y-1 mb-space-md">
+<div class="flex justify-between items-center font-code-sm">
+<span class="text-outline uppercase text-[10px] tracking-wider">Health Points</span>
+<span class="text-outline font-medium">450 / 450 HP</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 100%;"></div>
+</div>
+</div>
+<!-- Rewards & Actions -->
+<div class="flex items-center justify-between pt-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center gap-1 bg-surface-container px-2 py-1 rounded">
+<span class="material-symbols-outlined text-primary text-[14px]">bolt</span>
+<span class="font-code-sm text-on-surface-variant">+80 XP</span>
+</div>
+<div class="flex items-center gap-1 bg-surface-container px-2 py-1 rounded">
+<span class="material-symbols-outlined text-tertiary text-[14px]">paid</span>
+<span class="font-code-sm text-on-surface-variant">30 G</span>
+</div>
+</div>
+<button class="h-9 px-4 rounded-lg bg-surface-container hover:bg-surface-bright text-on-surface font-label-md transition-colors flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">replay</span>
+<span>REMATCH</span>
+</button>
+</div>
+</div>
+<!-- 3. Bug Bot (Completed) -->
+<div class="encounter-card w-full bg-surface-container-low rounded-xl p-space-md shadow-md relative transition-transform active:scale-[0.99]" data-tier="easy">
+<div class="flex items-start justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant text-[22px]">smart_toy</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5">
+<h3 class="font-headline-sm text-on-surface truncate">Bug Bot</h3>
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-outline font-label-sm">DEFEATED</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5 font-code-sm text-on-surface-variant">
+<span class="text-secondary font-semibold">LV. 6</span>
+<span>•</span>
+<span class="text-on-surface-variant">EASY</span>
+</div>
+</div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-label-sm text-outline block uppercase">Vulnerability</span>
+<span class="font-code-sm text-secondary font-semibold">LOOPS</span>
+</div>
+</div>
+<!-- HP Telemetry -->
+<div class="space-y-1 mb-space-md">
+<div class="flex justify-between items-center font-code-sm">
+<span class="text-outline uppercase text-[10px] tracking-wider">Health Points</span>
+<span class="text-outline font-medium">600 / 600 HP</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 100%;"></div>
+</div>
+</div>
+<!-- Bottom Actions -->
+<div class="flex items-center justify-between pt-space-xs">
+<span class="font-body-sm text-outline flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">check_circle</span>
+          First-clear rewards collected
+        </span>
+<button class="h-9 px-4 rounded-lg bg-surface-container hover:bg-surface-bright text-on-surface font-label-md transition-colors flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">replay</span>
+<span>REMATCH</span>
+</button>
+</div>
+</div>
+<!-- 4. String Samurai (Next Encounter) -->
+<div class="encounter-card w-full bg-surface-container-low rounded-xl p-space-md shadow-md relative transition-transform active:scale-[0.99]" data-tier="medium">
+<div class="flex items-start justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-tertiary text-[22px]">colorize</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5">
+<h3 class="font-headline-sm text-on-surface truncate">String Samurai</h3>
+<span class="px-1.5 py-0.5 rounded bg-tertiary/10 text-tertiary font-label-sm">NEXT</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5 font-code-sm text-on-surface-variant">
+<span class="text-secondary font-semibold">LV. 12</span>
+<span>•</span>
+<span class="text-tertiary">MEDIUM</span>
+</div>
+</div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-label-sm text-outline block uppercase">Vulnerability</span>
+<span class="font-code-sm text-secondary font-semibold">TWO POINTERS</span>
+</div>
+</div>
+<!-- Visual Slice -->
+<div class="w-full h-20 rounded-lg overflow-hidden relative mb-space-sm bg-surface-container-highest">
+<img class="w-full h-full object-cover opacity-75" data-alt="Futuristic cybernetic samurai with a gleaming blue energy katana standing amidst fractured string characters and floating terminal glyphs in a misty cyber-tactical alley, dark atmospheric mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBz0a6X0rQ8NbGMR6I2OdOI-HHZWHGxHQDdHT3kv4_3R89G0De-1mZ2S_Kxa5GBZDtr3MbnOqLoe69oZrWkfWkpox0ia_NEWrpzm6YPctq1vLSmwq0YSLudvr4Py_Ps9wa8MIh3AmvlZeGHcTAPtcAfrpM18ZkZqO2OanyAgCfv6QqawjxN6uWIaPNBSfjFrpcQSGRilE22JPnzoZq7JOKVrRUU1JiPMMRvKKkbYAb477Getcy6PtRv">
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-surface-container-low/30 to-transparent"></div>
+</div>
+<!-- HP Telemetry -->
+<div class="space-y-1 mb-space-md">
+<div class="flex justify-between items-center font-code-sm">
+<span class="text-outline uppercase text-[10px] tracking-wider">Health Points</span>
+<span class="text-on-surface font-semibold">1,200 / 1,200 HP</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="h-full bg-error rounded-full" style="width: 100%;"></div>
+</div>
+</div>
+<!-- Rewards & Actions -->
+<div class="flex items-center justify-between pt-space-xs">
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center gap-1 bg-surface-container px-2 py-1 rounded">
+<span class="material-symbols-outlined text-primary text-[14px]">bolt</span>
+<span class="font-code-sm text-primary">+380 XP</span>
+</div>
+<div class="flex items-center gap-1 bg-surface-container px-2 py-1 rounded">
+<span class="material-symbols-outlined text-tertiary text-[14px]">paid</span>
+<span class="font-code-sm text-tertiary">180 G</span>
+</div>
+</div>
+<button class="h-10 px-5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-headline-sm text-body-md font-semibold flex items-center gap-1.5 shadow-md active:scale-95 transition-transform" type="button">
+<span>Fight</span>
+<span class="material-symbols-outlined text-[16px]">swords</span>
+</button>
+</div>
+</div>
+<!-- 5. Recursion Zombie (Locked) -->
+<div class="encounter-card w-full bg-surface-container-low/60 rounded-xl p-space-md shadow-sm relative overflow-hidden opacity-75" data-tier="hard">
+<div class="flex items-start justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center shrink-0 text-outline">
+<span class="material-symbols-outlined text-[22px]">lock</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5">
+<h3 class="font-headline-sm text-outline truncate">Recursion Zombie</h3>
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-outline font-label-sm">LOCKED</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5 font-code-sm text-outline">
+<span>LV. 16</span>
+<span>•</span>
+<span class="text-error">HARD</span>
+</div>
+</div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-label-sm text-outline block uppercase">Vulnerability</span>
+<span class="font-code-sm text-outline">STACK MEMORY</span>
+</div>
+</div>
+<!-- Gate Requirement Box -->
+<div class="w-full bg-surface-container rounded-lg p-space-sm flex items-center justify-between my-space-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-[18px]">lock_clock</span>
+<span class="font-body-sm text-on-surface-variant">Unlock by reaching World 2 Boss</span>
+</div>
+<span class="font-code-sm text-outline font-medium">2,000 HP</span>
+</div>
+</div>
+<!-- 6. Algorithm Dragon (BOSS - Locked) -->
+<div class="encounter-card w-full bg-surface-container-low rounded-xl p-space-md shadow-xl relative overflow-hidden" data-tier="boss">
+<!-- Ambient Boss Aura -->
+<div class="absolute -top-12 -right-12 w-32 h-32 bg-error-container/20 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-start justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-lg bg-error-container/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-error text-[24px]">skull</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5">
+<h3 class="font-headline-sm text-on-surface truncate">Algorithm Dragon</h3>
+<span class="px-2 py-0.5 rounded bg-error-container text-on-error-container font-label-sm tracking-wider font-bold">SECTOR BOSS</span>
+</div>
+<div class="flex items-center gap-2 mt-0.5 font-code-sm text-error">
+<span class="font-bold">LV. 25</span>
+<span>•</span>
+<span>DYNAMIC PROGRAMMING</span>
+</div>
+</div>
+</div>
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-outline shrink-0">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+</div>
+</div>
+<!-- Boss Art Slot -->
+<div class="w-full h-28 rounded-lg overflow-hidden relative mb-space-sm bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Monolithic robotic cyber dragon with glowing crimson LED eyes and molten copper cooling conduits coiled around ancient server monoliths, intense dark sci-fi digital illustration, dramatic high contrast." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkuhO2wrLVL2tk25lOJedGimkq3V_-PLh8bL_PFbS7GCMMVed4mnXyL0UQ1CwqR7oJVw7WBRgtn_flKSFfvGzu0_aexyKxiVjAJTJCt9_Pn571WBOqm-YnsemJ6SEoXmgdppFccjgx-j12yTr6JyjaxT1oCYNe_KSPm-80D8WxKlQIAmoZ98mwPNyFje_qMW_o0sAFpwxPNqxJr7RlpcXVPpafKyd89g6zgCqOIU-qquY2UkhLWGy5">
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-surface-container-low/40 to-transparent"></div>
+<div class="absolute top-2 left-2 flex items-center gap-1 bg-surface-container-lowest/90 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-error text-[14px]">warning</span>
+<span class="font-label-sm text-error">MAX LETHALITY</span>
+</div>
+<div class="absolute bottom-2 right-2">
+<span class="font-code-md text-on-surface font-bold bg-surface-container-lowest/80 px-2 py-0.5 rounded">HP 5,000</span>
+</div>
+</div>
+<!-- Lock Banner -->
+<div class="flex items-center justify-between pt-space-xs">
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[16px]">encrypted</span>
+<span class="font-body-sm text-on-surface-variant">Defeat 6 Sector Minions to challenge</span>
+</div>
+<div class="flex items-center gap-1 bg-surface-container px-2 py-1 rounded">
+<span class="material-symbols-outlined text-tertiary text-[14px]">workspace_premium</span>
+<span class="font-code-sm text-tertiary font-bold">+1,500 XP</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Synchronize bottom navigation active state to Battle tab
+    const navLinks = document.querySelectorAll('nav a[data-path]');
+    const activeClasses = (document.querySelector('nav')?.dataset?.activeClasses || 'text-primary font-semibold relative after:content-[\'\'] after:absolute after:bottom-1 after:w-1 after:h-1 after:bg-primary after:rounded-full').split(' ');
+    
+    navLinks.forEach(link => {
+      const isBattle = link.getAttribute('data-path') === 'battle';
+      if (isBattle) {
+        link.classList.remove('text-on-surface-variant');
+        link.classList.add(...activeClasses);
+      } else {
+        link.classList.remove(...activeClasses);
+        link.classList.add('text-on-surface-variant');
+      }
+    });
+
+    // Encounter Filter Interactions
+    const filterButtons = document.querySelectorAll('#tier-filter-bar .filter-chip');
+    const cards = document.querySelectorAll('#encounter-card-list .encounter-card');
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filter = btn.dataset.filter;
+
+        // Visual toggle on chips
+        filterButtons.forEach(b => {
+          b.classList.remove('bg-primary', 'text-on-primary', 'shadow-sm');
+          b.classList.add('bg-surface-container', 'text-on-surface-variant');
+        });
+        btn.classList.remove('bg-surface-container', 'text-on-surface-variant');
+        btn.classList.add('bg-primary', 'text-on-primary', 'shadow-sm');
+
+        // Filter cards
+        cards.forEach(card => {
+          if (filter === 'all' || card.dataset.tier === filter) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    });
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-low/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.5)]" data-active-classes="text-primary font-semibold relative after:content-[''] after:absolute after:bottom-1 after:w-1 after:h-1 after:bg-primary after:rounded-full after:shadow-[0_0_8px_rgba(208,188,255,0.8)]"><div class="h-16 px-space-xs flex items-center justify-around"><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 transition-colors text-primary font-semibold relative after:content-[''] after:absolute after:bottom-1 after:w-1 after:h-1 after:bg-primary after:rounded-full after:shadow-[0_0_8px_rgba(208,188,255,0.8)]" data-path="home" href="#"><span class="material-symbols-outlined text-[20px]">cottage</span><span class="font-label-sm text-[10px]">Home</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 text-on-surface-variant hover:text-on-surface transition-colors" data-path="battle" href="#"><span class="material-symbols-outlined text-[20px]">swords</span><span class="font-label-sm text-[10px]">Battle</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 text-on-surface-variant hover:text-on-surface transition-colors" data-path="practice" href="#"><span class="material-symbols-outlined text-[20px]">terminal</span><span class="font-label-sm text-[10px]">Practice</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 text-on-surface-variant hover:text-on-surface transition-colors" data-path="rank" href="#"><span class="material-symbols-outlined text-[20px]">military_tech</span><span class="font-label-sm text-[10px]">Rank</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] gap-0.5 text-on-surface-variant hover:text-on-surface transition-colors" data-path="profile" href="#"><span class="material-symbols-outlined text-[20px]">shield_person</span><span class="font-label-sm text-[10px]">Profile</span></a></div></nav></body></html>
