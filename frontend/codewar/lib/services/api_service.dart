@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 import '../models/battle.dart';
@@ -11,14 +12,21 @@ import '../models/enemy.dart';
 import '../models/question.dart';
 import 'seed_data.dart';
 
-/// Thin REST client for the CodeWar backend. The Android emulator reaches
-/// the host machine's localhost via 10.0.2.2.
+/// The Android emulator reaches the host machine's localhost via 10.0.2.2;
+/// every other target (Windows/macOS/Linux desktop, web, iOS simulator)
+/// reaches it directly via 127.0.0.1.
+String _defaultBaseUrl() {
+  if (!kIsWeb && Platform.isAndroid) return 'http://10.0.2.2:8000';
+  return 'http://127.0.0.1:8000';
+}
+
+/// Thin REST client for the CodeWar backend.
 ///
 /// Every method has a short timeout and falls back to local seed data on
 /// any failure (timeout, connection refused, bad shape) so the demo never
 /// shows a blank or broken screen even if the backend isn't running.
 class ApiService {
-  ApiService({this.baseUrl = 'http://10.0.2.2:8000'});
+  ApiService({String? baseUrl}) : baseUrl = baseUrl ?? _defaultBaseUrl();
 
   final String baseUrl;
   // The very first HTTP call after a cold app start can take noticeably

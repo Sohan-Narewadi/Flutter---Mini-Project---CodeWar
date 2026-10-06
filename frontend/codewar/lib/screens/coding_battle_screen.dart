@@ -241,6 +241,13 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
                   ),
                   const SizedBox(height: 16),
                   CodeEditorPanel(
+                    // A new key (new battle or language switch) remounts the
+                    // editor with fresh starter code; otherwise this same
+                    // instance - and its TextEditingController - persists
+                    // across the timer's per-second rebuilds, so typing never
+                    // gets fought by a reset cursor. See CodeEditorPanel's
+                    // own doc comment for why this matters.
+                    key: ValueKey('${state.battleId}_${state.currentLanguage}'),
                     filename: 'SOLUTION.${_ext(state.currentLanguage)}',
                     initialCode: state.currentCode ?? '',
                     onChanged: state.updateCode,

@@ -80,8 +80,6 @@ class BattleVictoryScreen extends StatelessWidget {
               const SizedBox(height: 10),
               RewardRow(icon: Icons.bolt, label: 'Experience', value: '+${result?.xpEarned ?? enemy?.xpReward ?? 250} XP', color: AppColors.secondary),
               RewardRow(icon: Icons.monetization_on, label: 'Coins', value: '+${result?.goldEarned ?? enemy?.goldReward ?? 100}', color: AppColors.tertiary),
-              const RewardRow(icon: Icons.auto_awesome, label: 'Skill Point', value: '+1', color: AppColors.primary),
-              const RewardRow(icon: Icons.diamond, label: 'Corrupted Byte Shard (Tier 2)', value: 'x1', color: AppColors.primary),
               const Spacer(),
               SizedBox(
                 width: double.infinity,

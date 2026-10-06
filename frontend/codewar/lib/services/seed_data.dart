@@ -235,32 +235,13 @@ class SeedData {
     exampleOutput: '9',
     starterCode: {
       'python': '''def find_maximum(nums: list[int]) -> int:
-    if not nums:
-        return 0  # <- Bug: Return None
-    max_val = nums[0]
-    for n in nums:
-        if n > max_val:
-            max_val = n
-    return max_val''',
-      'typescript': '''function findMaximum(nums: number[]): number {
-  if (nums.length === 0) {
-    return 0; // <- Bug: Return None/null
-  }
-  let maxVal = nums[0];
-  for (const n of nums) {
-    if (n > maxVal) maxVal = n;
-  }
-  return maxVal;
+    # TODO: return the greatest value in nums (or None if nums is empty)
+    pass''',
+      'typescript': '''function findMaximum(nums: number[]): number | null {
+  // TODO: return the greatest value in nums (or null if nums is empty)
 }''',
       'cpp': '''int find_maximum(vector<int>& nums) {
-    if (nums.empty()) {
-        return 0; // <- Bug: should signal "no value"
-    }
-    int maxVal = nums[0];
-    for (int n : nums) {
-        if (n > maxVal) maxVal = n;
-    }
-    return maxVal;
+    // TODO: return the greatest value in nums
 }''',
     },
     testCases: const [
@@ -281,24 +262,13 @@ class SeedData {
     exampleOutput: '[0, 1]',
     starterCode: {
       'python': '''def two_sum(nums: list[int], target: int) -> list[int]:
+    # TODO: return the indices of the two numbers that add up to target
     pass''',
       'typescript': '''function twoSum(nums: number[], target: number): number[] {
-  const seen = new Map<number, number>();
-  for (let i = 0; i < nums.length; i++) {
-    const complement = target - nums[i];
-    if (seen.has(complement)) return [seen.get(complement)!, i];
-    seen.set(nums[i], i);
-  }
-  return [];
+  // TODO: return the indices of the two numbers that add up to target
 }''',
       'cpp': '''vector<int> two_sum(vector<int>& nums, int target) {
-    unordered_map<int, int> seen;
-    for (int i = 0; i < nums.size(); i++) {
-        int complement = target - nums[i];
-        if (seen.count(complement)) return {seen[complement], i};
-        seen[nums[i]] = i;
-    }
-    return {};
+    // TODO: return the indices of the two numbers that add up to target
 }''',
     },
     testCases: const [
