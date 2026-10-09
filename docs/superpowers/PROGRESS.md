@@ -51,10 +51,10 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - [x] 4.5 Persistence
 
 ### Stage 5: Rooms frontend
-- [ ] 5.1 RoomService + RoomState
-- [ ] 5.2 Hub + lobby
-- [ ] 5.3 Match + podium
-- [ ] 5.4 Tests
+- [x] 5.1 RoomService + RoomState
+- [x] 5.2 Hub + lobby
+- [x] 5.3 Match + podium
+- [x] 5.4 Tests
 
 ### Stage 6: Polish + tooling
 - [ ] 6.1 Design system
@@ -79,3 +79,4 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - Stage 3 backend done (3.1, 3.2): `GET /api/leaderboard?scope=global|weekly|friends&metric=xp|rating&limit=`, `POST /api/friends {name}`, `POST /api/practice/next {difficulty, topic?, daily?}`, `/api/practice/{id}/run|submit|hint`, `GET /api/practice/stats`. XP rules: practice XP only on the first solve of a question (easy 20/medium 40/hard 80, x2 for the daily), mastery points 5/10/20 per topic (100 = full). `progress.award_xp` is the single place XP/level/total/weekly are updated. Player gained total_xp, weekly_xp, weekly_week, last_solve_date. Remaining for Stage 3: Flutter Rank screen (3.3) and Practice screen (3.4).
 - Stage 3 done: Flutter `RankScreen` (live, tabs Global/Weekly/Friends, XP vs rating, add friend), `PracticeScreen` hub (streak, daily, topic mastery) + `PracticePlayScreen` (`/practice/play`) driven by `PracticeState`. Added `Language` enum (new code only). Flutter: 23 tests pass; backend: 124 pass.
 - Stage 4 done (rooms backend): `backend/app/rooms/{engine,rating,persist,manager}.py`, `backend/app/routers/rooms.py`, model `RoomResult`. Wire protocol is documented in `docs/superpowers/rooms-protocol.md` (read it before Stage 5). Rulings: `run` is private/unscored, `submit` is scored; duel is a 2-player race shown with HP bars; lobby disconnect removes the player, running disconnect has a 30s grace. Test DB is now a temp file (shared in-memory connection made threaded tests flaky). Backend: 165 tests pass (about 70s).
+- Stage 5 done (rooms UI): `models/room.dart`, `services/room_channel.dart` (RoomChannel seam over web_socket_channel), `providers/room_state.dart` (reconnect with backoff, terminal close codes 4401/4403/4404), screens `play_online_screen.dart` (`/online`: create/join) and `room_screen.dart` (`/room`: lobby, countdown, race/duel match, results). Entry point is a "Play Online" banner on the Battle tab (Stage 6 should promote it in the nav). Flutter tests: 30 pass. Test tip: fake-socket events need two `pump()` calls.

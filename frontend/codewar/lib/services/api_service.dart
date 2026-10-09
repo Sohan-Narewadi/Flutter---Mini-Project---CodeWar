@@ -11,6 +11,7 @@ import '../models/level_node.dart';
 import '../models/enemy.dart';
 import '../models/leaderboard.dart';
 import '../models/practice.dart';
+import '../models/room.dart';
 import 'settings_store.dart';
 
 /// Compile-time override: `flutter run --dart-define=API_URL=https://...`
@@ -145,6 +146,25 @@ class ApiService {
   Future<List<Enemy>> fetchEnemies() async {
     final list = await _request('GET', '/api/enemies') as List;
     return list.map((e) => Enemy.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  // --- Rooms ----------------------------------------------------------------
+
+  Future<RoomSnapshot> createRoom({String mode = 'race', String difficulty = 'easy', String language = 'python'}) async =>
+      RoomSnapshot.fromJson(await _request('POST', '/api/rooms',
+          body: {'mode': mode, 'difficulty': difficulty, 'language': language}) as Map<String, dynamic>);
+
+  Future<RoomSnapshot> joinRoom(String code) async => RoomSnapshot.fromJson(
+      await _request('POST', '/api/rooms/${Uri.encodeComponent(code.trim().toUpperCase())}/join') as Map<String, dynamic>);
+
+  /// WebSocket address for a room: same host as the REST API, ws:// or wss://.
+  Uri roomSocketUri(String code) {
+    final base = Uri.parse(baseUrl);
+    return base.replace(
+      scheme: base.scheme == 'https' ? 'wss' : 'ws',
+      path: '${base.path.endsWith('/') ? base.path.substring(0, base.path.length - 1) : base.path}/ws/rooms/${code.toUpperCase()}',
+      queryParameters: {'token': settings.token ?? ''},
+    );
   }
 
   // --- Leaderboard & friends ----------------------------------------------

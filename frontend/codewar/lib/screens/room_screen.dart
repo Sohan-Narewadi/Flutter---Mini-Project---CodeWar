@@ -1,0 +1,590 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
+import '../models/language.dart';
+import '../models/room.dart';
+import '../providers/game_state.dart';
+import '../providers/room_state.dart';
+import '../utils/theme.dart';
+import '../widgets/code_editor_panel.dart';
+import '../widgets/test_case_tile.dart';
+
+/// One screen for the whole life of a room: lobby, countdown, live match and
+/// results. It switches on the room status the server reports.
+class RoomScreen extends StatefulWidget {
+  const RoomScreen({super.key});
+
+  @override
+  State<RoomScreen> createState() => _RoomScreenState();
+}
+
+class _RoomScreenState extends State<RoomScreen> {
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    // Re-render a few times a second so the countdown and timer move
+    // smoothly between server snapshots.
+    _ticker = Timer.periodic(const Duration(milliseconds: 250), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _leave({bool confirm = false}) async {
+    final rooms = context.read<RoomState>();
+    if (confirm) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Leave this match?'),
+          content: const Text('You will forfeit if the match is running.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Stay')),
+            FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Leave')),
+          ],
+        ),
+      );
+      if (ok != true) return;
+    }
+    await rooms.leave();
+    if (mounted) context.go('/online');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rooms = context.watch<RoomState>();
+    final room = rooms.room;
+    if (room == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.go('/online');
+      });
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    final myId = int.tryParse(context.read<GameState>().player.id) ?? -1;
+
+    final Widget body;
+    switch (room.status) {
+      case 'lobby':
+        body = _Lobby(room: room, rooms: rooms, myId: myId);
+      case 'countdown':
+        body = _Countdown(rooms: rooms);
+      case 'running':
+        body = _Match(room: room, rooms: rooms, myId: myId);
+      default:
+        body = _Results(room: room, rooms: rooms, myId: myId, onDone: () => _leave());
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Room ${room.code}', style: AppTheme.mono(fontSize: 16, fontWeight: FontWeight.w800)),
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          key: const Key('leaveRoom'),
+          icon: const Icon(Icons.close),
+          onPressed: () => _leave(confirm: room.status == 'running'),
+        ),
+        actions: [
+          if (rooms.connection == RoomConnection.reconnecting)
+            const Padding(
+              padding: EdgeInsets.only(right: 16),
+              child: Center(child: Text('Reconnecting...', style: TextStyle(color: AppColors.tertiary, fontSize: 12))),
+            ),
+        ],
+      ),
+      body: Column(
+        children: [
+          if (rooms.connection == RoomConnection.closed && room.status != 'finished')
+            MaterialBanner(
+              content: Text(rooms.error ?? 'Disconnected from the room.'),
+              actions: [TextButton(onPressed: () => _leave(), child: const Text('Back'))],
+            ),
+          Expanded(child: body),
+        ],
+      ),
+    );
+  }
+}
+
+String _modeLabel(RoomSnapshot r) => r.isDuel ? 'Duel' : 'Race';
+
+// ---------------------------------------------------------------- lobby
+
+class _Lobby extends StatelessWidget {
+  const _Lobby({required this.room, required this.rooms, required this.myId});
+  final RoomSnapshot room;
+  final RoomState rooms;
+  final int myId;
+
+  @override
+  Widget build(BuildContext context) {
+    final isHost = room.hostId == myId;
+    final canStart = isHost && room.players.length >= 2 && !room.preparing;
+    final server = rooms.serverUrl;
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            gradient: const LinearGradient(
+              colors: [AppColors.primaryContainer, AppColors.secondaryContainer],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Column(
+            children: [
+              Text('${_modeLabel(room)} - ${room.difficulty.toUpperCase()}',
+                  style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+              const SizedBox(height: 8),
+              SelectableText(room.code,
+                  key: const Key('roomCode'),
+                  style: AppTheme.mono(fontSize: 44, fontWeight: FontWeight.w900, color: Colors.white)),
+              const SizedBox(height: 4),
+              TextButton.icon(
+                onPressed: () async {
+                  await Clipboard.setData(ClipboardData(text: room.code));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Room code copied')));
+                  }
+                },
+                icon: const Icon(Icons.copy, color: Colors.white, size: 16),
+                label: const Text('Copy code', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceContainer,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(color: AppColors.outlineVariant),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.public, size: 18, color: AppColors.secondary),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Friends join at: $server',
+                    style: AppTheme.mono(fontSize: 11, color: AppColors.onSurfaceVariant)),
+              ),
+              IconButton(
+                tooltip: 'Copy server address',
+                icon: const Icon(Icons.copy, size: 16),
+                onPressed: () => Clipboard.setData(ClipboardData(text: server)),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text('Players (${room.players.length}/${room.maxPlayers})',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.onSurface)),
+        const SizedBox(height: 8),
+        for (final p in room.players)
+          Container(
+            key: Key('lobbyPlayer_${p.playerId}'),
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainer,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: p.playerId == myId ? AppColors.primary : AppColors.outlineVariant),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.circle, size: 10, color: p.connected ? AppColors.secondary : AppColors.outline),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(p.name + (p.playerId == myId ? ' (You)' : ''),
+                      style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.onSurface)),
+                ),
+                if (p.isHost) const Icon(Icons.workspace_premium, color: AppColors.tertiary, size: 20),
+              ],
+            ),
+          ),
+        const SizedBox(height: 16),
+        if (rooms.error != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(rooms.error!, key: const Key('roomError'), style: const TextStyle(color: AppColors.error)),
+          ),
+        if (isHost)
+          FilledButton(
+            key: const Key('startMatch'),
+            onPressed: canStart ? rooms.start : null,
+            child: room.preparing
+                ? const Text('Preparing a fresh problem...')
+                : Text(room.players.length < 2 ? 'Waiting for a second player...' : 'Start match'),
+          )
+        else
+          const Center(
+            child: Text('Waiting for the host to start...', style: TextStyle(color: AppColors.onSurfaceVariant)),
+          ),
+      ],
+    );
+  }
+}
+
+// ------------------------------------------------------------ countdown
+
+class _Countdown extends StatelessWidget {
+  const _Countdown({required this.rooms});
+  final RoomState rooms;
+
+  @override
+  Widget build(BuildContext context) {
+    final n = rooms.countdownNumber;
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('GET READY', style: TextStyle(letterSpacing: 4, color: AppColors.onSurfaceVariant, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 16),
+          TweenAnimationBuilder<double>(
+            key: ValueKey(n),
+            tween: Tween(begin: 1.6, end: 1.0),
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOutBack,
+            builder: (context, scale, child) => Transform.scale(scale: scale, child: child),
+            child: Text(n > 0 ? '$n' : 'GO!',
+                key: const Key('countdownNumber'),
+                style: AppTheme.mono(fontSize: 96, fontWeight: FontWeight.w900, color: AppColors.primary)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------- match
+
+class _Match extends StatelessWidget {
+  const _Match({required this.room, required this.rooms, required this.myId});
+  final RoomSnapshot room;
+  final RoomState rooms;
+  final int myId;
+
+  String _clock(int s) => '${(s ~/ 60).toString().padLeft(2, '0')}:${(s % 60).toString().padLeft(2, '0')}';
+
+  @override
+  Widget build(BuildContext context) {
+    final q = rooms.question;
+    final me = room.playerById(myId);
+    final forfeited = me?.forfeited ?? false;
+    final secs = rooms.secondsLeft;
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Row(
+          children: [
+            Text(_modeLabel(room).toUpperCase(),
+                style: const TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1.5, color: AppColors.onSurfaceVariant)),
+            const Spacer(),
+            Icon(Icons.timer, size: 18, color: secs < 30 ? AppColors.error : AppColors.tertiary),
+            const SizedBox(width: 6),
+            Text(_clock(secs),
+                key: const Key('matchClock'),
+                style: AppTheme.mono(fontSize: 20, fontWeight: FontWeight.w800, color: secs < 30 ? AppColors.error : AppColors.onSurface)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        room.isDuel ? _DuelBars(room: room, myId: myId) : _RaceBars(room: room, myId: myId),
+        const SizedBox(height: 16),
+        if (q == null)
+          const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator()))
+        else ...[
+          Text(q.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.onSurface)),
+          const SizedBox(height: 6),
+          Text(q.prompt, style: const TextStyle(fontSize: 14, height: 1.4, color: AppColors.onSurface)),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: AppColors.outlineVariant),
+            ),
+            child: Text('Example\n${q.exampleInput}\n=> ${q.exampleOutput}',
+                style: AppTheme.mono(fontSize: 12, color: AppColors.onSurfaceVariant)),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            children: [
+              for (final l in Language.values)
+                ChoiceChip(
+                  label: Text(l.label),
+                  selected: rooms.language == l,
+                  onSelected: (_) => rooms.setLanguage(l),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          CodeEditorPanel(
+            key: ValueKey('${q.id}_${rooms.language.id}'),
+            filename: 'SOLUTION.${rooms.language.ext}',
+            initialCode: rooms.code,
+            onChanged: rooms.updateCode,
+          ),
+          const SizedBox(height: 12),
+          if (forfeited)
+            const Text('You left this match.', style: TextStyle(color: AppColors.error))
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.tonal(
+                    key: const Key('roomRun'),
+                    onPressed: rooms.judging ? null : rooms.run,
+                    child: const Text('Run Tests'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton(
+                    key: const Key('roomSubmit'),
+                    onPressed: rooms.judging ? null : rooms.submit,
+                    child: rooms.judging
+                        ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Text('Submit'),
+                  ),
+                ),
+              ],
+            ),
+          if (rooms.error != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(rooms.error!, key: const Key('roomError'), style: const TextStyle(color: AppColors.error)),
+            ),
+          if (rooms.lastRun != null) ...[
+            const SizedBox(height: 14),
+            Text(
+              '${rooms.lastRunKind == 'submit' ? 'Submitted' : 'Preview'}: ${rooms.lastRun!.passedTests}/${rooms.lastRun!.totalTests} tests passed',
+              key: const Key('roomRunSummary'),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.onSurface),
+            ),
+            const SizedBox(height: 8),
+            for (var i = 0; i < rooms.lastRun!.results.length; i++) TestCaseTile(index: i, result: rooms.lastRun!.results[i]),
+          ],
+        ],
+      ],
+    );
+  }
+}
+
+class _RaceBars extends StatelessWidget {
+  const _RaceBars({required this.room, required this.myId});
+  final RoomSnapshot room;
+  final int myId;
+
+  @override
+  Widget build(BuildContext context) {
+    final players = [...room.players]..sort((a, b) => b.bestPct.compareTo(a.bestPct));
+    return Column(
+      children: [
+        for (final p in players)
+          Padding(
+            key: Key('bar_${p.playerId}'),
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 92,
+                  child: Text(p.name + (p.playerId == myId ? ' (You)' : ''),
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: p.forfeited ? AppColors.outline : AppColors.onSurface,
+                        decoration: p.forfeited ? TextDecoration.lineThrough : null,
+                      )),
+                ),
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.full),
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(end: p.bestPct / 100),
+                      duration: const Duration(milliseconds: 500),
+                      builder: (context, v, _) => LinearProgressIndicator(
+                        value: v,
+                        minHeight: 10,
+                        backgroundColor: AppColors.surfaceContainerHighest,
+                        color: p.playerId == myId ? AppColors.primary : AppColors.secondary,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 44, child: Text('${p.bestPct}%', textAlign: TextAlign.right, style: AppTheme.mono(fontSize: 12, color: AppColors.onSurfaceVariant))),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _DuelBars extends StatelessWidget {
+  const _DuelBars({required this.room, required this.myId});
+  final RoomSnapshot room;
+  final int myId;
+
+  @override
+  Widget build(BuildContext context) {
+    final me = room.playerById(myId);
+    final foe = room.players.where((p) => p.playerId != myId).firstOrNull;
+    // Your best score drains the opponent's HP, and theirs drains yours.
+    final myHp = 100 - (foe?.bestPct ?? 0);
+    final foeHp = 100 - (me?.bestPct ?? 0);
+
+    Widget bar(String name, int hp, Color color, {required Key key}) => Column(
+          key: key,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.onSurface))),
+              Text('$hp HP', style: AppTheme.mono(fontSize: 12, color: AppColors.onSurfaceVariant)),
+            ]),
+            const SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.full),
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(end: hp / 100),
+                duration: const Duration(milliseconds: 600),
+                builder: (context, v, _) => LinearProgressIndicator(
+                  value: v,
+                  minHeight: 14,
+                  backgroundColor: AppColors.surfaceContainerHighest,
+                  color: color,
+                ),
+              ),
+            ),
+          ],
+        );
+
+    return Column(
+      children: [
+        bar(foe?.name ?? 'Opponent', foeHp, AppColors.error, key: const Key('foeHp')),
+        const SizedBox(height: 12),
+        bar('${me?.name ?? 'You'} (You)', myHp, AppColors.secondary, key: const Key('myHp')),
+      ],
+    );
+  }
+}
+
+// -------------------------------------------------------------- results
+
+class _Results extends StatelessWidget {
+  const _Results({required this.room, required this.rooms, required this.myId, required this.onDone});
+  final RoomSnapshot room;
+  final RoomState rooms;
+  final int myId;
+  final VoidCallback onDone;
+
+  @override
+  Widget build(BuildContext context) {
+    final standings = room.standings ?? const <Standing>[];
+    Standing? mine;
+    for (final s in standings) {
+      if (s.playerId == myId) mine = s;
+    }
+    final won = mine != null && mine.rank == 1 && standings.where((s) => s.rank == 1).length < standings.length;
+    final title = standings.isEmpty ? 'Match over' : (won ? 'Victory!' : (mine?.rank == 1 ? 'Draw' : 'Match over'));
+    final why = switch (room.reason) {
+      'solved' => 'A perfect solution ended the match.',
+      'timeout' => "Time's up.",
+      'forfeit' => 'The opponent left the match.',
+      _ => '',
+    };
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Icon(won ? Icons.emoji_events : Icons.flag, size: 72, color: won ? AppColors.tertiary : AppColors.primary),
+        const SizedBox(height: 8),
+        Text(title,
+            key: const Key('resultTitle'),
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: AppColors.onSurface)),
+        if (why.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(why, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.onSurfaceVariant)),
+          ),
+        const SizedBox(height: 20),
+        for (final s in standings)
+          Container(
+            key: Key('standing_${s.playerId}'),
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: s.playerId == myId ? AppColors.surfaceContainerHigh : AppColors.surfaceContainer,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              border: Border.all(color: s.playerId == myId ? AppColors.primary : AppColors.outlineVariant),
+            ),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 36,
+                  child: s.rank == 1
+                      ? const Icon(Icons.emoji_events, color: AppColors.tertiary)
+                      : Text('#${s.rank}', style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.outline)),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(s.name + (s.playerId == myId ? ' (You)' : ''),
+                          style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.onSurface)),
+                      Text(
+                        s.forfeited ? 'Left the match' : '${s.bestPct}% passed${s.timeS != null ? ' in ${s.timeS}s' : ''}',
+                        style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
+                if (s.hasRewards)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text('${s.ratingDelta! >= 0 ? '+' : ''}${s.ratingDelta} RP',
+                          key: Key('delta_${s.playerId}'),
+                          style: AppTheme.mono(
+                              fontSize: 13, fontWeight: FontWeight.w800, color: s.ratingDelta! >= 0 ? AppColors.secondary : AppColors.error)),
+                      if ((s.xp ?? 0) > 0)
+                        Text('+${s.xp} XP', style: AppTheme.mono(fontSize: 11, color: AppColors.tertiary)),
+                    ],
+                  )
+                else
+                  const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+              ],
+            ),
+          ),
+        const SizedBox(height: 12),
+        FilledButton(key: const Key('backToOnline'), onPressed: onDone, child: const Text('Back to lobby')),
+        const SizedBox(height: 8),
+        OutlinedButton(
+          onPressed: () async {
+            await rooms.leave();
+            if (context.mounted) context.go('/home');
+          },
+          child: const Text('Home'),
+        ),
+      ],
+    );
+  }
+}

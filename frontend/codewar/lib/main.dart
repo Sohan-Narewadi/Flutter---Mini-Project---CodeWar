@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import 'providers/game_state.dart';
 import 'providers/practice_state.dart';
+import 'providers/room_state.dart';
+import 'services/room_channel.dart';
 import 'routing/app_router.dart';
 import 'services/api_service.dart';
 import 'services/settings_store.dart';
@@ -16,11 +18,12 @@ Future<void> main() async {
 }
 
 class CodeWarApp extends StatefulWidget {
-  const CodeWarApp({super.key, this.settings, this.api});
+  const CodeWarApp({super.key, this.settings, this.api, this.channelFactory});
 
   /// Injected in tests; defaults to persisted settings.
   final SettingsStore? settings;
   final ApiService? api;
+  final RoomChannelFactory? channelFactory;
 
   @override
   State<CodeWarApp> createState() => _CodeWarAppState();
@@ -29,6 +32,7 @@ class CodeWarApp extends StatefulWidget {
 class _CodeWarAppState extends State<CodeWarApp> {
   late final GameState _state;
   late final PracticeState _practice;
+  late final RoomState _rooms;
   late final GoRouter _router;
 
   @override
@@ -37,12 +41,14 @@ class _CodeWarAppState extends State<CodeWarApp> {
     final api = widget.api ?? ApiService(settings: widget.settings ?? SettingsStore.memory());
     _state = GameState(api: api)..load();
     _practice = PracticeState(api, onProgress: _state.refreshProgress);
+    _rooms = RoomState(api, channelFactory: widget.channelFactory, onFinished: _state.refreshProgress);
     _router = buildRouter(_state);
   }
 
   @override
   void dispose() {
     _router.dispose();
+    _rooms.dispose();
     _practice.dispose();
     _state.dispose();
     super.dispose();
@@ -54,6 +60,7 @@ class _CodeWarAppState extends State<CodeWarApp> {
       providers: [
         ChangeNotifierProvider<GameState>.value(value: _state),
         ChangeNotifierProvider<PracticeState>.value(value: _practice),
+        ChangeNotifierProvider<RoomState>.value(value: _rooms),
       ],
       child: MaterialApp.router(
         title: 'CodeWar',

@@ -30,6 +30,41 @@ class _BattleArenaScreenState extends State<BattleArenaScreen> {
       body: Column(
         children: [
           Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: InkWell(
+              key: const Key('playOnlineBanner'),
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => context.push('/online'),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFA078FF), Color(0xFF00A6E0)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.public, color: Colors.white, size: 32),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Play Online', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
+                          Text('Race or duel friends with a room code', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: Colors.white),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: DifficultyFilterBar(selected: _filter, onSelected: (d) => setState(() => _filter = d)),
           ),
