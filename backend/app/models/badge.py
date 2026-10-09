@@ -1,11 +1,5 @@
-from datetime import datetime, timezone
-
 from sqlalchemy import Column, DateTime, Integer, String, UniqueConstraint
 from app.database import Base
-
-
-def _utcnow():
-    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class PlayerBadge(Base):
@@ -16,4 +10,5 @@ class PlayerBadge(Base):
     id = Column(Integer, primary_key=True)
     player_id = Column(Integer, nullable=False, index=True)
     key = Column(String, nullable=False)
-    earned_at = Column(DateTime, nullable=False, default=_utcnow)
+    # NULL for badges back-filled after the fact: they were earned earlier but the real date is unknown.
+    earned_at = Column(DateTime, nullable=True)

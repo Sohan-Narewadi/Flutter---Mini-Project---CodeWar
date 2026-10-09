@@ -1,7 +1,10 @@
 """Achievements. Every badge is earned from REAL data (rows in the database),
 never granted for free. `award_badges` is idempotent and cheap enough to call
 after any event that can change the inputs."""
+from datetime import datetime, timezone
+
 from sqlalchemy import func
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
 
 from app.models.badge import PlayerBadge
@@ -75,23 +78,32 @@ def _stats(db: Session, player: Player) -> dict:
     }
 
 
-def award_badges(db: Session, player: Player) -> list[str]:
+def award_badges(db: Session, player: Player, backfill: bool = False) -> list[str]:
     """Inserts any newly satisfied badges (flushes, does not commit) and
-    returns their keys in catalogue order."""
+    returns the keys that THIS call really inserted, in catalogue order.
+
+    Uses INSERT OR IGNORE so two sessions awarding the same badge at once
+    (a room finishing while a practice submit runs) cannot raise a unique
+    violation and abort the caller's transaction. `backfill=True` marks badges
+    found late (earned before this feature existed): they get no invented date."""
     db.flush()
     have = {k for (k,) in db.query(PlayerBadge.key).filter(PlayerBadge.player_id == player.id).all()}
     stats = _stats(db, player)
-    new = [key for key, b in BADGES.items() if key not in have and b["test"](stats)]
-    for key in new:
-        db.add(PlayerBadge(player_id=player.id, key=key))
-    if new:
-        db.flush()
-    return new
+    candidates = [key for key, b in BADGES.items() if key not in have and b["test"](stats)]
+    awarded = []
+    for key in candidates:
+        stmt = sqlite_insert(PlayerBadge).values(
+            player_id=player.id, key=key, earned_at=None if backfill else datetime.now(timezone.utc).replace(tzinfo=None)
+        ).on_conflict_do_nothing(index_elements=["player_id", "key"])
+        if db.execute(stmt).rowcount:
+            awarded.append(key)
+    return awarded
 
 
-def badge_view(key: str, earned_at=None) -> dict:
+def badge_view(key: str, earned_at=None, earned: bool | None = None) -> dict:
     b = BADGES[key]
     return {
+        "earned": bool(earned_at) if earned is None else earned,
         "key": key,
         "name": b["name"],
         "description": b["description"],

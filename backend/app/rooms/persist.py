@@ -1,4 +1,6 @@
 """Writes a finished room's outcome: ratings, XP, win/loss, friend links."""
+import logging
+
 from sqlalchemy.orm import Session
 
 from app.models.player import Player
@@ -10,6 +12,8 @@ from app.rooms.rating import update_ratings
 
 BASE_XP = {"easy": 30, "medium": 60, "hard": 120}
 RANK_SHARE = {1: 1.0, 2: 0.6}  # everyone else gets 0.3
+
+log = logging.getLogger(__name__)
 
 
 def persist_results(
@@ -50,7 +54,10 @@ def persist_results(
             rating_before=rating_before, rating_delta=delta, xp=xp, gold=gold,
         ))
         db.flush()
-        award_badges(db, player)
+        try:
+            award_badges(db, player)
+        except Exception:  # badges are a bonus: never lose the real match result over them
+            log.exception("badge award failed for player %s", player.id)
         rewards[player.id] = {"rating_delta": delta, "xp": xp, "gold": gold, "rating": player.rating}
 
     ids = [s["player_id"] for s in standings]

@@ -140,5 +140,5 @@ def test_campaign_win_does_not_count_as_an_online_win_but_earns_badges(auth_clie
         auth_client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"})
     me = auth_client.get("/api/player").json()
     assert me["wins"] == 0 and me["losses"] == 0  # the online record is online-only
-    earned = {b["key"] for b in auth_client.get("/api/badges").json() if b["earned_at"]}
+    earned = {b["key"] for b in auth_client.get("/api/badges").json() if b["earned"]}
     assert "first_solve" in earned  # a cleared campaign level counts as a first solve

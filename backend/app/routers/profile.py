@@ -16,10 +16,10 @@ router = APIRouter()
 def my_badges(player: Player = Depends(get_current_player), db: Session = Depends(get_db)):
     """The full catalogue with `earned_at` set for badges this player earned.
     Also back-fills badges earned before this feature existed."""
-    award_badges(db, player)
+    award_badges(db, player, backfill=True)
     db.commit()
     earned = {b.key: b.earned_at for b in db.query(PlayerBadge).filter(PlayerBadge.player_id == player.id).all()}
-    return [badge_view(key, earned.get(key)) for key in BADGES]
+    return [badge_view(key, earned.get(key), earned=key in earned) for key in BADGES]
 
 
 @router.get("/api/matches")
