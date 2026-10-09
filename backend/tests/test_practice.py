@@ -126,3 +126,24 @@ def test_stats_lists_every_topic(auth_client):
     stats = auth_client.get("/api/practice/stats").json()
     assert {t["id"] for t in stats["topics"]} == {"arrays", "strings", "math", "hashmap", "two-pointers", "dp"}
     assert stats["streak"] == 0 and stats["solved_today"] == 0
+
+
+def test_stats_total_solved_and_daily_flags(auth_client):
+    stats = auth_client.get("/api/practice/stats").json()
+    assert stats["total_solved"] == 0 and stats["daily_done"] is False
+    assert 0 < stats["daily_resets_in"] <= 24 * 3600
+
+    pr = _next(auth_client, daily=True, difficulty="medium", topic=None).json()
+    code = _reference(auth_client, pr["question"]["id"])
+    r = auth_client.post(f"/api/practice/{pr['practice_id']}/submit", json={"code": code, "language": "python"}).json()
+    assert r["solved"] is True
+    stats = auth_client.get("/api/practice/stats").json()
+    assert stats["total_solved"] == 1 and stats["daily_done"] is True
+
+
+def test_plain_solve_does_not_mark_daily_done(auth_client):
+    pr = _next(auth_client).json()
+    code = _reference(auth_client, pr["question"]["id"])
+    auth_client.post(f"/api/practice/{pr['practice_id']}/submit", json={"code": code, "language": "python"})
+    stats = auth_client.get("/api/practice/stats").json()
+    assert stats["total_solved"] == 1 and stats["daily_done"] is False

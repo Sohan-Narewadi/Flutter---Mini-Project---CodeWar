@@ -18,17 +18,40 @@ class TopicStat {
 }
 
 class PracticeStats {
-  const PracticeStats({required this.streak, required this.solvedToday, required this.topics});
+  const PracticeStats({
+    required this.streak,
+    required this.solvedToday,
+    required this.topics,
+    this.totalSolved = 0,
+    this.dailyDone = false,
+    this.dailyResetsIn = 0,
+  });
 
   final int streak;
   final int solvedToday;
   final List<TopicStat> topics;
+  final int totalSolved;
+  final bool dailyDone;
+
+  /// Seconds until the daily challenge changes (0 when unknown).
+  final int dailyResetsIn;
 
   static const empty = PracticeStats(streak: 0, solvedToday: 0, topics: []);
+
+  /// "5h 12m" / "42m": human text for [dailyResetsIn], empty when unknown.
+  String get dailyResetsLabel {
+    if (dailyResetsIn <= 0) return '';
+    final h = dailyResetsIn ~/ 3600;
+    final m = (dailyResetsIn % 3600) ~/ 60;
+    return h > 0 ? '${h}h ${m}m' : '${m < 1 ? 1 : m}m';
+  }
 
   factory PracticeStats.fromJson(Map<String, dynamic> json) => PracticeStats(
         streak: json['streak'] ?? 0,
         solvedToday: json['solved_today'] ?? 0,
+        totalSolved: json['total_solved'] ?? 0,
+        dailyDone: json['daily_done'] == true,
+        dailyResetsIn: json['daily_resets_in'] ?? 0,
         topics: (json['topics'] as List? ?? [])
             .map((e) => TopicStat.fromJson(e as Map<String, dynamic>))
             .toList(),

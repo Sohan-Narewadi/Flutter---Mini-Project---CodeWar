@@ -5,10 +5,16 @@ import 'package:provider/provider.dart';
 
 import '../models/language.dart';
 import '../providers/room_state.dart';
+import '../ui/app_card.dart';
+import '../ui/app_scaffold.dart';
+import '../ui/neon_button.dart';
+import '../ui/segmented_tabs.dart';
 import '../utils/theme.dart';
+import '../widgets/app_shell.dart';
+import '../widgets/bottom_nav_bar.dart' show kPlayTab;
 
-/// Entry point for online play: create a room (Race or Duel) or join one
-/// with a 6-character code a friend shared.
+/// Online hub (a main tab): create a Race or Duel room, or join one with the
+/// 6-character code a friend shared.
 class PlayOnlineScreen extends StatefulWidget {
   const PlayOnlineScreen({super.key});
 
@@ -21,6 +27,12 @@ class _PlayOnlineScreenState extends State<PlayOnlineScreen> {
   String _difficulty = 'easy';
   final _code = TextEditingController();
   bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _code.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
@@ -40,131 +52,144 @@ class _PlayOnlineScreenState extends State<PlayOnlineScreen> {
   @override
   Widget build(BuildContext context) {
     final rooms = context.watch<RoomState>();
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Play Online'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.canPop() ? context.pop() : context.go('/home')),
-      ),
+    final codeReady = _code.text.trim().length == 6;
+    return AppShell(
+      title: 'Play',
+      navIndex: kPlayTab,
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(bottom: 24),
         children: [
-          _card(
-            title: 'Create a room',
-            icon: Icons.add_circle_outline,
+          const PageHeader(title: 'Play Online', subtitle: 'Race your friends in real time. Same problem, first to solve wins.'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text('Mode', style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 12)),
-                const SizedBox(height: 6),
-                SegmentedButton<String>(
-                  key: const Key('modeSelector'),
-                  segments: const [
-                    ButtonSegment(value: 'race', label: Text('Race (2-8)'), icon: Icon(Icons.flag)),
-                    ButtonSegment(value: 'duel', label: Text('Duel (1v1)'), icon: Icon(Icons.sports_mma)),
-                  ],
-                  selected: {_mode},
-                  onSelectionChanged: (s) => setState(() => _mode = s.first),
-                ),
-                const SizedBox(height: 14),
-                const Text('Difficulty', style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 12)),
-                const SizedBox(height: 6),
-                SegmentedButton<String>(
-                  segments: const [
-                    ButtonSegment(value: 'easy', label: Text('Easy')),
-                    ButtonSegment(value: 'medium', label: Text('Medium')),
-                    ButtonSegment(value: 'hard', label: Text('Hard')),
-                  ],
-                  selected: {_difficulty},
-                  onSelectionChanged: (s) => setState(() => _difficulty = s.first),
-                ),
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    for (final l in Language.values)
-                      ChoiceChip(
-                        label: Text(l.label),
-                        selected: rooms.language == l,
-                        onSelected: (_) => rooms.setLanguage(l),
+                AppCard(
+                  accent: AppColors.accent,
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('CREATE A ROOM', style: AppTheme.overline(color: AppColors.accent)),
+                      const SizedBox(height: 14),
+                      SegmentedTabs<String>(
+                        key: const Key('modeSelector'),
+                        options: const {'race': 'Race · 2-8', 'duel': 'Duel · 1v1'},
+                        value: _mode,
+                        onChanged: (v) => setState(() => _mode = v),
                       ),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(
+                        _mode == 'race'
+                            ? 'Everyone solves the same problem. Ranked by who solves it first and how many tests pass.'
+                            : 'A head-to-head match. The winner takes rating from the loser.',
+                        style: const TextStyle(color: AppColors.textDim, fontSize: 13, height: 1.35),
+                      ),
+                      const SizedBox(height: 16),
+                      Text('DIFFICULTY', style: AppTheme.overline()),
+                      const SizedBox(height: 8),
+                      SegmentedTabs<String>(
+                        options: const {'easy': 'Easy', 'medium': 'Medium', 'hard': 'Hard'},
+                        value: _difficulty,
+                        onChanged: (v) => setState(() => _difficulty = v),
+                      ),
+                      const SizedBox(height: 16),
+                      Text('LANGUAGE', style: AppTheme.overline()),
+                      const SizedBox(height: 8),
+                      SegmentedTabs<Language>(
+                        options: {for (final l in Language.values) l: l.label},
+                        value: rooms.language,
+                        onChanged: rooms.setLanguage,
+                      ),
+                      const SizedBox(height: 20),
+                      NeonButton(
+                        key: const Key('createRoomButton'),
+                        label: 'Create room',
+                        icon: Icons.add_rounded,
+                        loading: _busy,
+                        onPressed: _busy ? null : () => _go((r) => r.create(mode: _mode, difficulty: _difficulty)),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    key: const Key('createRoomButton'),
-                    onPressed: _busy ? null : () => _go((r) => r.create(mode: _mode, difficulty: _difficulty)),
-                    child: _busy ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Create room'),
+                AppCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('JOIN WITH A CODE', style: AppTheme.overline()),
+                      const SizedBox(height: 12),
+                      TextField(
+                        key: const Key('roomCodeField'),
+                        controller: _code,
+                        maxLength: 6,
+                        textCapitalization: TextCapitalization.characters,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9]')),
+                          _UpperCaseFormatter(),
+                        ],
+                        style: AppTheme.display(fontSize: 28, letterSpacing: 8, color: AppColors.text),
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                          hintText: 'ABC123',
+                          hintStyle: AppTheme.display(fontSize: 28, letterSpacing: 8, color: AppColors.textFaint.withValues(alpha: 0.5)),
+                          counterText: '',
+                          contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                        ),
+                        onSubmitted: (_) => _busy || !codeReady ? null : _go((r) => r.join(_code.text)),
+                      ),
+                      const SizedBox(height: 14),
+                      NeonButton(
+                        key: const Key('joinRoomButton'),
+                        label: 'Join room',
+                        icon: Icons.login_rounded,
+                        variant: NeonVariant.secondary,
+                        onPressed: _busy ? null : () => _go((r) => r.join(_code.text)),
+                      ),
+                    ],
                   ),
+                ),
+                if (rooms.error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.error_outline_rounded, size: 18, color: AppColors.danger),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(rooms.error!, key: const Key('onlineError'), style: const TextStyle(color: AppColors.danger, height: 1.3)),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 18),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.textFaint),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Friends must reach the same server (${rooms.serverUrl}). Share the room code and, if needed, the server address from Settings.',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textFaint, height: 1.4),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 16),
-          _card(
-            title: 'Join with a code',
-            icon: Icons.login,
-            child: Column(
-              children: [
-                TextField(
-                  key: const Key('roomCodeField'),
-                  controller: _code,
-                  maxLength: 6,
-                  textCapitalization: TextCapitalization.characters,
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9]'))],
-                  style: AppTheme.mono(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.onSurface),
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(hintText: 'ABC123', counterText: ''),
-                  onSubmitted: (_) => _busy ? null : _go((r) => r.join(_code.text)),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.tonal(
-                    key: const Key('joinRoomButton'),
-                    onPressed: _busy ? null : () => _go((r) => r.join(_code.text)),
-                    child: const Text('Join room'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (rooms.error != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Text(rooms.error!, key: const Key('onlineError'), style: const TextStyle(color: AppColors.error)),
-            ),
-          const SizedBox(height: 16),
-          const Text(
-            'Friends must be able to reach the same server address (see Settings). Share the room code and the server URL with them.',
-            style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _card({required String title, required IconData icon, required Widget child}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Icon(icon, color: AppColors.primary),
-            const SizedBox(width: 8),
-            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.onSurface)),
-          ]),
-          const SizedBox(height: 14),
-          child,
-        ],
-      ),
-    );
-  }
+class _UpperCaseFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) =>
+      newValue.copyWith(text: newValue.text.toUpperCase());
 }

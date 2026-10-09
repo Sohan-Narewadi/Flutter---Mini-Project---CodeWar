@@ -5,13 +5,13 @@ import '../utils/theme.dart';
 Color difficultyColor(Difficulty d) {
   switch (d) {
     case Difficulty.easy:
-      return AppColors.secondary;
+      return AppColors.success;
     case Difficulty.medium:
-      return AppColors.tertiary;
+      return AppColors.gold;
     case Difficulty.hard:
-      return AppColors.error;
+      return AppColors.danger;
     case Difficulty.boss:
-      return AppColors.primary;
+      return const Color(0xFFB69CFF);
   }
 }
 
@@ -33,7 +33,7 @@ class DifficultyChip extends StatelessWidget {
       ),
       child: Text(
         difficultyLabel(difficulty).toUpperCase(),
-        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: color, letterSpacing: 0.5),
+        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: color, letterSpacing: 0.8),
       ),
     );
   }

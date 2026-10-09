@@ -63,6 +63,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(settings.token, 'tok');
     expect(find.byKey(const Key('nameField')), findsNothing);
-    expect(find.text('Sector Path'), findsWidgets);
+    expect(find.text('CAMPAIGN PATH'), findsWidgets);
   });
 }

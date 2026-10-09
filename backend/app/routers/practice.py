@@ -159,10 +159,24 @@ def practice_stats(player: Player = Depends(get_current_player), db: Session = D
         )
         .count()
     )
+    daily_done = (
+        db.query(PracticeAttempt)
+        .filter(
+            PracticeAttempt.player_id == player.id, PracticeAttempt.daily.is_(True),
+            PracticeAttempt.status == "solved", PracticeAttempt.solved_on == date.today().isoformat(),
+        )
+        .first()
+        is not None
+    )
+    now = datetime.now()
+    midnight = datetime.combine(now.date() + timedelta(days=1), datetime.min.time())
     # A streak that was not extended yesterday or today has lapsed.
     streak = effective_streak(player)
     return PracticeStatsOut(
         streak=streak, solved_today=solved_today,
+        total_solved=sum(s.solved for s in stats.values()),
+        daily_done=daily_done,
+        daily_resets_in=max(1, int((midnight - now).total_seconds())),
         topics=[
             TopicStatOut(
                 id=t, label=TOPIC_LABELS[t],

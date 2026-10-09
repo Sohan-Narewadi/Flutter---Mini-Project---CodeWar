@@ -4,130 +4,122 @@ import 'package:provider/provider.dart';
 
 import '../models/level_node.dart';
 import '../providers/game_state.dart';
+import '../ui/app_card.dart';
+import '../ui/neon_button.dart';
+import '../ui/skeleton.dart';
 import '../utils/theme.dart';
 import '../widgets/app_shell.dart';
+import '../widgets/difficulty_chip.dart';
+import '../widgets/home_header.dart';
 import '../widgets/sector_tile.dart';
-import '../ui/app_card.dart';
-import '../ui/skeleton.dart';
 
-/// Home / World Map: shows World 2 "Array Ruins" sector progress and the
-/// linear node spine. Tapping an unlocked node routes into the battle flow.
+/// Home: player strip, a "continue" hero for the current campaign level,
+/// shortcuts, and the level path. Everything shown comes from the server.
 class WorldMapScreen extends StatelessWidget {
   const WorldMapScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<GameState>();
-    final world = state.activeWorld;
-    final nodes = state.world2Levels;
-    final defeatedCount = nodes.where((n) => n.status == NodeStatus.done).length;
 
     if (!state.hasLoaded) {
       return AppShell(
-        title: 'World Map',
+        title: 'Home',
         navIndex: 0,
         body: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(AppSpace.page, 0, AppSpace.page, 24),
           children: [
+            const HomeHeader(),
             if (state.error != null && !state.isLoading)
               AppCard(
-                accent: AppColors.error,
+                accent: AppColors.danger,
                 margin: const EdgeInsets.only(bottom: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(state.error!, key: const Key('homeError'), style: const TextStyle(color: AppColors.onSurface)),
-                    const SizedBox(height: 8),
-                    FilledButton(onPressed: state.load, child: const Text('Try again')),
+                    Text(state.error!, key: const Key('homeError'), style: const TextStyle(color: AppColors.text)),
+                    const SizedBox(height: 12),
+                    NeonButton(label: 'Try again', compact: true, expanded: false, onPressed: state.load),
                   ],
                 ),
               ),
-            const SkeletonList(rows: 5, rowHeight: 78),
+            const SkeletonList(rows: 5, rowHeight: 84),
           ],
         ),
       );
     }
 
+    final world = state.activeWorld;
+    final nodes = state.world2Levels;
+    final done = nodes.where((n) => n.status == NodeStatus.done).length;
+    LevelNode? current;
+    for (final n in nodes) {
+      if (n.status == NodeStatus.current) {
+        current = n;
+        break;
+      }
+    }
+
     return AppShell(
-      title: 'World Map',
+      title: 'Home',
       navIndex: 0,
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainer,
-              borderRadius: BorderRadius.circular(AppRadius.xl),
-              border: Border.all(color: AppColors.outlineVariant),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.map, color: AppColors.primary),
-                    const SizedBox(width: 8),
-                    Text(
-                      world.name,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.onSurface),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  world.description,
-                  style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
-                ),
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(AppRadius.full),
-                  child: LinearProgressIndicator(
-                    value: world.clearedPercent.clamp(0.0, 1.0),
-                    minHeight: 8,
-                    backgroundColor: AppColors.surfaceContainerHigh,
-                    valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+      body: RefreshIndicator(
+        color: AppColors.accent,
+        backgroundColor: AppColors.surfaceHigh,
+        onRefresh: state.load,
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: 24),
+          children: [
+            const HomeHeader(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 8),
+                  _ContinueCard(
+                    worldName: world.name,
+                    done: done,
+                    total: nodes.length,
+                    current: current,
+                    onContinue: current == null ? null : () => _onNodeTap(context, current!),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '${(world.clearedPercent * 100).round()}% cleared · $defeatedCount/${nodes.length} nodes defeated',
-                  style: AppTheme.mono(fontSize: 11, color: AppColors.onSurfaceVariant),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  key: const Key('openArena'),
-                  onPressed: () => context.push('/battle'),
-                  icon: const Icon(Icons.gavel, size: 18),
-                  label: const Text('Battle Arena'),
-                ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _Shortcut(
+                          key: const Key('openArena'),
+                          icon: Icons.shield_moon_rounded,
+                          title: 'Arena',
+                          subtitle: 'Farm enemies',
+                          onTap: () => context.push('/battle'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _Shortcut(
+                          icon: Icons.groups_rounded,
+                          title: 'Play Online',
+                          subtitle: 'Race friends',
+                          onTap: () => context.go('/online'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 22),
+                  SectionTitle('Campaign path', trailing: Text('$done/${nodes.length} cleared', style: AppTheme.mono(fontSize: 12, color: AppColors.textDim))),
+                  for (var i = 0; i < nodes.length; i++)
+                    SectorTile(
+                      node: nodes[i],
+                      isLast: i == nodes.length - 1,
+                      onTap: () => _onNodeTap(context, nodes[i]),
+                    ),
+                ],
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => context.push('/online'),
-                  icon: const Icon(Icons.public, size: 18),
-                  label: const Text('Play Online'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          const Text('Sector Path', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.onSurface)),
-          const SizedBox(height: 12),
-          for (var i = 0; i < nodes.length; i++)
-            SectorTile(
-              node: nodes[i],
-              isLast: i == nodes.length - 1,
-              onTap: () => _onNodeTap(context, nodes[i]),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -136,5 +128,96 @@ class WorldMapScreen extends StatelessWidget {
     final state = context.read<GameState>();
     final enemy = state.enemyById(node.enemyId);
     context.push('/prepare/${enemy.id}?levelId=${node.id}');
+  }
+}
+
+class _ContinueCard extends StatelessWidget {
+  const _ContinueCard({required this.worldName, required this.done, required this.total, required this.current, required this.onContinue});
+
+  final String worldName;
+  final int done;
+  final int total;
+  final LevelNode? current;
+  final VoidCallback? onContinue;
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = total == 0 ? 0.0 : done / total;
+    final complete = current == null && total > 0 && done == total;
+    return AppCard(
+      accent: AppColors.accent,
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(worldName.toUpperCase(), style: AppTheme.overline(color: AppColors.accent)),
+              const Spacer(),
+              if (current != null) DifficultyChip(difficulty: current!.difficulty, compact: true),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            complete ? 'Sector cleared' : (current?.name ?? 'No level available'),
+            style: AppTheme.display(fontSize: 24, height: 1.1),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            complete
+                ? 'You cleared every level here. Keep sharp in Practice or race friends online.'
+                : current == null
+                    ? 'Pull down to refresh.'
+                    : 'Level ${current!.order} · +${current!.xpReward} XP · +${current!.goldReward} gold',
+            style: const TextStyle(color: AppColors.textDim, fontSize: 13),
+          ),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.full),
+            child: LinearProgressIndicator(value: pct, minHeight: 6, backgroundColor: AppColors.line, color: AppColors.accent),
+          ),
+          if (onContinue != null) ...[
+            const SizedBox(height: 16),
+            NeonButton(key: const Key('continueButton'), label: 'Continue', icon: Icons.play_arrow_rounded, onPressed: onContinue),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _Shortcut extends StatelessWidget {
+  const _Shortcut({super.key, required this.icon, required this.title, required this.subtitle, required this.onTap});
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      onTap: onTap,
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(AppRadius.md)),
+            child: Icon(icon, color: AppColors.accent, size: 22),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTheme.display(fontSize: 15)),
+                Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.textDim, fontSize: 12)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

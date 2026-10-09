@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../models/level_node.dart';
 import '../utils/theme.dart';
 import 'difficulty_chip.dart';
 
-/// A single node in the World Map's linear sector spine.
+/// A single node on the campaign path: a status marker on a connector line
+/// plus a card with the level name, difficulty and reward/stars.
 class SectorTile extends StatelessWidget {
   const SectorTile({super.key, required this.node, this.onTap, required this.isLast});
 
@@ -17,105 +19,118 @@ class SectorTile extends StatelessWidget {
     final current = node.status == NodeStatus.current;
     final done = node.status == NodeStatus.done;
 
-    Color dotColor;
-    IconData dotIcon;
-    if (done) {
-      dotColor = AppColors.secondary;
-      dotIcon = Icons.check;
-    } else if (current) {
-      dotColor = AppColors.primary;
-      dotIcon = Icons.bolt;
-    } else {
-      dotColor = AppColors.outline;
-      dotIcon = Icons.lock;
-    }
+    final Color dotColor = done
+        ? AppColors.success
+        : current
+            ? AppColors.accent
+            : AppColors.textFaint;
+    final IconData dotIcon = done
+        ? Icons.check_rounded
+        : current
+            ? Icons.bolt_rounded
+            : Icons.lock_rounded;
 
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Column(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: dotColor.withValues(alpha: 0.2),
-                  border: Border.all(color: dotColor, width: 2),
-                ),
-                child: Icon(dotIcon, size: 16, color: dotColor),
+    return Semantics(
+      button: !locked,
+      label: '${node.name}, ${difficultyLabel(node.difficulty)}, ${locked ? 'locked' : done ? 'completed' : 'available'}',
+      excludeSemantics: true,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              width: 40,
+              child: Column(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: dotColor.withValues(alpha: current ? 0.2 : 0.12),
+                      border: Border.all(color: dotColor, width: current ? 2 : 1.5),
+                      boxShadow: current ? [BoxShadow(color: AppColors.accent.withValues(alpha: 0.45), blurRadius: 14)] : null,
+                    ),
+                    child: Icon(dotIcon, size: 18, color: dotColor),
+                  ),
+                  if (!isLast)
+                    Expanded(
+                      child: Container(
+                        width: 2,
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(1),
+                          color: done ? AppColors.success.withValues(alpha: 0.5) : AppColors.line,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              if (!isLast)
-                Expanded(
-                  child: Container(
-                    width: 2,
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    color: AppColors.outlineVariant,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Opacity(
-              opacity: locked ? 0.55 : 1,
-              child: InkWell(
-                onTap: locked ? null : onTap,
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 14),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: current ? AppColors.surfaceContainerHigh : AppColors.surfaceContainer,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Opacity(
+                  opacity: locked ? 0.5 : 1,
+                  child: Material(
+                    color: current ? AppColors.surfaceHigh : AppColors.surface,
                     borderRadius: BorderRadius.circular(AppRadius.xl),
-                    border: Border.all(color: current ? AppColors.primary : AppColors.outlineVariant),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    child: InkWell(
+                      onTap: locked ? null : onTap,
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(AppRadius.xl),
+                          border: Border.all(color: current ? AppColors.accent.withValues(alpha: 0.7) : AppColors.line, width: current ? 1.5 : 1),
+                        ),
+                        child: Row(
                           children: [
-                            Text(
-                              '${node.order.toString().padLeft(2, '0')} · ${node.name}',
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.onSurface),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'LEVEL ${node.order.toString().padLeft(2, '0')}',
+                                    style: AppTheme.overline(color: current ? AppColors.accent : AppColors.textFaint),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(node.name, style: AppTheme.display(fontSize: 16, height: 1.15)),
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 10,
+                                    runSpacing: 6,
+                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    children: [
+                                      DifficultyChip(difficulty: node.difficulty, compact: true),
+                                      if (done)
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: List.generate(
+                                            3,
+                                            (i) => Icon(Icons.star_rounded, size: 16, color: i < node.stars ? AppColors.gold : AppColors.line),
+                                          ),
+                                        )
+                                      else if (!locked)
+                                        Text('+${node.xpReward} XP  ·  +${node.goldReward} gold',
+                                            style: AppTheme.mono(fontSize: 11, color: AppColors.textDim)),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 6),
-                            Row(
-                              children: [
-                                DifficultyChip(difficulty: node.difficulty, compact: true),
-                                const SizedBox(width: 8),
-                                if (done)
-                                  Row(
-                                    children: List.generate(
-                                      3,
-                                      (i) => Icon(
-                                        Icons.star,
-                                        size: 13,
-                                        color: i < node.stars ? AppColors.tertiary : AppColors.outlineVariant,
-                                      ),
-                                    ),
-                                  )
-                                else if (current)
-                                  Text('+${node.xpReward} XP · +${node.goldReward} coins',
-                                      style: AppTheme.mono(fontSize: 11, color: AppColors.secondary)),
-                              ],
-                            ),
+                            if (current) const Icon(Icons.arrow_forward_rounded, color: AppColors.accent),
                           ],
                         ),
                       ),
-                      if (current)
-                        const Icon(Icons.chevron_right, color: AppColors.primary)
-                      else if (locked)
-                        const Icon(Icons.lock_outline, color: AppColors.outline, size: 18),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

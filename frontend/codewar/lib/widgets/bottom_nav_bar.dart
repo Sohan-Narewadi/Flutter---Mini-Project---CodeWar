@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+
 import '../utils/theme.dart';
 
 class NavItem {
@@ -8,15 +11,18 @@ class NavItem {
   const NavItem(this.icon, this.label, this.route);
 }
 
-/// Index of the centered "Play" button (opens online play, never "active").
+/// Index of the centered "Play" button.
 const int kPlayIndex = 2;
 
+/// navIndex of the Play tab (same as [kPlayIndex]).
+const int kPlayTab = kPlayIndex;
+
 const List<NavItem> kNavItems = [
-  NavItem(Icons.cottage, 'Home', '/home'),
-  NavItem(Icons.terminal, 'Practice', '/practice'),
-  NavItem(Icons.bolt, 'Play', '/online'),
-  NavItem(Icons.military_tech, 'Rank', '/rank'),
-  NavItem(Icons.shield, 'Profile', '/profile'),
+  NavItem(Icons.home_rounded, 'Home', '/home'),
+  NavItem(Icons.terminal_rounded, 'Practice', '/practice'),
+  NavItem(Icons.bolt_rounded, 'Play', '/online'),
+  NavItem(Icons.leaderboard_rounded, 'Rank', '/rank'),
+  NavItem(Icons.person_rounded, 'Profile', '/profile'),
 ];
 
 class BottomNavBar extends StatelessWidget {
@@ -27,70 +33,90 @@ class BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceContainerLow,
-        border: Border(top: BorderSide(color: AppColors.outlineVariant)),
-      ),
-      padding: const EdgeInsets.only(top: 6, bottom: 4),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            for (var i = 0; i < kNavItems.length; i++)
-              if (i == kPlayIndex)
-                _PlayButton(item: kNavItems[i], onTap: () => onTap(i))
-              else
-                _NavButton(
-                  item: kNavItems[i],
-                  active: i == currentIndex,
-                  onTap: () => onTap(i),
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    return SizedBox(
+      height: 68 + bottomInset,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceLow.withValues(alpha: 0.9),
+                    border: const Border(top: BorderSide(color: AppColors.line)),
+                  ),
                 ),
-          ],
-        ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(bottom: bottomInset),
+            child: Row(
+              children: [
+                for (var i = 0; i < kNavItems.length; i++)
+                  Expanded(
+                    child: i == kPlayIndex
+                        ? _PlayButton(item: kNavItems[i], active: i == currentIndex, onTap: () => onTap(i))
+                        : _NavButton(item: kNavItems[i], active: i == currentIndex, onTap: () => onTap(i)),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
 class _PlayButton extends StatelessWidget {
-  const _PlayButton({required this.item, required this.onTap});
+  const _PlayButton({required this.item, required this.active, required this.onTap});
   final NavItem item;
+  final bool active;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
+      selected: active,
       label: 'Play online',
+      excludeSemantics: true,
       child: GestureDetector(
         key: const Key('navPlay'),
+        behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: Transform.translate(
-          offset: const Offset(0, -10),
+        child: OverflowBox(
+          maxHeight: 90,
+          alignment: Alignment.bottomCenter,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 58,
-                height: 58,
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primaryContainer, AppColors.secondaryContainer],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  gradient: AppColors.accentGradient,
+                  border: Border.all(color: AppColors.background, width: 4),
                   boxShadow: [
-                    BoxShadow(color: AppColors.primaryContainer.withValues(alpha: 0.45), blurRadius: 16, offset: const Offset(0, 4)),
+                    BoxShadow(
+                      color: AppColors.accent.withValues(alpha: active ? 0.55 : 0.35),
+                      blurRadius: active ? 24 : 18,
+                      offset: const Offset(0, 4),
+                    ),
                   ],
                 ),
-                child: Icon(item.icon, color: Colors.white, size: 30),
+                child: Icon(item.icon, color: AppColors.onAccent, size: 28),
               ),
               const SizedBox(height: 2),
-              Text(item.label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.primary)),
+              Text(
+                item.label,
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: active ? AppColors.accent : AppColors.textDim),
+              ),
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -108,30 +134,32 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? AppColors.primary : AppColors.onSurfaceVariant;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.lg),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    final color = active ? AppColors.accent : AppColors.textFaint;
+    return Semantics(
+      button: true,
+      selected: active,
+      label: item.label,
+      excludeSemantics: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(item.icon, color: color, size: 24),
-            const SizedBox(height: 4),
-            Text(
-              item.label,
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
-            ),
-            const SizedBox(height: 3),
             AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              width: active ? 16 : 0,
-              height: 3,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: active ? AppColors.accent.withValues(alpha: 0.14) : Colors.transparent,
                 borderRadius: BorderRadius.circular(AppRadius.full),
               ),
+              child: Icon(item.icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              item.label,
+              style: TextStyle(fontSize: 11, fontWeight: active ? FontWeight.w700 : FontWeight.w600, color: color),
             ),
           ],
         ),

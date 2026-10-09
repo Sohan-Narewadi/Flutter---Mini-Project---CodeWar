@@ -20,7 +20,6 @@ class ProfileScreen extends StatelessWidget {
     return AppShell(
       title: 'Profile',
       navIndex: 4,
-      showHud: false,
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

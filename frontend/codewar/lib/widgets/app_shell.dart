@@ -1,47 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'app_hud.dart';
-import 'offline_banner.dart';
+import '../ui/app_scaffold.dart';
 import 'bottom_nav_bar.dart';
+import 'offline_banner.dart';
 
-/// Wraps a top-level tab screen (Home/Battle/Practice/Rank/Profile) with the
-/// persistent player HUD header and bottom navigation bar.
+/// Wraps a top-level tab screen with the arcade backdrop, offline banner and
+/// bottom navigation. Each tab owns its own header (only Home shows the
+/// player strip), so nothing is repeated across tabs.
 class AppShell extends StatelessWidget {
   const AppShell({
     super.key,
-    required this.title,
     required this.body,
     required this.navIndex,
-    this.showHud = true,
+    this.title = '',
   });
 
+  /// Kept for call-site readability / semantics; the visible title lives in
+  /// each screen's own header.
   final String title;
   final Widget body;
   final int navIndex;
-  final bool showHud;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            const OfflineBanner(),
-            if (showHud) const AppHud(),
-            Expanded(child: body),
-          ],
-        ),
+    return AppScaffold(
+      body: Column(
+        children: [
+          const OfflineBanner(),
+          Expanded(child: body),
+        ],
       ),
-      bottomNavigationBar: BottomNavBar(
+      bottom: BottomNavBar(
         currentIndex: navIndex,
         onTap: (i) {
-          const routes = ['/home', '/practice', '/online', '/rank', '/profile'];
-          if (i == kPlayIndex) {
-            context.push(routes[i]);
-          } else if (i != navIndex) {
-            context.go(routes[i]);
-          }
+          if (i != navIndex) context.go(kNavItems[i].route);
         },
       ),
     );

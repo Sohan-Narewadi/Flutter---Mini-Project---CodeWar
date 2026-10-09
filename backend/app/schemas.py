@@ -217,4 +217,7 @@ class TopicStatOut(BaseModel):
 class PracticeStatsOut(BaseModel):
     streak: int
     solved_today: int
+    total_solved: int = 0
+    daily_done: bool = False
+    daily_resets_in: int = 0  # seconds until the daily challenge changes
     topics: list[TopicStatOut]

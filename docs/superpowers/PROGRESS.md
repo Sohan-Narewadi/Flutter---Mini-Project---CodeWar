@@ -95,3 +95,4 @@ User feedback: UI "looks vibe coded / sticky"; wants launch-ready, industry-grad
 - [ ] 10 Backend (badges, match history, tiers, public profile)
 - [ ] 11 Online/battle restyle, sound + haptics, accessibility
 - [ ] 12 Visual QA (Playwright at 4 widths), two-browser online test, final review
+- Progress log: Stage 7 done; 8.1-8.3 done (AppShell uses AppScaffold, HomeHeader on Home only, nav restyled, /online is a tab); 9.1 Home done; 9.2 Practice screen done (+backend stats `total_solved/daily_done/daily_resets_in`, 2 tests); 11.1 Play hub done. `tools/qa_shots.py` committed (run it after `flutter build web`). NEXT: Stage 10 backend (tiers, badges, matches, public profile), then 9.3 Rank, 9.4 Profile.
