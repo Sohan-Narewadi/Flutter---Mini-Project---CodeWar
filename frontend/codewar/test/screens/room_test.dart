@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:codewar/main.dart';
+import 'package:codewar/ui/neon_button.dart';
 import 'package:codewar/providers/game_state.dart';
 import 'package:codewar/providers/room_state.dart';
 import 'package:codewar/services/api_service.dart';
@@ -146,7 +147,7 @@ void main() {
     expect(find.byKey(const Key('roomCode')), findsOneWidget);
     expect(find.text('ABC234'), findsWidgets);
     // host with one player cannot start yet
-    final start = tester.widget<FilledButton>(find.byKey(const Key('startMatch')));
+    final start = tester.widget<NeonButton>(find.byKey(const Key('startMatch')));
     expect(start.onPressed, isNull);
   });
 
@@ -211,6 +212,30 @@ void main() {
     expect(find.text('Victory!'), findsOneWidget);
     expect(find.text('+16 RP'), findsOneWidget);
     expect(find.text('-16 RP'), findsOneWidget);
+  });
+
+  testWidgets('Rematch creates a fresh room with the same mode and difficulty', (tester) async {
+    final h = await boot(tester);
+    await openOnline(tester);
+    await tester.tap(find.byKey(const Key('createRoomButton')));
+    await tester.pumpAndSettle();
+    h.channel.snapshot(_room('finished', [_p(_me, 'Ada', host: true, pct: 100), _p(9, 'Bob')], reason: 'solved', standings: [
+      {'player_id': _me, 'name': 'Ada', 'rank': 1, 'best_pct': 100, 'passed': 3, 'total': 3, 'forfeited': false, 'time_s': 12.0,
+       'rating_delta': 16, 'xp': 30, 'gold': 7, 'rating': 1016},
+      {'player_id': 9, 'name': 'Bob', 'rank': 2, 'best_pct': 0, 'passed': 0, 'total': 0, 'forfeited': false, 'time_s': null,
+       'rating_delta': -16, 'xp': 0, 'gold': 0, 'rating': 984},
+    ]));
+    await pump2(tester);
+    final creates = h.calls.where((c) => c == 'POST /api/rooms').length;
+    await tester.ensureVisible(find.byKey(const Key('rematch')));
+    await tester.tap(find.byKey(const Key('rematch')));
+    // Cancelling the old socket's subscription needs real event-loop turns.
+    for (var i = 0; i < 4; i++) {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(h.calls.where((c) => c == 'POST /api/rooms').length, creates + 1);
+    expect(h.channels.length, 2, reason: 'a new socket is opened for the new room');
   });
 
   testWidgets('duel shows HP bars derived from the opponent best score', (tester) async {
