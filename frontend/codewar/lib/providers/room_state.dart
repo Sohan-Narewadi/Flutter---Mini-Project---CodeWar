@@ -19,7 +19,12 @@ class RoomState extends ChangeNotifier {
     this._api, {
     RoomChannelFactory? channelFactory,
     this.onFinished,
-    this.backoff = const [Duration(seconds: 1), Duration(seconds: 2), Duration(seconds: 4), Duration(seconds: 8)],
+    this.backoff = const [
+      Duration(seconds: 1),
+      Duration(seconds: 2),
+      Duration(seconds: 4),
+      Duration(seconds: 8),
+    ],
   }) : _factory = channelFactory ?? ((uri) => WsRoomChannel(uri));
 
   final ApiService _api;
@@ -52,7 +57,10 @@ class RoomState extends ChangeNotifier {
 
   String get serverUrl => _api.baseUrl;
 
-  bool get inRoom => room != null && connection != RoomConnection.closed && connection != RoomConnection.idle;
+  bool get inRoom =>
+      room != null &&
+      connection != RoomConnection.closed &&
+      connection != RoomConnection.idle;
 
   /// Seconds left in a running match, counting down locally between snapshots.
   int get secondsLeft {
@@ -66,7 +74,8 @@ class RoomState extends ChangeNotifier {
   int get countdownNumber {
     final base = room?.countdownLeft;
     if (base == null) return 0;
-    final left = base - DateTime.now().difference(_snapshotAt).inMilliseconds / 1000;
+    final left =
+        base - DateTime.now().difference(_snapshotAt).inMilliseconds / 1000;
     return left <= 0 ? 0 : left.ceil();
   }
 
@@ -74,8 +83,17 @@ class RoomState extends ChangeNotifier {
 
   // --- entering / leaving ------------------------------------------------
 
-  Future<bool> create({String mode = 'race', String difficulty = 'easy'}) async {
-    return _enter(() => _api.createRoom(mode: mode, difficulty: difficulty, language: language.id));
+  Future<bool> create({
+    String mode = 'race',
+    String difficulty = 'easy',
+  }) async {
+    return _enter(
+      () => _api.createRoom(
+        mode: mode,
+        difficulty: difficulty,
+        language: language.id,
+      ),
+    );
   }
 
   Future<bool> join(String code) async {
@@ -173,8 +191,12 @@ class RoomState extends ChangeNotifier {
     final wasRunning = room?.status == 'running';
     room = snap;
     _snapshotAt = DateTime.now();
-    if (snap.status == 'running' && !wasRunning && question != null) _seedCode();
-    if (snap.status == 'finished' && !_rewardsReported && (snap.standings?.any((s) => s.hasRewards) ?? false)) {
+    if (snap.status == 'running' && !wasRunning && question != null) {
+      _seedCode();
+    }
+    if (snap.status == 'finished' &&
+        !_rewardsReported &&
+        (snap.standings?.any((s) => s.hasRewards) ?? false)) {
       _rewardsReported = true;
       onFinished?.call();
     }
@@ -210,7 +232,9 @@ class RoomState extends ChangeNotifier {
   }
 
   void _onClosed(RoomChannel channel) {
-    if (!identical(channel, _channel)) return; // an old, replaced, or already-handled socket
+    if (!identical(channel, _channel)) {
+      return; // an old, replaced, or already-handled socket
+    }
     // web_socket_channel reports one failed connection as an error AND a done
     // event; handle it once so it costs one retry, not two.
     _channel = null;
@@ -218,9 +242,13 @@ class RoomState extends ChangeNotifier {
     if (_leaving) return;
     final finished = room?.status == 'finished';
     if (_terminalCodes.contains(closeCode) || finished || room == null) {
-      if (closeCode == 4401) error = 'Your session is no longer valid. Please sign in again.';
+      if (closeCode == 4401) {
+        error = 'Your session is no longer valid. Please sign in again.';
+      }
       if (closeCode == 4404) error = 'That room no longer exists.';
-      if (closeCode == 4000) error = 'This account joined the room from another device.';
+      if (closeCode == 4000) {
+        error = 'This account joined the room from another device.';
+      }
       connection = finished ? RoomConnection.closed : RoomConnection.closed;
       notifyListeners();
       return;

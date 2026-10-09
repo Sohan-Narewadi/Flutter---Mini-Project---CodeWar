@@ -75,7 +75,9 @@ class GameState extends ChangeNotifier {
       final fetchedWorlds = await _api.fetchWorlds();
       final world = _pickActiveWorld(fetchedWorlds);
       final results = await Future.wait([
-        world == null ? Future.value(<LevelNode>[]) : _api.fetchLevels(world.id),
+        world == null
+            ? Future.value(<LevelNode>[])
+            : _api.fetchLevels(world.id),
         _api.fetchEnemies(),
       ]);
       player = fetchedPlayer;
@@ -99,7 +101,10 @@ class GameState extends ChangeNotifier {
 
   GameWorld? _pickActiveWorld(List<GameWorld> list) {
     if (list.isEmpty) return null;
-    return list.firstWhere((w) => w.order == 2, orElse: () => list.length > 1 ? list[1] : list.first);
+    return list.firstWhere(
+      (w) => w.order == 2,
+      orElse: () => list.length > 1 ? list[1] : list.first,
+    );
   }
 
   /// Creates the player on the server, stores the token, and loads the game.
@@ -126,7 +131,9 @@ class GameState extends ChangeNotifier {
       final w = await _api.fetchWorlds();
       final world = _pickActiveWorld(w);
       final results = await Future.wait([
-        world == null ? Future.value(<LevelNode>[]) : _api.fetchLevels(world.id),
+        world == null
+            ? Future.value(<LevelNode>[])
+            : _api.fetchLevels(world.id),
         _api.fetchEnemies(),
         _api.fetchPlayer(),
       ]);
@@ -161,8 +168,9 @@ class GameState extends ChangeNotifier {
       levels.where((l) => l.worldId == activeWorld.id).toList()
         ..sort((a, b) => a.order.compareTo(b.order));
 
-  List<Enemy> get farmableEnemies =>
-      enemies.where((e) => !e.locked && e.difficulty == Difficulty.easy).toList();
+  List<Enemy> get farmableEnemies => enemies
+      .where((e) => !e.locked && e.difficulty == Difficulty.easy)
+      .toList();
 
   /// Kicks off a battle: calls POST /api/battles/start (required - a real
   /// battle needs a backend-issued battle_id), then prepares enemy/level/
@@ -172,12 +180,15 @@ class GameState extends ChangeNotifier {
   /// Throws [BattleApiException] on failure - callers must surface this to
   /// the user rather than silently starting a fake local battle.
   Future<void> startBattle({Enemy? enemy, LevelNode? level}) async {
-    currentEnemy = enemy ?? (level != null ? enemyById(level.enemyId) : currentEnemy);
+    currentEnemy =
+        enemy ?? (level != null ? enemyById(level.enemyId) : currentEnemy);
     currentLevel = level;
 
     final levelIdInt = int.tryParse(level?.id ?? '');
     if (levelIdInt == null) {
-      throw BattleApiException('This encounter has no backend level to battle against.');
+      throw BattleApiException(
+        'This encounter has no backend level to battle against.',
+      );
     }
 
     final start = await _api.startBattle(levelIdInt);
@@ -187,14 +198,17 @@ class GameState extends ChangeNotifier {
     // used to run here, but EnemyOut has no question_id field at all, so
     // that id was always empty and silently mis-resolved to a seed fallback.
     currentQuestion = start.question;
-    currentCode = currentQuestion?.starterCode[currentLanguage] ??
+    currentCode =
+        currentQuestion?.starterCode[currentLanguage] ??
         currentQuestion?.starterCode.values.first;
 
     battleId = start.battleId;
     enemyHpRemaining = start.enemyHpRemaining;
     enemyHpMax = currentEnemy?.hpMax ?? start.enemyHpRemaining;
     timeLimitS = start.timeLimitS;
-    battleStartedAt = start.startedAt != null ? DateTime.tryParse(start.startedAt!) : DateTime.now();
+    battleStartedAt = start.startedAt != null
+        ? DateTime.tryParse(start.startedAt!)
+        : DateTime.now();
     lastResult = null;
     notifyListeners();
   }
@@ -216,9 +230,15 @@ class GameState extends ChangeNotifier {
   Future<BattleResult> runTests() async {
     final bid = battleId;
     if (bid == null) {
-      throw BattleApiException('No active battle - start a battle before running tests.');
+      throw BattleApiException(
+        'No active battle - start a battle before running tests.',
+      );
     }
-    final result = await _api.runBattleTests(bid, currentCode ?? '', language: currentLanguage);
+    final result = await _api.runBattleTests(
+      bid,
+      currentCode ?? '',
+      language: currentLanguage,
+    );
     lastResult = result;
     notifyListeners();
     return result;
@@ -232,9 +252,15 @@ class GameState extends ChangeNotifier {
   Future<BattleResult> submitAttack() async {
     final bid = battleId;
     if (bid == null) {
-      throw BattleApiException('No active battle - start a battle before submitting.');
+      throw BattleApiException(
+        'No active battle - start a battle before submitting.',
+      );
     }
-    final result = await _api.submitBattle(bid, currentCode ?? '', language: currentLanguage);
+    final result = await _api.submitBattle(
+      bid,
+      currentCode ?? '',
+      language: currentLanguage,
+    );
     lastResult = result;
 
     enemyHpRemaining = result.enemyHpRemaining;
@@ -242,7 +268,10 @@ class GameState extends ChangeNotifier {
 
     // Refresh from the backend rather than recomputing locally: the server
     // owns leveling, unlocks and progress.
-    if (result.finalized || result.xpEarned > 0 || result.goldEarned > 0 || result.hpLost > 0) {
+    if (result.finalized ||
+        result.xpEarned > 0 ||
+        result.goldEarned > 0 ||
+        result.hpLost > 0) {
       await refreshProgress();
     }
 

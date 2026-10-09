@@ -47,7 +47,9 @@ class SegmentedTabs<T> extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppColors.accent.withValues(alpha: 0.16),
                     borderRadius: BorderRadius.circular(AppRadius.md - 4),
-                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.55)),
+                    border: Border.all(
+                      color: AppColors.accent.withValues(alpha: 0.55),
+                    ),
                   ),
                 ),
               ),
@@ -74,7 +76,9 @@ class SegmentedTabs<T> extends StatelessWidget {
                               style: AppTheme.display(
                                 fontSize: 14,
                                 letterSpacing: 0.3,
-                                color: k == value ? AppColors.accent : AppColors.textDim,
+                                color: k == value
+                                    ? AppColors.accent
+                                    : AppColors.textDim,
                               ),
                             ),
                           ),

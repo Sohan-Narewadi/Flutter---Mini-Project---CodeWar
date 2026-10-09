@@ -47,7 +47,10 @@ class StatTile extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(value, style: AppTheme.display(fontSize: 28, color: color)),
+            child: Text(
+              value,
+              style: AppTheme.display(fontSize: 28, color: color),
+            ),
           ),
         ],
       ),

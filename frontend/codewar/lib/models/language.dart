@@ -9,6 +9,8 @@ enum Language {
   final String label;
   final String ext;
 
-  static Language fromId(String id) =>
-      Language.values.firstWhere((l) => l.id == id, orElse: () => Language.python);
+  static Language fromId(String id) => Language.values.firstWhere(
+    (l) => l.id == id,
+    orElse: () => Language.python,
+  );
 }

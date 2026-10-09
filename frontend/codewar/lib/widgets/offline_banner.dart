@@ -23,10 +23,15 @@ class OfflineBanner extends StatelessWidget {
             const Icon(Icons.cloud_off, size: 18, color: AppColors.danger),
             const SizedBox(width: 8),
             const Expanded(
-              child: Text('Server unreachable. Showing last known data.',
-                  style: TextStyle(color: AppColors.text, fontSize: 13)),
+              child: Text(
+                'Server unreachable. Showing last known data.',
+                style: TextStyle(color: AppColors.text, fontSize: 13),
+              ),
             ),
-            TextButton(onPressed: () => state.load(), child: const Text('Retry')),
+            TextButton(
+              onPressed: () => state.load(),
+              child: const Text('Retry'),
+            ),
             IconButton(
               tooltip: 'Server settings',
               icon: const Icon(Icons.settings, size: 18),

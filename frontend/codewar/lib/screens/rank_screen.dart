@@ -30,7 +30,7 @@ class RankScreen extends StatefulWidget {
 
 const _refreshEvery = Duration(seconds: 15);
 
-class _RankScreenState extends State<RankScreen> {
+class _RankScreenState extends State<RankScreen> with WidgetsBindingObserver {
   String _scope = 'global';
   String _metric = 'xp';
   Leaderboard? _board;
@@ -43,12 +43,32 @@ class _RankScreenState extends State<RankScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _load();
+    _startPolling();
+  }
+
+  void _startPolling() {
+    _timer?.cancel();
     _timer = Timer.periodic(_refreshEvery, (_) => _load(silent: true));
+  }
+
+  /// No polling while the app is in the background; refresh as soon as it returns.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _load(silent: true);
+      _startPolling();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      _timer?.cancel();
+      _timer = null;
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     super.dispose();
   }
@@ -178,7 +198,6 @@ class _RankScreenState extends State<RankScreen> {
                   if (_scope != 'weekly') ...[
                     const SizedBox(height: 10),
                     SegmentedTabs<String>(
-                      height: 38,
                       options: const {
                         'xp': 'Total XP',
                         'rating': 'Online rating',
@@ -387,80 +406,86 @@ class _PodiumSlot extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = _medal(entry.rank);
     final first = entry.rank == 1;
-    return GestureDetector(
-      key: Key('rank_${entry.playerId}'),
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (first)
-              const Icon(
-                Icons.workspace_premium_rounded,
-                color: AppColors.gold,
-                size: 26,
-              ),
-            PlayerAvatar(
-              name: entry.name,
-              tier: Tier.fromKey(entry.tier, rating: entry.rating),
-              size: first ? 68 : 56,
-              glow: first || entry.isMe,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              entry.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: AppTheme.display(fontSize: 14),
-            ),
-            if (entry.isMe)
-              Text('YOU', style: AppTheme.overline(color: AppColors.accent)),
-            const SizedBox(height: 4),
-            Container(
-              height: pillarHeight,
-              width: double.infinity,
-              alignment: Alignment.topCenter,
-              padding: const EdgeInsets.only(top: 10),
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(AppRadius.md),
+    return Semantics(
+      button: true,
+      label:
+          '${entry.name}, rank ${entry.rank}, ${compactNumber(entry.value)} $unit',
+      excludeSemantics: true,
+      child: GestureDetector(
+        key: Key('rank_${entry.playerId}'),
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (first)
+                const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: AppColors.gold,
+                  size: 26,
                 ),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    color.withValues(alpha: 0.28),
-                    color.withValues(alpha: 0.04),
-                  ],
-                ),
-                border: Border(top: BorderSide(color: color, width: 2)),
+              PlayerAvatar(
+                name: entry.name,
+                tier: Tier.fromKey(entry.tier, rating: entry.rating),
+                size: first ? 68 : 56,
+                glow: first || entry.isMe,
               ),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
+              const SizedBox(height: 8),
+              Text(
+                entry.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: AppTheme.display(fontSize: 14),
+              ),
+              if (entry.isMe)
+                Text('YOU', style: AppTheme.overline(color: AppColors.accent)),
+              const SizedBox(height: 4),
+              Container(
+                height: pillarHeight,
+                width: double.infinity,
                 alignment: Alignment.topCenter,
-                child: Column(
-                  children: [
-                    Text(
-                      '${entry.rank}',
-                      style: AppTheme.display(fontSize: 26, color: color),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${compactNumber(entry.value)} $unit',
-                      style: AppTheme.mono(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textDim,
+                padding: const EdgeInsets.only(top: 10),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(AppRadius.md),
+                  ),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      color.withValues(alpha: 0.28),
+                      color.withValues(alpha: 0.04),
+                    ],
+                  ),
+                  border: Border(top: BorderSide(color: color, width: 2)),
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.topCenter,
+                  child: Column(
+                    children: [
+                      Text(
+                        '${entry.rank}',
+                        style: AppTheme.display(fontSize: 26, color: color),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 2),
+                      Text(
+                        '${compactNumber(entry.value)} $unit',
+                        style: AppTheme.mono(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textDim,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

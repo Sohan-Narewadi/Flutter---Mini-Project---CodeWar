@@ -77,4 +77,20 @@ void main() {
     });
     expect(r.newBadges.single.key, 'first_solve');
   });
+
+  test('daily countdown keeps counting down from when it was measured', () {
+    final t0 = DateTime.utc(2026, 10, 9, 12);
+    final stats = PracticeStats(streak: 0, solvedToday: 0, topics: const [], dailyResetsIn: 5 * 3600 + 12 * 60, fetchedAt: t0);
+    expect(stats.dailyLabel(now: t0), '5h 12m');
+    expect(stats.dailyLabel(now: t0.add(const Duration(minutes: 12))), '5h 0m');
+    expect(stats.dailyLabel(now: t0.add(const Duration(hours: 6))), '1m', reason: 'never negative or empty once measured');
+  });
+
+  test('a back-filled badge is earned even though its real date is unknown', () {
+    final b = BadgeInfo.fromJson({'key': 'k', 'name': 'N', 'description': 'D', 'icon': 'flag', 'earned': true, 'earned_at': null});
+    expect(b.earned, isTrue);
+    expect(b.earnedAt, isNull);
+    final locked = BadgeInfo.fromJson({'key': 'k', 'name': 'N', 'description': 'D', 'icon': 'flag', 'earned': false, 'earned_at': null});
+    expect(locked.earned, isFalse);
+  });
 }

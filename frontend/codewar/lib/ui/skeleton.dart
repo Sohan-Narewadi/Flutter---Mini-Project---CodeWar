@@ -5,7 +5,12 @@ import '../utils/theme.dart';
 /// A softly pulsing placeholder block shown while data loads, instead of
 /// flashing fake or empty content.
 class SkeletonBox extends StatefulWidget {
-  const SkeletonBox({super.key, this.height = 16, this.width, this.radius = AppRadius.lg});
+  const SkeletonBox({
+    super.key,
+    this.height = 16,
+    this.width,
+    this.radius = AppRadius.lg,
+  });
 
   final double height;
   final double? width;
@@ -15,9 +20,12 @@ class SkeletonBox extends StatefulWidget {
   State<SkeletonBox> createState() => _SkeletonBoxState();
 }
 
-class _SkeletonBoxState extends State<SkeletonBox> with SingleTickerProviderStateMixin {
-  late final AnimationController _c =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 1100))..repeat(reverse: true);
+class _SkeletonBoxState extends State<SkeletonBox>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1100),
+  )..repeat(reverse: true);
 
   @override
   void dispose() {
@@ -33,7 +41,11 @@ class _SkeletonBoxState extends State<SkeletonBox> with SingleTickerProviderStat
         height: widget.height,
         width: widget.width,
         decoration: BoxDecoration(
-          color: Color.lerp(AppColors.surface, AppColors.surfaceHighest, _c.value),
+          color: Color.lerp(
+            AppColors.surface,
+            AppColors.surfaceHighest,
+            _c.value,
+          ),
           borderRadius: BorderRadius.circular(widget.radius),
         ),
       ),

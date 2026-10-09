@@ -43,7 +43,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _error = null);
     try {
       await game.refreshProgress();
-      final results = await Future.wait([game.api.fetchBadges(), game.api.fetchMatches(limit: 10), practice.loadStats()]);
+      final results = await Future.wait([
+        game.api.fetchBadges(),
+        game.api.fetchMatches(limit: 10),
+        practice.loadStats(),
+      ]);
       if (!mounted) return;
       setState(() {
         _badges = results[0] as List<BadgeInfo>;
@@ -67,7 +71,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           style: TextStyle(color: AppColors.textDim, height: 1.4),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Stay')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Stay'),
+          ),
           TextButton(
             key: const Key('confirmSignOut'),
             style: TextButton.styleFrom(foregroundColor: AppColors.danger),
@@ -85,7 +92,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (_) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(AppSpace.page, 0, AppSpace.page, 24),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpace.page,
+            0,
+            AppSpace.page,
+            24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -93,11 +105,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 12),
               Text(b.name, style: AppTheme.display(fontSize: 22)),
               const SizedBox(height: 6),
-              Text(b.description, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textDim, height: 1.4)),
+              Text(
+                b.description,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.textDim, height: 1.4),
+              ),
               const SizedBox(height: 10),
               Text(
-                b.earned ? 'EARNED ${timeAgo(b.earnedAt).toUpperCase()}' : 'NOT EARNED YET',
-                style: AppTheme.overline(color: b.earned ? AppColors.gold : AppColors.textFaint),
+                b.earned
+                    ? (b.earnedAt == null
+                          ? 'EARNED'
+                          : 'EARNED ${timeAgo(b.earnedAt).toUpperCase()}')
+                    : 'NOT EARNED YET',
+                style: AppTheme.overline(
+                  color: b.earned ? AppColors.gold : AppColors.textFaint,
+                ),
               ),
             ],
           ),
@@ -110,10 +132,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final game = context.watch<GameState>();
     final practice = context.watch<PracticeState>();
+    if (!game.hasLoaded) {
+      // Never show placeholder numbers as if they were this player's stats.
+      return AppShell(
+        title: 'Profile',
+        navIndex: 4,
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpace.page,
+            20,
+            AppSpace.page,
+            28,
+          ),
+          children: [
+            if (game.error != null && !game.isLoading)
+              _ErrorCard(message: game.error!, onRetry: game.load)
+            else
+              const SkeletonList(rows: 4, rowHeight: 96),
+          ],
+        ),
+      );
+    }
     final player = game.player;
     final tier = Tier.fromKey(player.tier, rating: player.rating);
     final games = player.wins + player.losses;
-    final winRate = games == 0 ? '—' : '${(100 * player.wins / games).round()}%';
+    final winRate = games == 0
+        ? '—'
+        : '${(100 * player.wins / games).round()}%';
     final next = tier.next;
     final badges = _badges;
     final earnedCount = badges?.where((b) => b.earned).length ?? 0;
@@ -126,14 +171,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: AppColors.surfaceHigh,
         onRefresh: _load,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(AppSpace.page, 20, AppSpace.page, 28),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpace.page,
+            20,
+            AppSpace.page,
+            28,
+          ),
           children: [
             // ---- Hero ----
-            Center(child: PlayerAvatar(name: player.displayName, tier: tier, size: 96, glow: true)),
+            Center(
+              child: PlayerAvatar(
+                name: player.displayName,
+                tier: tier,
+                size: 96,
+                glow: true,
+              ),
+            ),
             const SizedBox(height: 14),
-            Center(child: Text(player.displayName, style: AppTheme.display(fontSize: 28))),
+            Center(
+              child: Text(
+                player.displayName,
+                style: AppTheme.display(fontSize: 28),
+              ),
+            ),
             const SizedBox(height: 4),
-            Center(child: Text('@${player.username}', style: AppTheme.mono(fontSize: 12, color: AppColors.textDim))),
+            Center(
+              child: Text(
+                '@${player.username}',
+                style: AppTheme.mono(fontSize: 12, color: AppColors.textDim),
+              ),
+            ),
             const SizedBox(height: 10),
             Center(child: TierBadge(tier: tier)),
             const SizedBox(height: 18),
@@ -143,11 +210,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Row(
                     children: [
-                      Text('LEVEL ${player.level}', style: AppTheme.display(fontSize: 18, color: AppColors.accent)),
+                      Text(
+                        'LEVEL ${player.level}',
+                        style: AppTheme.display(
+                          fontSize: 18,
+                          color: AppColors.accent,
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text('${player.xp} / ${player.xpToNext} XP',
-                            maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.right, style: AppTheme.mono(fontSize: 12, color: AppColors.textDim)),
+                        child: Text(
+                          '${player.xp} / ${player.xpToNext} XP',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          style: AppTheme.mono(
+                            fontSize: 12,
+                            color: AppColors.textDim,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -157,13 +238,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Row(
                     children: [
                       Flexible(
-                        child: Text(next == null ? '${tier.label.toUpperCase()} · TOP TIER' : '${tier.label.toUpperCase()} → ${next.label.toUpperCase()}',
-                            maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTheme.overline(color: tier.color)),
+                        child: Text(
+                          next == null
+                              ? '${tier.label.toUpperCase()} · TOP TIER'
+                              : '${tier.label.toUpperCase()} → ${next.label.toUpperCase()}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTheme.overline(color: tier.color),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(next == null ? '${player.rating} RP' : '${player.rating} / ${next.minRating} RP',
-                            maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.right, style: AppTheme.mono(fontSize: 12, color: AppColors.textDim)),
+                        child: Text(
+                          next == null
+                              ? '${player.rating} RP'
+                              : '${player.rating} / ${next.minRating} RP',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          style: AppTheme.mono(
+                            fontSize: 12,
+                            color: AppColors.textDim,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -177,9 +274,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _Chip(icon: Icons.monetization_on_rounded, label: '${player.gold} gold', color: AppColors.gold),
-                _Chip(icon: Icons.favorite_rounded, label: '${player.hp}/${player.hpMax} HP', color: AppColors.danger),
-                _Chip(icon: Icons.local_fire_department_rounded, label: '${player.streak} day streak', color: player.streak > 0 ? AppColors.gold : AppColors.textFaint),
+                _Chip(
+                  icon: Icons.monetization_on_rounded,
+                  label: '${player.gold} gold',
+                  color: AppColors.gold,
+                ),
+                _Chip(
+                  icon: Icons.favorite_rounded,
+                  label: '${player.hp}/${player.hpMax} HP',
+                  color: AppColors.danger,
+                ),
+                _Chip(
+                  icon: Icons.local_fire_department_rounded,
+                  label: '${player.streak} day streak',
+                  color: player.streak > 0
+                      ? AppColors.gold
+                      : AppColors.textFaint,
+                ),
               ],
             ),
 
@@ -188,33 +299,90 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SectionTitle('Stats'),
             Row(
               children: [
-                Expanded(child: StatTile(icon: Icons.bolt_rounded, color: AppColors.accent, value: '${player.rating}', label: 'Rating')),
+                Expanded(
+                  child: StatTile(
+                    icon: Icons.bolt_rounded,
+                    color: AppColors.accent,
+                    value: '${player.rating}',
+                    label: 'Rating',
+                  ),
+                ),
                 const SizedBox(width: 10),
-                Expanded(child: StatTile(icon: Icons.percent_rounded, color: AppColors.success, value: winRate, label: 'Win rate')),
+                Expanded(
+                  child: StatTile(
+                    icon: Icons.percent_rounded,
+                    color: AppColors.success,
+                    value: winRate,
+                    label: 'Win rate',
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: StatTile(icon: Icons.emoji_events_rounded, color: AppColors.gold, value: '${player.wins}', label: 'Wins')),
+                Expanded(
+                  child: StatTile(
+                    icon: Icons.emoji_events_rounded,
+                    color: AppColors.gold,
+                    value: '${player.wins}',
+                    label: 'Wins',
+                  ),
+                ),
                 const SizedBox(width: 10),
-                Expanded(child: StatTile(icon: Icons.close_rounded, color: AppColors.danger, value: '${player.losses}', label: 'Losses')),
+                Expanded(
+                  child: StatTile(
+                    icon: Icons.close_rounded,
+                    color: AppColors.danger,
+                    value: '${player.losses}',
+                    label: 'Losses',
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: StatTile(icon: Icons.check_circle_rounded, color: AppColors.accent, value: '${practice.stats.totalSolved}', label: 'Solved')),
+                Expanded(
+                  child: StatTile(
+                    icon: Icons.check_circle_rounded,
+                    color: AppColors.accent,
+                    value: practice.hasStats
+                        ? '${practice.stats.totalSolved}'
+                        : '—',
+                    label: 'Solved',
+                  ),
+                ),
                 const SizedBox(width: 10),
-                Expanded(child: StatTile(icon: Icons.whatshot_rounded, color: AppColors.gold, value: '${player.bestStreak}', label: 'Best streak')),
+                Expanded(
+                  child: StatTile(
+                    icon: Icons.whatshot_rounded,
+                    color: AppColors.gold,
+                    value: '${player.bestStreak}',
+                    label: 'Best streak',
+                  ),
+                ),
               ],
             ),
 
             // ---- Badges ----
             const SizedBox(height: 24),
-            SectionTitle('Badges', trailing: badges == null ? null : Text('$earnedCount/${badges.length}', style: AppTheme.mono(fontSize: 12, color: AppColors.textDim))),
+            SectionTitle(
+              'Badges',
+              trailing: badges == null
+                  ? null
+                  : Text(
+                      '$earnedCount/${badges.length}',
+                      style: AppTheme.mono(
+                        fontSize: 12,
+                        color: AppColors.textDim,
+                      ),
+                    ),
+            ),
             if (badges == null)
-              _error != null ? _ErrorCard(message: _error!, onRetry: _load) : const SkeletonBox(height: 120, radius: AppRadius.xl)
+              _error != null
+                  ? _ErrorCard(message: _error!, onRetry: _load)
+                  : const SkeletonBox(height: 120, radius: AppRadius.xl)
             else
               LayoutBuilder(
                 builder: (context, c) {
@@ -228,20 +396,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       for (final b in badges)
                         SizedBox(
                           width: w,
-                          child: GestureDetector(
-                            key: Key('badge_${b.key}'),
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () => _showBadge(b),
-                            child: Column(
-                              children: [
-                                _BadgeDisc(badge: b, size: 52),
-                                const SizedBox(height: 6),
-                                Text(b.name,
+                          child: Semantics(
+                            button: true,
+                            label:
+                                '${b.name}, ${b.earned ? 'earned' : 'locked'}',
+                            excludeSemantics: true,
+                            child: GestureDetector(
+                              key: Key('badge_${b.key}'),
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => _showBadge(b),
+                              child: Column(
+                                children: [
+                                  _BadgeDisc(badge: b, size: 52),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    b.name,
                                     maxLines: 2,
                                     textAlign: TextAlign.center,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 11, height: 1.2, fontWeight: FontWeight.w600, color: b.earned ? AppColors.text : AppColors.textFaint)),
-                              ],
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      height: 1.2,
+                                      fontWeight: FontWeight.w600,
+                                      color: b.earned
+                                          ? AppColors.text
+                                          : AppColors.textFaint,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -254,15 +437,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
             const SectionTitle('Recent matches'),
             if (_matches == null)
-              _error != null ? const SizedBox.shrink() : const SkeletonList(rows: 3, rowHeight: 64)
+              _error != null
+                  ? const SizedBox.shrink()
+                  : const SkeletonList(rows: 3, rowHeight: 64)
             else if (_matches!.isEmpty)
               AppCard(
                 child: Row(
                   children: [
-                    const Icon(Icons.sports_esports_rounded, color: AppColors.textFaint),
+                    const Icon(
+                      Icons.sports_esports_rounded,
+                      color: AppColors.textFaint,
+                    ),
                     const SizedBox(width: 12),
-                    const Expanded(child: Text('No online matches yet. Create a room and challenge a friend.', style: TextStyle(color: AppColors.textDim, height: 1.35))),
-                    TextButton(onPressed: () => context.go('/online'), child: const Text('Play')),
+                    const Expanded(
+                      child: Text(
+                        'No online matches yet. Create a room and challenge a friend.',
+                        style: TextStyle(
+                          color: AppColors.textDim,
+                          height: 1.35,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => context.go('/online'),
+                      child: const Text('Play'),
+                    ),
                   ],
                 ),
               )
@@ -281,9 +480,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         child: Row(
                           children: [
-                            SizedBox(width: 96, child: Text(t.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600))),
-                            Expanded(child: _Bar(value: t.masteryPercent / 100, color: t.masteryPercent >= 100 ? AppColors.gold : AppColors.accent)),
-                            SizedBox(width: 44, child: Text('${t.masteryPercent}%', textAlign: TextAlign.right, style: AppTheme.mono(fontSize: 12, color: AppColors.textDim))),
+                            SizedBox(
+                              width: 96,
+                              child: Text(
+                                t.label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: _Bar(
+                                value: t.masteryPercent / 100,
+                                color: t.masteryPercent >= 100
+                                    ? AppColors.gold
+                                    : AppColors.accent,
+                              ),
+                            ),
+                            SizedBox(
+                              width: 44,
+                              child: Text(
+                                '${t.masteryPercent}%',
+                                textAlign: TextAlign.right,
+                                style: AppTheme.mono(
+                                  fontSize: 12,
+                                  color: AppColors.textDim,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -294,9 +520,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             // ---- Account ----
             const SizedBox(height: 28),
-            NeonButton(label: 'Settings & server', icon: Icons.settings_rounded, variant: NeonVariant.secondary, onPressed: () => context.push('/settings')),
+            NeonButton(
+              label: 'Settings & server',
+              icon: Icons.settings_rounded,
+              variant: NeonVariant.secondary,
+              onPressed: () => context.push('/settings'),
+            ),
             const SizedBox(height: 10),
-            NeonButton(key: const Key('signOutButton'), label: 'Sign out', icon: Icons.logout_rounded, variant: NeonVariant.danger, onPressed: _signOut),
+            NeonButton(
+              key: const Key('signOutButton'),
+              label: 'Sign out',
+              icon: Icons.logout_rounded,
+              variant: NeonVariant.danger,
+              onPressed: _signOut,
+            ),
           ],
         ),
       ),
@@ -317,7 +554,12 @@ class _Bar extends StatelessWidget {
         tween: Tween(end: value.clamp(0.0, 1.0)),
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeOutCubic,
-        builder: (context, v, _) => LinearProgressIndicator(value: v, minHeight: 8, backgroundColor: AppColors.line, color: color),
+        builder: (context, v, _) => LinearProgressIndicator(
+          value: v,
+          minHeight: 8,
+          backgroundColor: AppColors.line,
+          color: color,
+        ),
       ),
     );
   }
@@ -333,7 +575,11 @@ class _Chip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(AppRadius.full), border: Border.all(color: AppColors.line)),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.full),
+        border: Border.all(color: AppColors.line),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -361,10 +607,24 @@ class _BadgeDisc extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: color.withValues(alpha: on ? 0.14 : 0.06),
-        border: Border.all(color: color.withValues(alpha: on ? 0.7 : 0.3), width: on ? 2 : 1.5),
-        boxShadow: on ? [BoxShadow(color: AppColors.gold.withValues(alpha: 0.3), blurRadius: 14)] : null,
+        border: Border.all(
+          color: color.withValues(alpha: on ? 0.7 : 0.3),
+          width: on ? 2 : 1.5,
+        ),
+        boxShadow: on
+            ? [
+                BoxShadow(
+                  color: AppColors.gold.withValues(alpha: 0.3),
+                  blurRadius: 14,
+                ),
+              ]
+            : null,
       ),
-      child: Icon(on ? badge.iconData : Icons.lock_rounded, color: color, size: size * 0.46),
+      child: Icon(
+        on ? badge.iconData : Icons.lock_rounded,
+        color: color,
+        size: size * 0.46,
+      ),
     );
   }
 }
@@ -375,7 +635,12 @@ class _MatchRow extends StatelessWidget {
 
   static String _ordinal(int n) {
     if (n % 100 >= 11 && n % 100 <= 13) return '${n}th';
-    return switch (n % 10) { 1 => '${n}st', 2 => '${n}nd', 3 => '${n}rd', _ => '${n}th' };
+    return switch (n % 10) {
+      1 => '${n}st',
+      2 => '${n}nd',
+      3 => '${n}rd',
+      _ => '${n}th',
+    };
   }
 
   @override
@@ -394,22 +659,45 @@ class _MatchRow extends StatelessWidget {
               width: 44,
               height: 44,
               alignment: Alignment.center,
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(AppRadius.md)),
-              child: Text(_ordinal(m.rank), style: AppTheme.display(fontSize: 15, color: color)),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: Text(
+                _ordinal(m.rank),
+                style: AppTheme.display(fontSize: 15, color: color),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${m.mode == 'duel' ? 'Duel' : 'Race'}$vs', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTheme.display(fontSize: 15)),
+                  Text(
+                    '${m.mode == 'duel' ? 'Duel' : 'Race'}$vs',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTheme.display(fontSize: 15),
+                  ),
                   const SizedBox(height: 2),
-                  Text('${m.bestPct}% solved  ·  +${m.xp} XP  ·  ${timeAgo(m.finishedAt)}', style: const TextStyle(fontSize: 12, color: AppColors.textDim)),
+                  Text(
+                    '${m.bestPct}% solved  ·  +${m.xp} XP  ·  ${timeAgo(m.finishedAt)}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textDim,
+                    ),
+                  ),
                 ],
               ),
             ),
             if (delta != 0)
-              Text(delta > 0 ? '+$delta' : '$delta', style: AppTheme.display(fontSize: 16, color: delta > 0 ? AppColors.success : AppColors.danger)),
+              Text(
+                delta > 0 ? '+$delta' : '$delta',
+                style: AppTheme.display(
+                  fontSize: 16,
+                  color: delta > 0 ? AppColors.success : AppColors.danger,
+                ),
+              ),
           ],
         ),
       ),
@@ -430,7 +718,9 @@ class _ErrorCard extends StatelessWidget {
         children: [
           const Icon(Icons.cloud_off_rounded, color: AppColors.danger),
           const SizedBox(width: 10),
-          Expanded(child: Text(message, style: const TextStyle(color: AppColors.text))),
+          Expanded(
+            child: Text(message, style: const TextStyle(color: AppColors.text)),
+          ),
           TextButton(onPressed: onRetry, child: const Text('Retry')),
         ],
       ),

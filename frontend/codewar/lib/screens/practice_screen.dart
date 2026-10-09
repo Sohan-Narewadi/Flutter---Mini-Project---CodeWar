@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -22,22 +24,40 @@ class PracticeScreen extends StatefulWidget {
 }
 
 class _PracticeScreenState extends State<PracticeScreen> {
+  Timer? _tick;
+
+  @override
+  void dispose() {
+    _tick?.cancel();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
+    // Keeps the daily countdown moving while the tab stays open.
+    _tick = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted) setState(() {});
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.read<PracticeState>().loadStats();
     });
   }
 
-  Future<void> _start(BuildContext context, {bool daily = false, String? topic}) async {
+  Future<void> _start(
+    BuildContext context, {
+    bool daily = false,
+    String? topic,
+  }) async {
     final p = context.read<PracticeState>();
     final ok = await p.start(daily: daily, topicOverride: topic);
     if (!context.mounted) return;
     if (ok) {
       context.push('/practice/play');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(p.error ?? 'Could not start practice.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(p.error ?? 'Could not start practice.')),
+      );
     }
   }
 
@@ -55,7 +75,10 @@ class _PracticeScreenState extends State<PracticeScreen> {
         child: ListView(
           padding: const EdgeInsets.only(bottom: 24),
           children: [
-            const PageHeader(title: 'Practice', subtitle: 'Endless fresh problems. Every solve builds mastery.'),
+            const PageHeader(
+              title: 'Practice',
+              subtitle: 'Endless fresh problems. Every solve builds mastery.',
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
               child: Column(
@@ -63,44 +86,92 @@ class _PracticeScreenState extends State<PracticeScreen> {
                 children: [
                   Row(
                     children: [
-                      Expanded(child: StatTile(icon: Icons.local_fire_department_rounded, color: AppColors.gold, value: '${stats.streak}', label: 'Streak')),
+                      Expanded(
+                        child: StatTile(
+                          icon: Icons.local_fire_department_rounded,
+                          color: AppColors.gold,
+                          value: '${stats.streak}',
+                          label: 'Streak',
+                        ),
+                      ),
                       const SizedBox(width: 10),
-                      Expanded(child: StatTile(icon: Icons.check_circle_rounded, color: AppColors.success, value: '${stats.solvedToday}', label: 'Today')),
+                      Expanded(
+                        child: StatTile(
+                          icon: Icons.check_circle_rounded,
+                          color: AppColors.success,
+                          value: '${stats.solvedToday}',
+                          label: 'Today',
+                        ),
+                      ),
                       const SizedBox(width: 10),
-                      Expanded(child: StatTile(icon: Icons.emoji_events_rounded, color: AppColors.accent, value: '${stats.totalSolved}', label: 'Solved')),
+                      Expanded(
+                        child: StatTile(
+                          icon: Icons.emoji_events_rounded,
+                          color: AppColors.accent,
+                          value: '${stats.totalSolved}',
+                          label: 'Solved',
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   _DailyCard(
                     busy: p.starting,
                     done: stats.dailyDone,
-                    resetsIn: stats.dailyResetsLabel,
+                    resetsIn: stats.dailyLabel(),
                     onTap: () => _start(context, daily: true),
                   ),
                   const SizedBox(height: 24),
                   Text('DIFFICULTY', style: AppTheme.overline()),
                   const SizedBox(height: 8),
                   SegmentedTabs<String>(
-                    options: const {'easy': 'Easy', 'medium': 'Medium', 'hard': 'Hard'},
+                    options: const {
+                      'easy': 'Easy',
+                      'medium': 'Medium',
+                      'hard': 'Hard',
+                    },
                     value: p.difficulty,
                     onChanged: p.setDifficulty,
                   ),
                   const SizedBox(height: 24),
                   SectionTitle(
                     'Topics',
-                    trailing: GestureDetector(
-                      key: const Key('randomPractice'),
-                      behavior: HitTestBehavior.opaque,
-                      onTap: p.starting ? null : () => _start(context),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.shuffle_rounded, size: 16, color: AppColors.accent),
-                            const SizedBox(width: 6),
-                            Text('Surprise me', style: AppTheme.display(fontSize: 14, color: AppColors.accent)),
-                          ],
+                    trailing: Semantics(
+                      button: true,
+                      label: 'Surprise me: random problem',
+                      excludeSemantics: true,
+                      child: GestureDetector(
+                        key: const Key('randomPractice'),
+                        behavior: HitTestBehavior.opaque,
+                        onTap: p.starting ? null : () => _start(context),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minHeight: 44),
+                          child: Center(
+                            widthFactor: 1,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.shuffle_rounded,
+                                    size: 16,
+                                    color: AppColors.accent,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Surprise me',
+                                    style: AppTheme.display(
+                                      fontSize: 14,
+                                      color: AppColors.accent,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -112,10 +183,21 @@ class _PracticeScreenState extends State<PracticeScreen> {
                         accent: AppColors.danger,
                         child: Row(
                           children: [
-                            const Icon(Icons.cloud_off_rounded, color: AppColors.danger),
+                            const Icon(
+                              Icons.cloud_off_rounded,
+                              color: AppColors.danger,
+                            ),
                             const SizedBox(width: 10),
-                            Expanded(child: Text(p.statsError!, style: const TextStyle(color: AppColors.text))),
-                            TextButton(onPressed: p.loadStats, child: const Text('Retry')),
+                            Expanded(
+                              child: Text(
+                                p.statsError!,
+                                style: const TextStyle(color: AppColors.text),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: p.loadStats,
+                              child: const Text('Retry'),
+                            ),
                           ],
                         ),
                       ),
@@ -139,7 +221,12 @@ class _PracticeScreenState extends State<PracticeScreen> {
 }
 
 class _DailyCard extends StatelessWidget {
-  const _DailyCard({required this.busy, required this.done, required this.resetsIn, required this.onTap});
+  const _DailyCard({
+    required this.busy,
+    required this.done,
+    required this.resetsIn,
+    required this.onTap,
+  });
   final bool busy;
   final bool done;
   final String resetsIn;
@@ -157,7 +244,10 @@ class _DailyCard extends StatelessWidget {
       gradient: done
           ? null
           : LinearGradient(
-              colors: [AppColors.accentDeep.withValues(alpha: 0.55), AppColors.accent.withValues(alpha: 0.30)],
+              colors: [
+                AppColors.accentDeep.withValues(alpha: 0.55),
+                AppColors.accent.withValues(alpha: 0.30),
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -171,24 +261,49 @@ class _DailyCard extends StatelessWidget {
               color: AppColors.background.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(done ? Icons.check_rounded : Icons.today_rounded, color: done ? AppColors.success : AppColors.text, size: 26),
+            child: Icon(
+              done ? Icons.check_rounded : Icons.today_rounded,
+              color: done ? AppColors.success : AppColors.text,
+              size: 26,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('DAILY CHALLENGE', style: AppTheme.overline(color: done ? AppColors.success : AppColors.text.withValues(alpha: 0.8))),
+                Text(
+                  'DAILY CHALLENGE',
+                  style: AppTheme.overline(
+                    color: done
+                        ? AppColors.success
+                        : AppColors.text.withValues(alpha: 0.8),
+                  ),
+                ),
                 const SizedBox(height: 3),
-                Text(done ? 'Nice work' : 'Today\'s puzzle', style: AppTheme.display(fontSize: 20, height: 1.1)),
+                Text(
+                  done ? 'Nice work' : 'Today\'s puzzle',
+                  style: AppTheme.display(fontSize: 20, height: 1.1),
+                ),
                 const SizedBox(height: 4),
-                Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textDim, height: 1.3)),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textDim,
+                    height: 1.3,
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(width: 8),
           busy
-              ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
+              ? const SizedBox(
+                  height: 22,
+                  width: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2.5),
+                )
               : const Icon(Icons.arrow_forward_rounded, color: AppColors.text),
         ],
       ),
@@ -197,7 +312,11 @@ class _DailyCard extends StatelessWidget {
 }
 
 class _TopicGrid extends StatelessWidget {
-  const _TopicGrid({required this.topics, required this.enabled, required this.onTap});
+  const _TopicGrid({
+    required this.topics,
+    required this.enabled,
+    required this.onTap,
+  });
   final List<TopicStat> topics;
   final bool enabled;
   final ValueChanged<TopicStat> onTap;
@@ -205,7 +324,12 @@ class _TopicGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (topics.isEmpty) {
-      return const AppCard(child: Text('No topics available right now. Pull down to refresh.', style: TextStyle(color: AppColors.textDim)));
+      return const AppCard(
+        child: Text(
+          'No topics available right now. Pull down to refresh.',
+          style: TextStyle(color: AppColors.textDim),
+        ),
+      );
     }
     return LayoutBuilder(
       builder: (context, c) {
@@ -216,7 +340,15 @@ class _TopicGrid extends StatelessWidget {
           spacing: gap,
           runSpacing: gap,
           children: [
-            for (final t in topics) SizedBox(width: w, child: _TopicTile(topic: t, enabled: enabled, onTap: () => onTap(t))),
+            for (final t in topics)
+              SizedBox(
+                width: w,
+                child: _TopicTile(
+                  topic: t,
+                  enabled: enabled,
+                  onTap: () => onTap(t),
+                ),
+              ),
           ],
         );
       },
@@ -232,13 +364,23 @@ class _TopicSkeletons extends StatelessWidget {
     return Wrap(
       spacing: 12,
       runSpacing: 12,
-      children: [for (var i = 0; i < 6; i++) const SizedBox(width: 150, child: SkeletonBox(height: 132, radius: AppRadius.xl))],
+      children: [
+        for (var i = 0; i < 6; i++)
+          const SizedBox(
+            width: 150,
+            child: SkeletonBox(height: 132, radius: AppRadius.xl),
+          ),
+      ],
     );
   }
 }
 
 class _TopicTile extends StatelessWidget {
-  const _TopicTile({required this.topic, required this.enabled, required this.onTap});
+  const _TopicTile({
+    required this.topic,
+    required this.enabled,
+    required this.onTap,
+  });
   final TopicStat topic;
   final bool enabled;
   final VoidCallback onTap;
@@ -269,8 +411,15 @@ class _TopicTile extends StatelessWidget {
               Container(
                 width: 38,
                 height: 38,
-                decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(AppRadius.md)),
-                child: Icon(_icons[topic.id] ?? Icons.code_rounded, color: color, size: 22),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: Icon(
+                  _icons[topic.id] ?? Icons.code_rounded,
+                  color: color,
+                  size: 22,
+                ),
               ),
               const Spacer(),
               SizedBox(
@@ -285,7 +434,12 @@ class _TopicTile extends StatelessWidget {
                       backgroundColor: AppColors.line,
                       color: color,
                     ),
-                    if (mastered) const Icon(Icons.star_rounded, size: 16, color: AppColors.gold),
+                    if (mastered)
+                      const Icon(
+                        Icons.star_rounded,
+                        size: 16,
+                        color: AppColors.gold,
+                      ),
                   ],
                 ),
               ),
@@ -295,15 +449,28 @@ class _TopicTile extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(topic.label, maxLines: 1, style: AppTheme.display(fontSize: 17)),
+            child: Text(
+              topic.label,
+              maxLines: 1,
+              style: AppTheme.display(fontSize: 17),
+            ),
           ),
           const SizedBox(height: 2),
           Text(
-            topic.masteryPercent >= 100 ? 'Mastered' : 'Mastery ${topic.masteryPercent}%',
-            style: TextStyle(fontSize: 12, color: mastered ? AppColors.gold : AppColors.textDim, fontWeight: FontWeight.w600),
+            topic.masteryPercent >= 100
+                ? 'Mastered'
+                : 'Mastery ${topic.masteryPercent}%',
+            style: TextStyle(
+              fontSize: 12,
+              color: mastered ? AppColors.gold : AppColors.textDim,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 2),
-          Text('${topic.solved} solved', style: const TextStyle(fontSize: 12, color: AppColors.textFaint)),
+          Text(
+            '${topic.solved} solved',
+            style: const TextStyle(fontSize: 12, color: AppColors.textFaint),
+          ),
         ],
       ),
     );

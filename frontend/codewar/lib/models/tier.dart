@@ -33,7 +33,8 @@ enum Tier {
   }
 
   /// The next tier up, or null at the top.
-  Tier? get next => index + 1 < Tier.values.length ? Tier.values[index + 1] : null;
+  Tier? get next =>
+      index + 1 < Tier.values.length ? Tier.values[index + 1] : null;
 
   /// 0..1 progress from this tier's floor to the next tier's floor.
   double progress(int rating) {

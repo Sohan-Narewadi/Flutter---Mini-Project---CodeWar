@@ -27,7 +27,12 @@ class WorldMapScreen extends StatelessWidget {
         title: 'Home',
         navIndex: 0,
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(AppSpace.page, 0, AppSpace.page, 24),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpace.page,
+            0,
+            AppSpace.page,
+            24,
+          ),
           children: [
             const HomeHeader(),
             if (state.error != null && !state.isLoading)
@@ -37,9 +42,18 @@ class WorldMapScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(state.error!, key: const Key('homeError'), style: const TextStyle(color: AppColors.text)),
+                    Text(
+                      state.error!,
+                      key: const Key('homeError'),
+                      style: const TextStyle(color: AppColors.text),
+                    ),
                     const SizedBox(height: 12),
-                    NeonButton(label: 'Try again', compact: true, expanded: false, onPressed: state.load),
+                    NeonButton(
+                      label: 'Try again',
+                      compact: true,
+                      expanded: false,
+                      onPressed: state.load,
+                    ),
                   ],
                 ),
               ),
@@ -82,7 +96,9 @@ class WorldMapScreen extends StatelessWidget {
                     done: done,
                     total: nodes.length,
                     current: current,
-                    onContinue: current == null ? null : () => _onNodeTap(context, current!),
+                    onContinue: current == null
+                        ? null
+                        : () => _onNodeTap(context, current!),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -108,7 +124,16 @@ class WorldMapScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 22),
-                  SectionTitle('Campaign path', trailing: Text('$done/${nodes.length} cleared', style: AppTheme.mono(fontSize: 12, color: AppColors.textDim))),
+                  SectionTitle(
+                    'Campaign path',
+                    trailing: Text(
+                      '$done/${nodes.length} cleared',
+                      style: AppTheme.mono(
+                        fontSize: 12,
+                        color: AppColors.textDim,
+                      ),
+                    ),
+                  ),
                   for (var i = 0; i < nodes.length; i++)
                     SectorTile(
                       node: nodes[i],
@@ -132,7 +157,13 @@ class WorldMapScreen extends StatelessWidget {
 }
 
 class _ContinueCard extends StatelessWidget {
-  const _ContinueCard({required this.worldName, required this.done, required this.total, required this.current, required this.onContinue});
+  const _ContinueCard({
+    required this.worldName,
+    required this.done,
+    required this.total,
+    required this.current,
+    required this.onContinue,
+  });
 
   final String worldName;
   final int done;
@@ -152,14 +183,20 @@ class _ContinueCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(worldName.toUpperCase(), style: AppTheme.overline(color: AppColors.accent)),
+              Text(
+                worldName.toUpperCase(),
+                style: AppTheme.overline(color: AppColors.accent),
+              ),
               const Spacer(),
-              if (current != null) DifficultyChip(difficulty: current!.difficulty, compact: true),
+              if (current != null)
+                DifficultyChip(difficulty: current!.difficulty, compact: true),
             ],
           ),
           const SizedBox(height: 10),
           Text(
-            complete ? 'Sector cleared' : (current?.name ?? 'No level available'),
+            complete
+                ? 'Sector cleared'
+                : (current?.name ?? 'No level available'),
             style: AppTheme.display(fontSize: 24, height: 1.1),
           ),
           const SizedBox(height: 6),
@@ -167,18 +204,28 @@ class _ContinueCard extends StatelessWidget {
             complete
                 ? 'You cleared every level here. Keep sharp in Practice or race friends online.'
                 : current == null
-                    ? 'Pull down to refresh.'
-                    : 'Level ${current!.order} · +${current!.xpReward} XP · +${current!.goldReward} gold',
+                ? 'Pull down to refresh.'
+                : 'Level ${current!.order} · +${current!.xpReward} XP · +${current!.goldReward} gold',
             style: const TextStyle(color: AppColors.textDim, fontSize: 13),
           ),
           const SizedBox(height: 14),
           ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.full),
-            child: LinearProgressIndicator(value: pct, minHeight: 6, backgroundColor: AppColors.line, color: AppColors.accent),
+            child: LinearProgressIndicator(
+              value: pct,
+              minHeight: 6,
+              backgroundColor: AppColors.line,
+              color: AppColors.accent,
+            ),
           ),
           if (onContinue != null) ...[
             const SizedBox(height: 16),
-            NeonButton(key: const Key('continueButton'), label: 'Continue', icon: Icons.play_arrow_rounded, onPressed: onContinue),
+            NeonButton(
+              key: const Key('continueButton'),
+              label: 'Continue',
+              icon: Icons.play_arrow_rounded,
+              onPressed: onContinue,
+            ),
           ],
         ],
       ),
@@ -187,7 +234,13 @@ class _ContinueCard extends StatelessWidget {
 }
 
 class _Shortcut extends StatelessWidget {
-  const _Shortcut({super.key, required this.icon, required this.title, required this.subtitle, required this.onTap});
+  const _Shortcut({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
   final IconData icon;
   final String title;
   final String subtitle;
@@ -204,13 +257,19 @@ class _Shortcut extends StatelessWidget {
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(AppRadius.md)),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
             child: Icon(icon, color: AppColors.accent, size: 22),
           ),
           const SizedBox(height: 10),
           Text(title, style: AppTheme.display(fontSize: 16)),
           const SizedBox(height: 2),
-          Text(subtitle, style: const TextStyle(color: AppColors.textDim, fontSize: 12)),
+          Text(
+            subtitle,
+            style: const TextStyle(color: AppColors.textDim, fontSize: 12),
+          ),
         ],
       ),
     );

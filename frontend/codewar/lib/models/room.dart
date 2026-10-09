@@ -25,17 +25,17 @@ class RoomPlayer {
   final int? rank;
 
   factory RoomPlayer.fromJson(Map<String, dynamic> j) => RoomPlayer(
-        playerId: j['player_id'] ?? 0,
-        name: j['name']?.toString() ?? '?',
-        connected: j['connected'] == true,
-        isHost: j['is_host'] == true,
-        passed: j['passed'] ?? 0,
-        total: j['total'] ?? 0,
-        bestPct: j['best_pct'] ?? 0,
-        submissions: j['submissions'] ?? 0,
-        forfeited: j['forfeited'] == true,
-        rank: j['rank'] as int?,
-      );
+    playerId: j['player_id'] ?? 0,
+    name: j['name']?.toString() ?? '?',
+    connected: j['connected'] == true,
+    isHost: j['is_host'] == true,
+    passed: j['passed'] ?? 0,
+    total: j['total'] ?? 0,
+    bestPct: j['best_pct'] ?? 0,
+    submissions: j['submissions'] ?? 0,
+    forfeited: j['forfeited'] == true,
+    rank: j['rank'] as int?,
+  );
 }
 
 class Standing {
@@ -66,17 +66,17 @@ class Standing {
   bool get hasRewards => ratingDelta != null;
 
   factory Standing.fromJson(Map<String, dynamic> j) => Standing(
-        playerId: j['player_id'] ?? 0,
-        name: j['name']?.toString() ?? '?',
-        rank: j['rank'] ?? 0,
-        bestPct: j['best_pct'] ?? 0,
-        forfeited: j['forfeited'] == true,
-        timeS: j['time_s'] as num?,
-        ratingDelta: j['rating_delta'] as int?,
-        xp: j['xp'] as int?,
-        gold: j['gold'] as int?,
-        rating: j['rating'] as int?,
-      );
+    playerId: j['player_id'] ?? 0,
+    name: j['name']?.toString() ?? '?',
+    rank: j['rank'] ?? 0,
+    bestPct: j['best_pct'] ?? 0,
+    forfeited: j['forfeited'] == true,
+    timeS: j['time_s'] as num?,
+    ratingDelta: j['rating_delta'] as int?,
+    xp: j['xp'] as int?,
+    gold: j['gold'] as int?,
+    rating: j['rating'] as int?,
+  );
 }
 
 class RoomSnapshot {
@@ -122,23 +122,23 @@ class RoomSnapshot {
   }
 
   factory RoomSnapshot.fromJson(Map<String, dynamic> j) => RoomSnapshot(
-        code: j['code']?.toString() ?? '',
-        mode: j['mode']?.toString() ?? 'race',
-        difficulty: j['difficulty']?.toString() ?? 'easy',
-        language: j['language']?.toString() ?? 'python',
-        status: j['status']?.toString() ?? 'lobby',
-        hostId: j['host_id'] ?? 0,
-        maxPlayers: j['max_players'] ?? 8,
-        timeLimitS: j['time_limit_s'] ?? 300,
-        secondsLeft: j['seconds_left'] as int?,
-        countdownLeft: (j['countdown_left'] as num?)?.toDouble(),
-        reason: j['reason']?.toString(),
-        preparing: j['preparing'] == true,
-        players: (j['players'] as List? ?? [])
-            .map((e) => RoomPlayer.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        standings: (j['standings'] as List?)
-            ?.map((e) => Standing.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    code: j['code']?.toString() ?? '',
+    mode: j['mode']?.toString() ?? 'race',
+    difficulty: j['difficulty']?.toString() ?? 'easy',
+    language: j['language']?.toString() ?? 'python',
+    status: j['status']?.toString() ?? 'lobby',
+    hostId: j['host_id'] ?? 0,
+    maxPlayers: j['max_players'] ?? 8,
+    timeLimitS: j['time_limit_s'] ?? 300,
+    secondsLeft: j['seconds_left'] as int?,
+    countdownLeft: (j['countdown_left'] as num?)?.toDouble(),
+    reason: j['reason']?.toString(),
+    preparing: j['preparing'] == true,
+    players: (j['players'] as List? ?? [])
+        .map((e) => RoomPlayer.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    standings: (j['standings'] as List?)
+        ?.map((e) => Standing.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }

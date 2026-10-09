@@ -8,6 +8,7 @@ class BadgeInfo {
     required this.description,
     required this.icon,
     this.earnedAt,
+    this._earned,
   });
 
   final String key;
@@ -16,17 +17,23 @@ class BadgeInfo {
   final String icon;
   final DateTime? earnedAt;
 
-  bool get earned => earnedAt != null;
+  final bool? _earned;
+
+  /// Earned for real. [earnedAt] can still be null for badges the server back-filled (real date unknown).
+  bool get earned => _earned ?? earnedAt != null;
 
   IconData get iconData => _icons[icon] ?? Icons.workspace_premium_rounded;
 
   factory BadgeInfo.fromJson(Map<String, dynamic> j) => BadgeInfo(
-        key: j['key']?.toString() ?? '',
-        name: j['name']?.toString() ?? '',
-        description: j['description']?.toString() ?? '',
-        icon: j['icon']?.toString() ?? '',
-        earnedAt: j['earned_at'] == null ? null : DateTime.tryParse(j['earned_at'].toString()),
-      );
+    key: j['key']?.toString() ?? '',
+    name: j['name']?.toString() ?? '',
+    description: j['description']?.toString() ?? '',
+    icon: j['icon']?.toString() ?? '',
+    earnedAt: j['earned_at'] == null
+        ? null
+        : DateTime.tryParse(j['earned_at'].toString()),
+    earned: j['earned'] is bool ? j['earned'] as bool : null,
+  );
 
   static const _icons = <String, IconData>{
     'flag': Icons.flag_rounded,
@@ -80,18 +87,22 @@ class MatchRecord {
   bool get won => rank == 1 && playersCount > 1;
 
   factory MatchRecord.fromJson(Map<String, dynamic> j) => MatchRecord(
-        roomCode: j['room_code']?.toString() ?? '',
-        mode: j['mode']?.toString() ?? 'race',
-        rank: j['rank'] ?? 0,
-        playersCount: j['players_count'] ?? 1,
-        bestPct: j['best_pct'] ?? 0,
-        ratingBefore: j['rating_before'] ?? 1000,
-        ratingDelta: j['rating_delta'] ?? 0,
-        xp: j['xp'] ?? 0,
-        gold: j['gold'] ?? 0,
-        opponents: (j['opponents'] as List? ?? []).map((e) => e.toString()).toList(),
-        finishedAt: j['finished_at'] == null ? null : DateTime.tryParse(j['finished_at'].toString()),
-      );
+    roomCode: j['room_code']?.toString() ?? '',
+    mode: j['mode']?.toString() ?? 'race',
+    rank: j['rank'] ?? 0,
+    playersCount: j['players_count'] ?? 1,
+    bestPct: j['best_pct'] ?? 0,
+    ratingBefore: j['rating_before'] ?? 1000,
+    ratingDelta: j['rating_delta'] ?? 0,
+    xp: j['xp'] ?? 0,
+    gold: j['gold'] ?? 0,
+    opponents: (j['opponents'] as List? ?? [])
+        .map((e) => e.toString())
+        .toList(),
+    finishedAt: j['finished_at'] == null
+        ? null
+        : DateTime.tryParse(j['finished_at'].toString()),
+  );
 }
 
 /// What anyone signed in can see about a player.
@@ -119,16 +130,16 @@ class PublicProfile {
   final List<String> badges;
 
   factory PublicProfile.fromJson(Map<String, dynamic> j) => PublicProfile(
-        id: j['id'] ?? 0,
-        name: j['name']?.toString() ?? '?',
-        level: j['level'] ?? 1,
-        rating: j['rating'] ?? 1000,
-        tier: j['tier']?.toString() ?? 'bronze',
-        wins: j['wins'] ?? 0,
-        losses: j['losses'] ?? 0,
-        totalXp: j['total_xp'] ?? 0,
-        badges: (j['badges'] as List? ?? []).map((e) => e.toString()).toList(),
-      );
+    id: j['id'] ?? 0,
+    name: j['name']?.toString() ?? '?',
+    level: j['level'] ?? 1,
+    rating: j['rating'] ?? 1000,
+    tier: j['tier']?.toString() ?? 'bronze',
+    wins: j['wins'] ?? 0,
+    losses: j['losses'] ?? 0,
+    totalXp: j['total_xp'] ?? 0,
+    badges: (j['badges'] as List? ?? []).map((e) => e.toString()).toList(),
+  );
 }
 
 /// "just now", "5m ago", "3h ago", "2d ago", else a short date.

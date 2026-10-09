@@ -16,13 +16,18 @@ import '../widgets/hp_xp_bar.dart';
 /// Battle preparation: the match-up, the enemy's topic, language choice, the
 /// rewards on offer, and the button that starts the real (server-issued) battle.
 class BattlePreparationScreen extends StatefulWidget {
-  const BattlePreparationScreen({super.key, required this.enemyId, this.levelId});
+  const BattlePreparationScreen({
+    super.key,
+    required this.enemyId,
+    this.levelId,
+  });
 
   final String enemyId;
   final String? levelId;
 
   @override
-  State<BattlePreparationScreen> createState() => _BattlePreparationScreenState();
+  State<BattlePreparationScreen> createState() =>
+      _BattlePreparationScreenState();
 }
 
 class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
@@ -43,14 +48,27 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
             padding: const EdgeInsets.fromLTRB(8, 8, AppSpace.page, 0),
             child: Row(
               children: [
-                IconButton(tooltip: 'Back', icon: const Icon(Icons.arrow_back_rounded), onPressed: () => context.canPop() ? context.pop() : context.go('/home')),
-                Text('Battle preparation', style: AppTheme.display(fontSize: 22)),
+                IconButton(
+                  tooltip: 'Back',
+                  icon: const Icon(Icons.arrow_back_rounded),
+                  onPressed: () =>
+                      context.canPop() ? context.pop() : context.go('/home'),
+                ),
+                Text(
+                  'Battle preparation',
+                  style: AppTheme.display(fontSize: 22),
+                ),
               ],
             ),
           ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(AppSpace.page, 12, AppSpace.page, 24),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpace.page,
+                12,
+                AppSpace.page,
+                24,
+              ),
               children: [
                 AppCard(
                   accent: AppColors.danger,
@@ -64,29 +82,64 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('YOU', style: AppTheme.overline(color: AppColors.accent)),
+                                Text(
+                                  'YOU',
+                                  style: AppTheme.overline(
+                                    color: AppColors.accent,
+                                  ),
+                                ),
                                 const SizedBox(height: 4),
-                                Text(player.displayName, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTheme.display(fontSize: 18)),
+                                Text(
+                                  player.displayName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTheme.display(fontSize: 18),
+                                ),
                               ],
                             ),
                           ),
-                          const Icon(Icons.flash_on_rounded, color: AppColors.gold),
+                          const Icon(
+                            Icons.flash_on_rounded,
+                            color: AppColors.gold,
+                          ),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text('ENEMY', style: AppTheme.overline(color: AppColors.danger)),
+                                Text(
+                                  'ENEMY',
+                                  style: AppTheme.overline(
+                                    color: AppColors.danger,
+                                  ),
+                                ),
                                 const SizedBox(height: 4),
-                                Text(enemy.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTheme.display(fontSize: 18)),
+                                Text(
+                                  enemy.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTheme.display(fontSize: 18),
+                                ),
                               ],
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
-                      HpXpBar(progress: player.hpProgress, color: AppColors.accent, label: 'YOUR HP', trailing: '${player.hp}/${player.hpMax}', height: 8),
+                      HpXpBar(
+                        progress: player.hpProgress,
+                        color: AppColors.accent,
+                        label: 'YOUR HP',
+                        trailing: '${player.hp}/${player.hpMax}',
+                        height: 8,
+                      ),
                       const SizedBox(height: 12),
-                      HpXpBar(progress: enemy.hpProgress, color: AppColors.danger, label: 'ENEMY HP', trailing: '${enemy.hpCurrent}/${enemy.hpMax}', height: 8),
+                      HpXpBar(
+                        progress: enemy.hpProgress,
+                        color: AppColors.danger,
+                        label: 'ENEMY HP',
+                        trailing: '${enemy.hpCurrent}/${enemy.hpMax}',
+                        height: 8,
+                      ),
                     ],
                   ),
                 ),
@@ -97,12 +150,20 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
                     padding: const EdgeInsets.all(14),
                     child: const Row(
                       children: [
-                        Icon(Icons.favorite_rounded, color: AppColors.gold, size: 20),
+                        Icon(
+                          Icons.favorite_rounded,
+                          color: AppColors.gold,
+                          size: 20,
+                        ),
                         SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             'Your HP is low. A wrong submission costs HP and can end the fight. HP regenerates slowly over time, or practice instead (no HP at stake).',
-                            style: TextStyle(color: AppColors.text, fontSize: 13, height: 1.35),
+                            style: TextStyle(
+                              color: AppColors.text,
+                              fontSize: 13,
+                              height: 1.35,
+                            ),
                           ),
                         ),
                       ],
@@ -112,18 +173,40 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
                 const SizedBox(height: 14),
                 Row(
                   children: [
-                    Expanded(child: _InfoTile(label: 'Topic', value: enemy.vulnerability.isEmpty ? 'Mixed' : enemy.vulnerability)),
+                    Expanded(
+                      child: _InfoTile(
+                        label: 'Topic',
+                        value: enemy.vulnerability.isEmpty
+                            ? 'Mixed'
+                            : enemy.vulnerability,
+                      ),
+                    ),
                     const SizedBox(width: 10),
-                    Expanded(child: _InfoTile(label: 'Tier', value: enemy.tier.isEmpty ? 'Minion' : '${enemy.tier[0].toUpperCase()}${enemy.tier.substring(1)}')),
+                    Expanded(
+                      child: _InfoTile(
+                        label: 'Tier',
+                        value: enemy.tier.isEmpty
+                            ? 'Minion'
+                            : '${enemy.tier[0].toUpperCase()}${enemy.tier.substring(1)}',
+                      ),
+                    ),
                     const SizedBox(width: 10),
-                    Expanded(child: _InfoTile(label: 'Difficulty', value: difficultyLabel(enemy.difficulty))),
+                    Expanded(
+                      child: _InfoTile(
+                        label: 'Difficulty',
+                        value: difficultyLabel(enemy.difficulty),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 22),
                 Text('LANGUAGE', style: AppTheme.overline()),
                 const SizedBox(height: 8),
                 SegmentedTabs<String>(
-                  options: const {'python': 'Python 3', 'typescript': 'TypeScript'},
+                  options: const {
+                    'python': 'Python 3',
+                    'typescript': 'TypeScript',
+                  },
                   value: _language,
                   onChanged: (v) => setState(() => _language = v),
                 ),
@@ -132,9 +215,23 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Expanded(child: StatTile(icon: Icons.bolt_rounded, color: AppColors.accent, value: '+${enemy.xpReward}', label: 'XP')),
+                    Expanded(
+                      child: StatTile(
+                        icon: Icons.bolt_rounded,
+                        color: AppColors.accent,
+                        value: '+${enemy.xpReward}',
+                        label: 'XP',
+                      ),
+                    ),
                     const SizedBox(width: 10),
-                    Expanded(child: StatTile(icon: Icons.monetization_on_rounded, color: AppColors.gold, value: '+${enemy.goldReward}', label: 'Gold')),
+                    Expanded(
+                      child: StatTile(
+                        icon: Icons.monetization_on_rounded,
+                        color: AppColors.gold,
+                        value: '+${enemy.goldReward}',
+                        label: 'Gold',
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 26),
@@ -143,7 +240,9 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
                   label: 'Start battle',
                   icon: Icons.sports_martial_arts_rounded,
                   loading: _starting,
-                  onPressed: _starting ? null : () => _confirmAndFight(context, enemy.id),
+                  onPressed: _starting
+                      ? null
+                      : () => _confirmAndFight(context, enemy.id),
                 ),
               ],
             ),
@@ -166,14 +265,18 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
     final matchingLevels = widget.levelId == null
         ? const Iterable<LevelNode>.empty()
         : state.levels.where((l) => l.id == widget.levelId);
-    final level = matchingLevels.isNotEmpty ? matchingLevels.first : state.levelForEnemy(enemyId);
+    final level = matchingLevels.isNotEmpty
+        ? matchingLevels.first
+        : state.levelForEnemy(enemyId);
     try {
       await state.startBattle(enemy: enemy, level: level);
       if (!context.mounted) return;
       context.push('/ide');
     } on BattleApiException catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } finally {
       if (mounted) setState(() => _starting = false);
     }
@@ -194,7 +297,12 @@ class _InfoTile extends StatelessWidget {
         children: [
           Text(label.toUpperCase(), style: AppTheme.overline()),
           const SizedBox(height: 6),
-          Text(value, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppTheme.display(fontSize: 14, height: 1.15)),
+          Text(
+            value,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppTheme.display(fontSize: 14, height: 1.15),
+          ),
         ],
       ),
     );

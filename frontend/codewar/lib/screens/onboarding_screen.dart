@@ -62,7 +62,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       maxWidth: 440,
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(AppSpace.page + 4, 24, AppSpace.page + 4, 24),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpace.page + 4,
+            24,
+            AppSpace.page + 4,
+            24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -74,15 +79,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: Text(
                   'CODEWAR',
                   textAlign: TextAlign.center,
-                  style: AppTheme.display(fontSize: 40, letterSpacing: 6, color: Colors.white),
+                  style: AppTheme.display(
+                    fontSize: 40,
+                    letterSpacing: 6,
+                    color: Colors.white,
+                  ),
                 ),
               ),
               const SizedBox(height: 6),
-              const Text('Code to fight. Climb the ranks.', textAlign: TextAlign.center, style: TextStyle(color: AppColors.textDim, fontSize: 15)),
+              const Text(
+                'Code to fight. Climb the ranks.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textDim, fontSize: 15),
+              ),
               const SizedBox(height: 28),
-              const _Feature(icon: Icons.all_inclusive_rounded, text: 'Endless fresh problems, verified by a real judge'),
-              const _Feature(icon: Icons.groups_rounded, text: 'Race or duel friends live with a room code'),
-              const _Feature(icon: Icons.leaderboard_rounded, text: 'Real leaderboard, tiers and badges'),
+              const _Feature(
+                icon: Icons.all_inclusive_rounded,
+                text: 'Endless fresh problems, verified by a real judge',
+              ),
+              const _Feature(
+                icon: Icons.groups_rounded,
+                text: 'Race or duel friends live with a room code',
+              ),
+              const _Feature(
+                icon: Icons.leaderboard_rounded,
+                text: 'Real leaderboard, tiers and badges',
+              ),
               const SizedBox(height: 28),
               TextField(
                 key: const Key('nameField'),
@@ -91,12 +113,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => _busy ? null : _submit(),
                 style: AppTheme.display(fontSize: 18),
-                decoration: const InputDecoration(hintText: 'Choose your warrior name', counterText: ''),
+                decoration: const InputDecoration(
+                  hintText: 'Choose your warrior name',
+                  counterText: '',
+                ),
               ),
               Theme(
-                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                data: Theme.of(
+                  context,
+                ).copyWith(dividerColor: Colors.transparent),
                 child: ExpansionTile(
-                  title: const Text('Advanced: server address', style: TextStyle(color: AppColors.textDim, fontSize: 14)),
+                  title: const Text(
+                    'Advanced: server address',
+                    style: TextStyle(color: AppColors.textDim, fontSize: 14),
+                  ),
                   tilePadding: EdgeInsets.zero,
                   childrenPadding: const EdgeInsets.only(bottom: 8),
                   iconColor: AppColors.textDim,
@@ -106,7 +136,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       key: const Key('serverField'),
                       controller: _server,
                       keyboardType: TextInputType.url,
-                      decoration: const InputDecoration(labelText: 'Server URL', hintText: 'https://your-tunnel.trycloudflare.com'),
+                      decoration: const InputDecoration(
+                        labelText: 'Server URL',
+                        hintText: 'https://your-tunnel.trycloudflare.com',
+                      ),
                     ),
                   ],
                 ),
@@ -116,14 +149,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline_rounded, size: 18, color: AppColors.danger),
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        size: 18,
+                        color: AppColors.danger,
+                      ),
                       const SizedBox(width: 8),
-                      Expanded(child: Text(_error!, key: const Key('onboardingError'), style: const TextStyle(color: AppColors.danger))),
+                      Expanded(
+                        child: Text(
+                          _error!,
+                          key: const Key('onboardingError'),
+                          style: const TextStyle(color: AppColors.danger),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               const SizedBox(height: 8),
-              NeonButton(key: const Key('startButton'), label: 'Enter the Arena', icon: Icons.bolt_rounded, loading: _busy, onPressed: _busy ? null : _submit),
+              NeonButton(
+                key: const Key('startButton'),
+                label: 'Enter the Arena',
+                icon: Icons.bolt_rounded,
+                loading: _busy,
+                onPressed: _busy ? null : _submit,
+              ),
               const SizedBox(height: 14),
               const Text(
                 'No password or email. Your warrior lives on this device.',
@@ -149,9 +198,19 @@ class _Logo extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(26),
         gradient: AppColors.accentGradient,
-        boxShadow: [BoxShadow(color: AppColors.accent.withValues(alpha: 0.45), blurRadius: 36, offset: const Offset(0, 8))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accent.withValues(alpha: 0.45),
+            blurRadius: 36,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: const Icon(Icons.code_rounded, size: 46, color: AppColors.onAccent),
+      child: const Icon(
+        Icons.code_rounded,
+        size: 46,
+        color: AppColors.onAccent,
+      ),
     );
   }
 }
@@ -170,11 +229,23 @@ class _Feature extends StatelessWidget {
           Container(
             width: 34,
             height: 34,
-            decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(
+              color: AppColors.accent.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
             child: Icon(icon, size: 18, color: AppColors.accent),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Text(text, style: const TextStyle(color: AppColors.text, fontSize: 14, height: 1.25))),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: AppColors.text,
+                fontSize: 14,
+                height: 1.25,
+              ),
+            ),
+          ),
         ],
       ),
     );

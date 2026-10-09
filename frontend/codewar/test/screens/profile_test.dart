@@ -13,13 +13,14 @@ const _player = {
   'hp': 90, 'hp_max': 100, 'gold': 25, 'streak': 2, 'best_streak': 6, 'rating': 1120, 'wins': 3, 'losses': 1, 'tier': 'silver',
 };
 
-Future<List<String>> _boot(WidgetTester tester, {List<Map<String, dynamic>> matches = const []}) async {
+Future<List<String>> _boot(WidgetTester tester, {List<Map<String, dynamic>> matches = const [], bool serverDown = false}) async {
   tester.view.physicalSize = const Size(900, 3200);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
   final paths = <String>[];
   final client = MockClient((req) async {
     paths.add('${req.method} ${req.url.path}');
+    if (serverDown) return http.Response('boom', 503);
     http.Response json(Object o) => http.Response(jsonEncode(o), 200);
     switch (req.url.path) {
       case '/api/player':
@@ -43,6 +44,17 @@ Future<List<String>> _boot(WidgetTester tester, {List<Map<String, dynamic>> matc
   });
   final settings = SettingsStore.memory()..token = 'tok';
   await tester.pumpWidget(CodeWarApp(api: ApiService(settings: settings, client: client)));
+  if (serverDown) {
+    // Skeletons shimmer forever while nothing loads, so pump a fixed number of frames.
+    for (var i = 0; i < 6; i++) {
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    await tester.tap(find.text('Profile').last);
+    for (var i = 0; i < 6; i++) {
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+    return paths;
+  }
   await tester.pumpAndSettle();
   await tester.tap(find.text('Profile').last);
   await tester.pumpAndSettle();
@@ -105,5 +117,18 @@ void main() {
     await tester.tap(find.byKey(const Key('confirmSignOut')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('nameField')), findsOneWidget);
+  });
+
+  testWidgets('Profile never shows placeholder stats when the server is unreachable', (tester) async {
+    await _boot(tester, serverDown: true);
+    expect(find.text('1000'), findsNothing, reason: 'the default rating must not look like real data');
+    expect(find.text('BRONZE'), findsNothing);
+    expect(find.text('0 gold'), findsNothing);
+    expect(find.byKey(const Key('signOutButton')), findsNothing);
+  });
+
+  testWidgets('Profile shows a dash, not a fake zero, for solved problems until stats load', (tester) async {
+    await _boot(tester);
+    expect(find.text('12'), findsOneWidget); // real total from /api/practice/stats
   });
 }

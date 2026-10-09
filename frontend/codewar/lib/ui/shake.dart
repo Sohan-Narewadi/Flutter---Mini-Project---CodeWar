@@ -5,7 +5,11 @@ import 'package:flutter/material.dart';
 /// Shakes [child] briefly whenever [trigger] decreases (e.g. an enemy took
 /// damage and its HP went down).
 class ShakeOnDecrease extends StatefulWidget {
-  const ShakeOnDecrease({super.key, required this.trigger, required this.child});
+  const ShakeOnDecrease({
+    super.key,
+    required this.trigger,
+    required this.child,
+  });
 
   final num trigger;
   final Widget child;
@@ -14,9 +18,12 @@ class ShakeOnDecrease extends StatefulWidget {
   State<ShakeOnDecrease> createState() => _ShakeOnDecreaseState();
 }
 
-class _ShakeOnDecreaseState extends State<ShakeOnDecrease> with SingleTickerProviderStateMixin {
-  late final AnimationController _c =
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
+class _ShakeOnDecreaseState extends State<ShakeOnDecrease>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 420),
+  );
 
   @override
   void didUpdateWidget(ShakeOnDecrease old) {

@@ -26,31 +26,41 @@ class _AutoIndentFormatter extends TextInputFormatter {
   const _AutoIndentFormatter();
 
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     final oldText = oldValue.text;
     final newText = newValue.text;
 
     if (newText.length != oldText.length + 1) return newValue;
 
     var insertAt = 0;
-    while (insertAt < oldText.length && oldText[insertAt] == newText[insertAt]) {
+    while (insertAt < oldText.length &&
+        oldText[insertAt] == newText[insertAt]) {
       insertAt++;
     }
     // Confirm this is a pure single-char insertion at insertAt (everything
     // after the inserted char still matches the old text unchanged) - if
     // not, this was some other kind of edit (e.g. autocorrect); bail out.
-    if (newText.substring(insertAt + 1) != oldText.substring(insertAt)) return newValue;
+    if (newText.substring(insertAt + 1) != oldText.substring(insertAt)) {
+      return newValue;
+    }
     if (newText[insertAt] != '\n') return newValue;
 
     final lineStart = _lineStartBefore(oldText, insertAt);
     final previousLine = oldText.substring(lineStart, insertAt);
-    final currentIndent = RegExp(r'^[ \t]*').firstMatch(previousLine)?.group(0) ?? '';
+    final currentIndent =
+        RegExp(r'^[ \t]*').firstMatch(previousLine)?.group(0) ?? '';
     final opensBlock = previousLine.trimRight().endsWith(':');
     final indent = opensBlock ? '$currentIndent    ' : currentIndent;
 
     if (indent.isEmpty) return newValue;
 
-    final finalText = newText.substring(0, insertAt + 1) + indent + newText.substring(insertAt + 1);
+    final finalText =
+        newText.substring(0, insertAt + 1) +
+        indent +
+        newText.substring(insertAt + 1);
     return TextEditingValue(
       text: finalText,
       selection: TextSelection.collapsed(offset: insertAt + 1 + indent.length),
@@ -148,7 +158,13 @@ class _CodeEditorPanelState extends State<CodeEditorPanel> {
     final block = text.substring(blockStart, blockEnd);
     final indented = block.split('\n').map((l) => '    $l').join('\n');
     final newText = text.replaceRange(blockStart, blockEnd, indented);
-    _setValue(newText, TextSelection(baseOffset: blockStart, extentOffset: blockStart + indented.length));
+    _setValue(
+      newText,
+      TextSelection(
+        baseOffset: blockStart,
+        extentOffset: blockStart + indented.length,
+      ),
+    );
   }
 
   void _outdent() {
@@ -157,7 +173,10 @@ class _CodeEditorPanelState extends State<CodeEditorPanel> {
     if (!sel.isValid) return;
 
     final blockStart = _lineStartBefore(text, sel.start);
-    final nextNewline = text.indexOf('\n', sel.isCollapsed ? sel.start : sel.end);
+    final nextNewline = text.indexOf(
+      '\n',
+      sel.isCollapsed ? sel.start : sel.end,
+    );
     final blockEnd = nextNewline == -1 ? text.length : nextNewline;
     final block = text.substring(blockStart, blockEnd);
 
@@ -182,26 +201,42 @@ class _CodeEditorPanelState extends State<CodeEditorPanel> {
     final newText = text.replaceRange(blockStart, blockEnd, outdented);
 
     final newSelection = sel.isCollapsed
-        ? TextSelection.collapsed(offset: (sel.start - firstLineRemoved).clamp(blockStart, newText.length))
-        : TextSelection(baseOffset: blockStart, extentOffset: blockStart + outdented.length);
+        ? TextSelection.collapsed(
+            offset: (sel.start - firstLineRemoved).clamp(
+              blockStart,
+              newText.length,
+            ),
+          )
+        : TextSelection(
+            baseOffset: blockStart,
+            extentOffset: blockStart + outdented.length,
+          );
     _setValue(newText, newSelection);
   }
 
   static const double _fontSize = 13.5;
   static const double _lineHeight = 21;
 
-  TextStyle get _codeStyle =>
-      AppTheme.mono(fontSize: _fontSize, color: AppColors.text)
-          .copyWith(height: _lineHeight / _fontSize, letterSpacing: 0);
+  TextStyle get _codeStyle => AppTheme.mono(
+    fontSize: _fontSize,
+    color: AppColors.text,
+  ).copyWith(height: _lineHeight / _fontSize, letterSpacing: 0);
 
   /// Width of one monospace character at the code font size.
   double get _charWidth {
-    final tp = TextPainter(text: TextSpan(text: '0', style: _codeStyle), textDirection: TextDirection.ltr)..layout();
+    final tp = TextPainter(
+      text: TextSpan(text: '0', style: _codeStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
     return tp.width;
   }
 
   double _textWidth(String line) {
-    final tp = TextPainter(text: TextSpan(text: line, style: _codeStyle), textDirection: TextDirection.ltr, maxLines: 1)..layout();
+    final tp = TextPainter(
+      text: TextSpan(text: line, style: _codeStyle),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
     return tp.width;
   }
 
@@ -209,7 +244,10 @@ class _CodeEditorPanelState extends State<CodeEditorPanel> {
   Widget build(BuildContext context) {
     final lines = _controller.text.split('\n');
     final lineCount = lines.length;
-    final longest = lines.fold<String>('', (m, l) => l.length > m.length ? l : m);
+    final longest = lines.fold<String>(
+      '',
+      (m, l) => l.length > m.length ? l : m,
+    );
     final gutterWidth = 14.0 + (lineCount.toString().length * _charWidth) + 10;
     return Container(
       decoration: BoxDecoration(
@@ -227,23 +265,47 @@ class _CodeEditorPanelState extends State<CodeEditorPanel> {
             color: AppColors.surfaceHigh,
             child: Row(
               children: [
-                const Icon(Icons.code_rounded, size: 16, color: AppColors.accent),
+                const Icon(
+                  Icons.code_rounded,
+                  size: 16,
+                  color: AppColors.accent,
+                ),
                 const SizedBox(width: 8),
-                Text(widget.filename, style: AppTheme.mono(fontSize: 12, color: AppColors.accent, fontWeight: FontWeight.w700)),
+                Text(
+                  widget.filename,
+                  style: AppTheme.mono(
+                    fontSize: 12,
+                    color: AppColors.accent,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const Spacer(),
-                Text('$lineCount ${lineCount == 1 ? 'line' : 'lines'}', style: AppTheme.mono(fontSize: 11, color: AppColors.textFaint)),
+                Text(
+                  '$lineCount ${lineCount == 1 ? 'line' : 'lines'}',
+                  style: AppTheme.mono(
+                    fontSize: 11,
+                    color: AppColors.textFaint,
+                  ),
+                ),
               ],
             ),
           ),
           ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: widget.maxHeight, minHeight: widget.minHeight),
+            constraints: BoxConstraints(
+              maxHeight: widget.maxHeight,
+              minHeight: widget.minHeight,
+            ),
             child: SingleChildScrollView(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     width: gutterWidth,
-                    padding: const EdgeInsets.only(top: 12, bottom: 12, right: 10),
+                    padding: const EdgeInsets.only(
+                      top: 12,
+                      bottom: 12,
+                      right: 10,
+                    ),
                     color: AppColors.surfaceLow,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -251,7 +313,13 @@ class _CodeEditorPanelState extends State<CodeEditorPanel> {
                         lineCount,
                         (i) => SizedBox(
                           height: _lineHeight,
-                          child: Text('${i + 1}', style: AppTheme.mono(fontSize: 12, color: AppColors.textFaint).copyWith(height: _lineHeight / 12)),
+                          child: Text(
+                            '${i + 1}',
+                            style: AppTheme.mono(
+                              fontSize: 12,
+                              color: AppColors.textFaint,
+                            ).copyWith(height: _lineHeight / 12),
+                          ),
                         ),
                       ),
                     ),
@@ -261,34 +329,58 @@ class _CodeEditorPanelState extends State<CodeEditorPanel> {
                       builder: (context, c) {
                         // Never wrap: long lines scroll sideways so the line
                         // numbers always match what is on screen.
-                        final width = (_textWidth(longest) + 56).clamp(c.maxWidth, double.infinity);
+                        final width = (_textWidth(longest) + 56).clamp(
+                          c.maxWidth,
+                          double.infinity,
+                        );
                         return SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: SizedBox(
                             width: width,
                             child: Padding(
-                              padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                              padding: const EdgeInsets.fromLTRB(
+                                12,
+                                12,
+                                12,
+                                12,
+                              ),
                               child: Shortcuts(
                                 shortcuts: <ShortcutActivator, Intent>{
-                                  LogicalKeySet(LogicalKeyboardKey.tab): const _IndentIntent(),
-                                  LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.tab): const _OutdentIntent(),
+                                  LogicalKeySet(LogicalKeyboardKey.tab):
+                                      const _IndentIntent(),
+                                  LogicalKeySet(
+                                    LogicalKeyboardKey.shift,
+                                    LogicalKeyboardKey.tab,
+                                  ): const _OutdentIntent(),
                                 },
                                 child: Actions(
                                   actions: <Type, Action<Intent>>{
-                                    _IndentIntent: CallbackAction<_IndentIntent>(onInvoke: (_) => _indent()),
-                                    _OutdentIntent: CallbackAction<_OutdentIntent>(onInvoke: (_) => _outdent()),
+                                    _IndentIntent:
+                                        CallbackAction<_IndentIntent>(
+                                          onInvoke: (_) => _indent(),
+                                        ),
+                                    _OutdentIntent:
+                                        CallbackAction<_OutdentIntent>(
+                                          onInvoke: (_) => _outdent(),
+                                        ),
                                   },
                                   child: TextField(
                                     controller: _controller,
                                     onChanged: widget.onChanged,
-                                    inputFormatters: const [_AutoIndentFormatter()],
+                                    inputFormatters: const [
+                                      _AutoIndentFormatter(),
+                                    ],
                                     maxLines: null,
                                     keyboardType: TextInputType.multiline,
                                     autocorrect: false,
                                     enableSuggestions: false,
                                     cursorColor: AppColors.accent,
                                     style: _codeStyle,
-                                    strutStyle: const StrutStyle(fontSize: _fontSize, height: _lineHeight / _fontSize, forceStrutHeight: true),
+                                    strutStyle: const StrutStyle(
+                                      fontSize: _fontSize,
+                                      height: _lineHeight / _fontSize,
+                                      forceStrutHeight: true,
+                                    ),
                                     decoration: const InputDecoration(
                                       border: InputBorder.none,
                                       enabledBorder: InputBorder.none,

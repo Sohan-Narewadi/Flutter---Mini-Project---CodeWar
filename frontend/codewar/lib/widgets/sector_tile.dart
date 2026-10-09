@@ -7,7 +7,12 @@ import 'difficulty_chip.dart';
 /// A single node on the campaign path: a status marker on a connector line
 /// plus a card with the level name, difficulty and reward/stars.
 class SectorTile extends StatelessWidget {
-  const SectorTile({super.key, required this.node, this.onTap, required this.isLast});
+  const SectorTile({
+    super.key,
+    required this.node,
+    this.onTap,
+    required this.isLast,
+  });
 
   final LevelNode node;
   final VoidCallback? onTap;
@@ -22,17 +27,22 @@ class SectorTile extends StatelessWidget {
     final Color dotColor = done
         ? AppColors.success
         : current
-            ? AppColors.accent
-            : AppColors.textFaint;
+        ? AppColors.accent
+        : AppColors.textFaint;
     final IconData dotIcon = done
         ? Icons.check_rounded
         : current
-            ? Icons.bolt_rounded
-            : Icons.lock_rounded;
+        ? Icons.bolt_rounded
+        : Icons.lock_rounded;
 
     return Semantics(
       button: !locked,
-      label: '${node.name}, ${difficultyLabel(node.difficulty)}, ${locked ? 'locked' : done ? 'completed' : 'available'}',
+      label:
+          '${node.name}, ${difficultyLabel(node.difficulty)}, ${locked
+              ? 'locked'
+              : done
+              ? 'completed'
+              : 'available'}',
       excludeSemantics: true,
       child: IntrinsicHeight(
         child: Row(
@@ -48,8 +58,18 @@ class SectorTile extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: dotColor.withValues(alpha: current ? 0.2 : 0.12),
-                      border: Border.all(color: dotColor, width: current ? 2 : 1.5),
-                      boxShadow: current ? [BoxShadow(color: AppColors.accent.withValues(alpha: 0.45), blurRadius: 14)] : null,
+                      border: Border.all(
+                        color: dotColor,
+                        width: current ? 2 : 1.5,
+                      ),
+                      boxShadow: current
+                          ? [
+                              BoxShadow(
+                                color: AppColors.accent.withValues(alpha: 0.45),
+                                blurRadius: 14,
+                              ),
+                            ]
+                          : null,
                     ),
                     child: Icon(dotIcon, size: 18, color: dotColor),
                   ),
@@ -60,7 +80,9 @@ class SectorTile extends StatelessWidget {
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(1),
-                          color: done ? AppColors.success.withValues(alpha: 0.5) : AppColors.line,
+                          color: done
+                              ? AppColors.success.withValues(alpha: 0.5)
+                              : AppColors.line,
                         ),
                       ),
                     ),
@@ -80,10 +102,18 @@ class SectorTile extends StatelessWidget {
                       onTap: locked ? null : onTap,
                       borderRadius: BorderRadius.circular(AppRadius.xl),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(AppRadius.xl),
-                          border: Border.all(color: current ? AppColors.accent.withValues(alpha: 0.7) : AppColors.line, width: current ? 1.5 : 1),
+                          border: Border.all(
+                            color: current
+                                ? AppColors.accent.withValues(alpha: 0.7)
+                                : AppColors.line,
+                            width: current ? 1.5 : 1,
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -93,34 +123,63 @@ class SectorTile extends StatelessWidget {
                                 children: [
                                   Text(
                                     'LEVEL ${node.order.toString().padLeft(2, '0')}',
-                                    style: AppTheme.overline(color: current ? AppColors.accent : AppColors.textFaint),
+                                    style: AppTheme.overline(
+                                      color: current
+                                          ? AppColors.accent
+                                          : AppColors.textFaint,
+                                    ),
                                   ),
                                   const SizedBox(height: 3),
-                                  Text(node.name, style: AppTheme.display(fontSize: 16, height: 1.15)),
+                                  Text(
+                                    node.name,
+                                    style: AppTheme.display(
+                                      fontSize: 16,
+                                      height: 1.15,
+                                    ),
+                                  ),
                                   const SizedBox(height: 8),
                                   Wrap(
                                     spacing: 10,
                                     runSpacing: 6,
-                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
                                     children: [
-                                      DifficultyChip(difficulty: node.difficulty, compact: true),
+                                      DifficultyChip(
+                                        difficulty: node.difficulty,
+                                        compact: true,
+                                      ),
                                       if (done)
                                         Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: List.generate(
                                             3,
-                                            (i) => Icon(Icons.star_rounded, size: 16, color: i < node.stars ? AppColors.gold : AppColors.line),
+                                            (i) => Icon(
+                                              Icons.star_rounded,
+                                              size: 16,
+                                              color: i < node.stars
+                                                  ? AppColors.gold
+                                                  : AppColors.line,
+                                            ),
                                           ),
                                         )
                                       else if (!locked)
-                                        Text('+${node.xpReward} XP  ·  +${node.goldReward} gold',
-                                            style: AppTheme.mono(fontSize: 11, color: AppColors.textDim)),
+                                        Text(
+                                          '+${node.xpReward} XP  ·  +${node.goldReward} gold',
+                                          style: AppTheme.mono(
+                                            fontSize: 11,
+                                            color: AppColors.textDim,
+                                          ),
+                                        ),
                                     ],
                                   ),
                                 ],
                               ),
                             ),
-                            if (current) const Icon(Icons.arrow_forward_rounded, color: AppColors.accent),
+                            if (current)
+                              const Icon(
+                                Icons.arrow_forward_rounded,
+                                color: AppColors.accent,
+                              ),
                           ],
                         ),
                       ),

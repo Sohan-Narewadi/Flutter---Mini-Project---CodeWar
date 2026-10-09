@@ -25,7 +25,9 @@ class _BattleArenaScreenState extends State<BattleArenaScreen> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<GameState>();
-    final enemies = state.enemies.where((e) => _filter == null || e.difficulty == _filter).toList();
+    final enemies = state.enemies
+        .where((e) => _filter == null || e.difficulty == _filter)
+        .toList();
 
     return AppShell(
       title: 'Battle Arena',
@@ -39,26 +41,42 @@ class _BattleArenaScreenState extends State<BattleArenaScreen> {
             trailing: IconButton(
               tooltip: 'Back',
               icon: const Icon(Icons.close_rounded),
-              onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
+              onPressed: () =>
+                  context.canPop() ? context.pop() : context.go('/home'),
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
-            child: DifficultyFilterBar(selected: _filter, onSelected: (d) => setState(() => _filter = d)),
+            child: DifficultyFilterBar(
+              selected: _filter,
+              onSelected: (d) => setState(() => _filter = d),
+            ),
           ),
           const SizedBox(height: 14),
           if (enemies.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: AppSpace.page),
-              child: AppCard(child: Text('No enemies match this filter.', style: TextStyle(color: AppColors.textDim))),
+              child: AppCard(
+                child: Text(
+                  'No enemies match this filter.',
+                  style: TextStyle(color: AppColors.textDim),
+                ),
+              ),
             )
           else
             for (final enemy in enemies)
               Padding(
-                padding: const EdgeInsets.fromLTRB(AppSpace.page, 0, AppSpace.page, 12),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpace.page,
+                  0,
+                  AppSpace.page,
+                  12,
+                ),
                 child: EnemyCard(
                   enemy: enemy,
-                  onFight: enemy.locked ? null : () => context.push('/prepare/${enemy.id}'),
+                  onFight: enemy.locked
+                      ? null
+                      : () => context.push('/prepare/${enemy.id}'),
                 ),
               ),
         ],

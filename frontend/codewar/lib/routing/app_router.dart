@@ -25,11 +25,17 @@ CustomTransitionPage<void> _page(GoRouterState state, Widget child) {
     transitionDuration: const Duration(milliseconds: 220),
     reverseTransitionDuration: const Duration(milliseconds: 160),
     transitionsBuilder: (context, animation, secondary, child) {
-      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+      );
       return FadeTransition(
         opacity: curved,
         child: SlideTransition(
-          position: Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero).animate(curved),
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.04),
+            end: Offset.zero,
+          ).animate(curved),
           child: child,
         ),
       );
@@ -50,16 +56,48 @@ GoRouter buildRouter(GameState state) {
       return null;
     },
     routes: [
-      GoRoute(path: '/onboarding', pageBuilder: (context, state) => _page(state, const OnboardingScreen())),
-      GoRoute(path: '/settings', pageBuilder: (context, state) => _page(state, const SettingsScreen())),
-      GoRoute(path: '/home', pageBuilder: (context, state) => _page(state, const WorldMapScreen())),
-      GoRoute(path: '/battle', pageBuilder: (context, state) => _page(state, const BattleArenaScreen())),
-      GoRoute(path: '/practice', pageBuilder: (context, state) => _page(state, const PracticeScreen())),
-      GoRoute(path: '/online', pageBuilder: (context, state) => _page(state, const PlayOnlineScreen())),
-      GoRoute(path: '/room', pageBuilder: (context, state) => _page(state, const RoomScreen())),
-      GoRoute(path: '/practice/play', pageBuilder: (context, state) => _page(state, const PracticePlayScreen())),
-      GoRoute(path: '/rank', pageBuilder: (context, state) => _page(state, const RankScreen())),
-      GoRoute(path: '/profile', pageBuilder: (context, state) => _page(state, const ProfileScreen())),
+      GoRoute(
+        path: '/onboarding',
+        pageBuilder: (context, state) => _page(state, const OnboardingScreen()),
+      ),
+      GoRoute(
+        path: '/settings',
+        pageBuilder: (context, state) => _page(state, const SettingsScreen()),
+      ),
+      GoRoute(
+        path: '/home',
+        pageBuilder: (context, state) => _page(state, const WorldMapScreen()),
+      ),
+      GoRoute(
+        path: '/battle',
+        pageBuilder: (context, state) =>
+            _page(state, const BattleArenaScreen()),
+      ),
+      GoRoute(
+        path: '/practice',
+        pageBuilder: (context, state) => _page(state, const PracticeScreen()),
+      ),
+      GoRoute(
+        path: '/online',
+        pageBuilder: (context, state) => _page(state, const PlayOnlineScreen()),
+      ),
+      GoRoute(
+        path: '/room',
+        pageBuilder: (context, state) => _page(state, const RoomScreen()),
+      ),
+      GoRoute(
+        path: '/practice/play',
+        pageBuilder: (context, state) =>
+            _page(state, const PracticePlayScreen()),
+      ),
+      GoRoute(
+        path: '/rank',
+        pageBuilder: (context, state) => _page(state, const RankScreen()),
+      ),
+      GoRoute(
+        path: '/profile',
+        pageBuilder: (context, state) => _page(state, const ProfileScreen()),
+      ),
       GoRoute(
         path: '/prepare/:enemyId',
         pageBuilder: (context, state) => _page(
@@ -70,9 +108,21 @@ GoRouter buildRouter(GameState state) {
           ),
         ),
       ),
-      GoRoute(path: '/ide', pageBuilder: (context, state) => _page(state, const CodingBattleScreen())),
-      GoRoute(path: '/victory', pageBuilder: (context, state) => _page(state, const BattleVictoryScreen())),
-      GoRoute(path: '/defeat', pageBuilder: (context, state) => _page(state, const BattleDefeatScreen())),
+      GoRoute(
+        path: '/ide',
+        pageBuilder: (context, state) =>
+            _page(state, const CodingBattleScreen()),
+      ),
+      GoRoute(
+        path: '/victory',
+        pageBuilder: (context, state) =>
+            _page(state, const BattleVictoryScreen()),
+      ),
+      GoRoute(
+        path: '/defeat',
+        pageBuilder: (context, state) =>
+            _page(state, const BattleDefeatScreen()),
+      ),
     ],
   );
 }

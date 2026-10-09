@@ -32,11 +32,22 @@ class PracticePlayScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.terminal_rounded, size: 40, color: AppColors.textFaint),
+                const Icon(
+                  Icons.terminal_rounded,
+                  size: 40,
+                  color: AppColors.textFaint,
+                ),
                 const SizedBox(height: 12),
-                const Text('No active problem.', style: TextStyle(color: AppColors.textDim)),
+                const Text(
+                  'No active problem.',
+                  style: TextStyle(color: AppColors.textDim),
+                ),
                 const SizedBox(height: 16),
-                NeonButton(label: 'Back to Practice', expanded: false, onPressed: () => context.go('/practice')),
+                NeonButton(
+                  label: 'Back to Practice',
+                  expanded: false,
+                  onPressed: () => context.go('/practice'),
+                ),
               ],
             ),
           ),
@@ -55,23 +66,55 @@ class PracticePlayScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(8, 8, AppSpace.page, 4),
             child: Row(
               children: [
-                IconButton(tooltip: 'Back', icon: const Icon(Icons.arrow_back_rounded), onPressed: () => context.canPop() ? context.pop() : context.go('/practice')),
-                Expanded(child: Text(session.daily ? 'DAILY CHALLENGE' : 'PRACTICE', style: AppTheme.overline(color: session.daily ? AppColors.gold : AppColors.accent))),
+                IconButton(
+                  tooltip: 'Back',
+                  icon: const Icon(Icons.arrow_back_rounded),
+                  onPressed: () => context.canPop()
+                      ? context.pop()
+                      : context.go('/practice'),
+                ),
+                Expanded(
+                  child: Text(
+                    session.daily ? 'DAILY CHALLENGE' : 'PRACTICE',
+                    style: AppTheme.overline(
+                      color: session.daily ? AppColors.gold : AppColors.accent,
+                    ),
+                  ),
+                ),
                 DifficultyChip(difficulty: difficulty),
               ],
             ),
           ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(AppSpace.page, 4, AppSpace.page, 20),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpace.page,
+                4,
+                AppSpace.page,
+                20,
+              ),
               children: [
-                Text(q.title, style: AppTheme.display(fontSize: 26, height: 1.1)),
+                Text(
+                  q.title,
+                  style: AppTheme.display(fontSize: 26, height: 1.1),
+                ),
                 if (q.tags.isNotEmpty) ...[
                   const SizedBox(height: 10),
-                  Wrap(spacing: 6, runSpacing: 6, children: [for (final t in q.tags) _Tag(t)]),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [for (final t in q.tags) _Tag(t)],
+                  ),
                 ],
                 const SizedBox(height: 14),
-                Text(q.prompt, style: const TextStyle(fontSize: 15, height: 1.5, color: AppColors.text)),
+                Text(
+                  q.prompt,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    height: 1.5,
+                    color: AppColors.text,
+                  ),
+                ),
                 const SizedBox(height: 14),
                 Container(
                   width: double.infinity,
@@ -86,9 +129,21 @@ class PracticePlayScreen extends StatelessWidget {
                     children: [
                       Text('EXAMPLE', style: AppTheme.overline()),
                       const SizedBox(height: 8),
-                      Text('Input   ${q.exampleInput}', style: AppTheme.mono(fontSize: 12.5, color: AppColors.accent)),
+                      Text(
+                        'Input   ${q.exampleInput}',
+                        style: AppTheme.mono(
+                          fontSize: 12.5,
+                          color: AppColors.accent,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text('Output  ${q.exampleOutput}', style: AppTheme.mono(fontSize: 12.5, color: AppColors.gold)),
+                      Text(
+                        'Output  ${q.exampleOutput}',
+                        style: AppTheme.mono(
+                          fontSize: 12.5,
+                          color: AppColors.gold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -113,13 +168,27 @@ class PracticePlayScreen extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.error_outline_rounded, size: 18, color: AppColors.danger),
+                        const Icon(
+                          Icons.error_outline_rounded,
+                          size: 18,
+                          color: AppColors.danger,
+                        ),
                         const SizedBox(width: 8),
-                        Expanded(child: Text(p.error!, key: const Key('practiceError'), style: const TextStyle(color: AppColors.danger, height: 1.3))),
+                        Expanded(
+                          child: Text(
+                            p.error!,
+                            key: const Key('practiceError'),
+                            style: const TextStyle(
+                              color: AppColors.danger,
+                              height: 1.3,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                for (final h in p.hints) _HintCard(level: h.level, text: h.text),
+                for (final h in p.hints)
+                  _HintCard(level: h.level, text: h.text),
                 if (solved) _SolvedCard(p: p),
                 if (p.lastRun != null) ...[
                   const SizedBox(height: 18),
@@ -132,13 +201,16 @@ class PracticePlayScreen extends StatelessWidget {
                         key: const Key('testSummary'),
                         style: AppTheme.display(
                           fontSize: 14,
-                          color: p.lastRun!.passedTests == p.lastRun!.totalTests ? AppColors.success : AppColors.danger,
+                          color: p.lastRun!.passedTests == p.lastRun!.totalTests
+                              ? AppColors.success
+                              : AppColors.danger,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
-                  for (var i = 0; i < p.lastRun!.results.length; i++) TestCaseTile(index: i, result: p.lastRun!.results[i]),
+                  for (var i = 0; i < p.lastRun!.results.length; i++)
+                    TestCaseTile(index: i, result: p.lastRun!.results[i]),
                 ],
               ],
             ),
@@ -156,10 +228,21 @@ class _Tag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(color: AppColors.surfaceHigh, borderRadius: BorderRadius.circular(AppRadius.full), border: Border.all(color: AppColors.line)),
-        child: Text(text, style: const TextStyle(fontSize: 12, color: AppColors.textDim, fontWeight: FontWeight.w600)),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    decoration: BoxDecoration(
+      color: AppColors.surfaceHigh,
+      borderRadius: BorderRadius.circular(AppRadius.full),
+      border: Border.all(color: AppColors.line),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontSize: 12,
+        color: AppColors.textDim,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  );
 }
 
 class _ActionBar extends StatelessWidget {
@@ -170,7 +253,10 @@ class _ActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(AppSpace.page, 12, AppSpace.page, 12),
-      decoration: const BoxDecoration(color: AppColors.surfaceLow, border: Border(top: BorderSide(color: AppColors.line))),
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceLow,
+        border: Border(top: BorderSide(color: AppColors.line)),
+      ),
       child: SafeArea(
         top: false,
         child: Row(
@@ -241,9 +327,19 @@ class _HintCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('HINT $level', style: AppTheme.overline(color: AppColors.gold)),
+                Text(
+                  'HINT $level',
+                  style: AppTheme.overline(color: AppColors.gold),
+                ),
                 const SizedBox(height: 4),
-                Text(text, style: const TextStyle(fontSize: 14, height: 1.4, color: AppColors.text)),
+                Text(
+                  text,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    height: 1.4,
+                    color: AppColors.text,
+                  ),
+                ),
               ],
             ),
           ),
@@ -271,23 +367,48 @@ class _SolvedCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 28),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.success,
+                  size: 28,
+                ),
                 const SizedBox(width: 10),
-                Text('Solved!', style: AppTheme.display(fontSize: 24, color: AppColors.success)),
+                Text(
+                  'Solved!',
+                  style: AppTheme.display(
+                    fontSize: 24,
+                    color: AppColors.success,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 10),
             if (r.xpEarned > 0)
-              Text('+${r.xpEarned} XP   +${r.goldEarned} gold', style: AppTheme.display(fontSize: 18, color: AppColors.gold))
+              Text(
+                '+${r.xpEarned} XP   +${r.goldEarned} gold',
+                style: AppTheme.display(fontSize: 18, color: AppColors.gold),
+              )
             else
-              const Text('Already rewarded. Solve something new for more XP.', style: TextStyle(color: AppColors.textDim)),
+              const Text(
+                'Already rewarded. Solve something new for more XP.',
+                style: TextStyle(color: AppColors.textDim),
+              ),
             const SizedBox(height: 4),
-            Text('${r.streak} day streak', style: const TextStyle(fontSize: 13, color: AppColors.textDim)),
+            Text(
+              '${r.streak} day streak',
+              style: const TextStyle(fontSize: 13, color: AppColors.textDim),
+            ),
             for (final b in r.newBadges) ...[
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: AppColors.gold.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(AppRadius.md), border: Border.all(color: AppColors.gold.withValues(alpha: 0.5))),
+                decoration: BoxDecoration(
+                  color: AppColors.gold.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(
+                    color: AppColors.gold.withValues(alpha: 0.5),
+                  ),
+                ),
                 child: Row(
                   children: [
                     Icon(b.iconData, color: AppColors.gold),
@@ -296,8 +417,17 @@ class _SolvedCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('BADGE UNLOCKED', style: AppTheme.overline(color: AppColors.gold)),
-                          Text('${b.name}: ${b.description}', style: const TextStyle(fontSize: 13, color: AppColors.text)),
+                          Text(
+                            'BADGE UNLOCKED',
+                            style: AppTheme.overline(color: AppColors.gold),
+                          ),
+                          Text(
+                            '${b.name}: ${b.description}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.text,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -318,16 +448,32 @@ class _SolvedCard extends StatelessWidget {
                     onPressed: p.starting
                         ? null
                         : () async {
-                            final ok = await p.start(topicOverride: p.session?.topic);
+                            final ok = await p.start(
+                              topicOverride: p.session?.topic,
+                            );
                             if (!context.mounted) return;
                             if (!ok) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(p.error ?? 'Could not load next problem.')));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    p.error ?? 'Could not load next problem.',
+                                  ),
+                                ),
+                              );
                             }
                           },
                   ),
                 ),
                 const SizedBox(width: 10),
-                Expanded(child: NeonButton(label: 'Done', variant: NeonVariant.secondary, onPressed: () => context.canPop() ? context.pop() : context.go('/practice'))),
+                Expanded(
+                  child: NeonButton(
+                    label: 'Done',
+                    variant: NeonVariant.secondary,
+                    onPressed: () => context.canPop()
+                        ? context.pop()
+                        : context.go('/practice'),
+                  ),
+                ),
               ],
             ),
           ],

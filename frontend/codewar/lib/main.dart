@@ -40,12 +40,18 @@ class _CodeWarAppState extends State<CodeWarApp> {
   @override
   void initState() {
     super.initState();
-    final api = widget.api ?? ApiService(settings: widget.settings ?? SettingsStore.memory());
+    final api =
+        widget.api ??
+        ApiService(settings: widget.settings ?? SettingsStore.memory());
     Sfx.soundOn = api.settings.soundOn;
     Sfx.hapticsOn = api.settings.hapticsOn;
     _state = GameState(api: api)..load();
     _practice = PracticeState(api, onProgress: _state.refreshProgress);
-    _rooms = RoomState(api, channelFactory: widget.channelFactory, onFinished: _state.refreshProgress);
+    _rooms = RoomState(
+      api,
+      channelFactory: widget.channelFactory,
+      onFinished: _state.refreshProgress,
+    );
     _state.onSignOut = () {
       _practice.reset();
       _rooms.reset();

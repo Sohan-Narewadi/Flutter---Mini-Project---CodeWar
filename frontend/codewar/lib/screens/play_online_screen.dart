@@ -59,7 +59,11 @@ class _PlayOnlineScreenState extends State<PlayOnlineScreen> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
-          const PageHeader(title: 'Play Online', subtitle: 'Race your friends in real time. Same problem, first to solve wins.'),
+          const PageHeader(
+            title: 'Play Online',
+            subtitle:
+                'Race your friends in real time. Same problem, first to solve wins.',
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
             child: Column(
@@ -71,11 +75,17 @@ class _PlayOnlineScreenState extends State<PlayOnlineScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('CREATE A ROOM', style: AppTheme.overline(color: AppColors.accent)),
+                      Text(
+                        'CREATE A ROOM',
+                        style: AppTheme.overline(color: AppColors.accent),
+                      ),
                       const SizedBox(height: 14),
                       SegmentedTabs<String>(
                         key: const Key('modeSelector'),
-                        options: const {'race': 'Race · 2-8', 'duel': 'Duel · 1v1'},
+                        options: const {
+                          'race': 'Race · 2-8',
+                          'duel': 'Duel · 1v1',
+                        },
                         value: _mode,
                         onChanged: (v) => setState(() => _mode = v),
                       ),
@@ -84,13 +94,21 @@ class _PlayOnlineScreenState extends State<PlayOnlineScreen> {
                         _mode == 'race'
                             ? 'Everyone solves the same problem. Ranked by who solves it first and how many tests pass.'
                             : 'A head-to-head match. The winner takes rating from the loser.',
-                        style: const TextStyle(color: AppColors.textDim, fontSize: 13, height: 1.35),
+                        style: const TextStyle(
+                          color: AppColors.textDim,
+                          fontSize: 13,
+                          height: 1.35,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Text('DIFFICULTY', style: AppTheme.overline()),
                       const SizedBox(height: 8),
                       SegmentedTabs<String>(
-                        options: const {'easy': 'Easy', 'medium': 'Medium', 'hard': 'Hard'},
+                        options: const {
+                          'easy': 'Easy',
+                          'medium': 'Medium',
+                          'hard': 'Hard',
+                        },
                         value: _difficulty,
                         onChanged: (v) => setState(() => _difficulty = v),
                       ),
@@ -108,7 +126,14 @@ class _PlayOnlineScreenState extends State<PlayOnlineScreen> {
                         label: 'Create room',
                         icon: Icons.add_rounded,
                         loading: _busy,
-                        onPressed: _busy ? null : () => _go((r) => r.create(mode: _mode, difficulty: _difficulty)),
+                        onPressed: _busy
+                            ? null
+                            : () => _go(
+                                (r) => r.create(
+                                  mode: _mode,
+                                  difficulty: _difficulty,
+                                ),
+                              ),
                       ),
                     ],
                   ),
@@ -127,18 +152,32 @@ class _PlayOnlineScreenState extends State<PlayOnlineScreen> {
                         maxLength: 6,
                         textCapitalization: TextCapitalization.characters,
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp('[a-zA-Z0-9]')),
+                          FilteringTextInputFormatter.allow(
+                            RegExp('[a-zA-Z0-9]'),
+                          ),
                           _UpperCaseFormatter(),
                         ],
-                        style: AppTheme.display(fontSize: 28, letterSpacing: 8, color: AppColors.text),
+                        style: AppTheme.display(
+                          fontSize: 28,
+                          letterSpacing: 8,
+                          color: AppColors.text,
+                        ),
                         textAlign: TextAlign.center,
                         decoration: InputDecoration(
                           hintText: 'ABC123',
-                          hintStyle: AppTheme.display(fontSize: 28, letterSpacing: 8, color: AppColors.textFaint.withValues(alpha: 0.5)),
+                          hintStyle: AppTheme.display(
+                            fontSize: 28,
+                            letterSpacing: 8,
+                            color: AppColors.textFaint.withValues(alpha: 0.5),
+                          ),
                           counterText: '',
-                          contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 18,
+                          ),
                         ),
-                        onSubmitted: (_) => _busy || !codeReady ? null : _go((r) => r.join(_code.text)),
+                        onSubmitted: (_) => _busy || !codeReady
+                            ? null
+                            : _go((r) => r.join(_code.text)),
                       ),
                       const SizedBox(height: 14),
                       NeonButton(
@@ -146,7 +185,9 @@ class _PlayOnlineScreenState extends State<PlayOnlineScreen> {
                         label: 'Join room',
                         icon: Icons.login_rounded,
                         variant: NeonVariant.secondary,
-                        onPressed: _busy ? null : () => _go((r) => r.join(_code.text)),
+                        onPressed: _busy
+                            ? null
+                            : () => _go((r) => r.join(_code.text)),
                       ),
                     ],
                   ),
@@ -157,10 +198,21 @@ class _PlayOnlineScreenState extends State<PlayOnlineScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.error_outline_rounded, size: 18, color: AppColors.danger),
+                        const Icon(
+                          Icons.error_outline_rounded,
+                          size: 18,
+                          color: AppColors.danger,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(rooms.error!, key: const Key('onlineError'), style: const TextStyle(color: AppColors.danger, height: 1.3)),
+                          child: Text(
+                            rooms.error!,
+                            key: const Key('onlineError'),
+                            style: const TextStyle(
+                              color: AppColors.danger,
+                              height: 1.3,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -169,12 +221,20 @@ class _PlayOnlineScreenState extends State<PlayOnlineScreen> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.textFaint),
+                    const Icon(
+                      Icons.info_outline_rounded,
+                      size: 16,
+                      color: AppColors.textFaint,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Friends must reach the same server (${rooms.serverUrl}). Share the room code and, if needed, the server address from Settings.',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textFaint, height: 1.4),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textFaint,
+                          height: 1.4,
+                        ),
                       ),
                     ),
                   ],
@@ -190,6 +250,8 @@ class _PlayOnlineScreenState extends State<PlayOnlineScreen> {
 
 class _UpperCaseFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) =>
-      newValue.copyWith(text: newValue.text.toUpperCase());
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) => newValue.copyWith(text: newValue.text.toUpperCase());
 }

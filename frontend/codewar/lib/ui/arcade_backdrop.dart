@@ -14,7 +14,9 @@ class ArcadeBackdrop extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         const ExcludeSemantics(
-          child: RepaintBoundary(child: CustomPaint(painter: _BackdropPainter())),
+          child: RepaintBoundary(
+            child: CustomPaint(painter: _BackdropPainter()),
+          ),
         ),
         child,
       ],
@@ -47,22 +49,37 @@ class _BackdropPainter extends CustomPainter {
       canvas.drawCircle(
         c,
         r,
-        Paint()..shader = RadialGradient(colors: [color.withValues(alpha: 0.20), color.withValues(alpha: 0)]).createShader(rect),
+        Paint()
+          ..shader = RadialGradient(
+            colors: [color.withValues(alpha: 0.20), color.withValues(alpha: 0)],
+          ).createShader(rect),
       );
     }
 
-    glow(Offset(size.width * 0.05, -20), size.width * 0.8, AppColors.accentDeep);
+    glow(
+      Offset(size.width * 0.05, -20),
+      size.width * 0.8,
+      AppColors.accentDeep,
+    );
     glow(Offset(size.width * 0.98, 40), size.width * 0.7, AppColors.accent);
 
     // Fade the grid into the base color toward the bottom so content stays calm.
-    final fade = Rect.fromLTWH(0, size.height * 0.35, size.width, size.height * 0.65);
+    final fade = Rect.fromLTWH(
+      0,
+      size.height * 0.35,
+      size.width,
+      size.height * 0.65,
+    );
     canvas.drawRect(
       fade,
       Paint()
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.background.withValues(alpha: 0), AppColors.background.withValues(alpha: 0.92)],
+          colors: [
+            AppColors.background.withValues(alpha: 0),
+            AppColors.background.withValues(alpha: 0.92),
+          ],
         ).createShader(fade),
     );
   }

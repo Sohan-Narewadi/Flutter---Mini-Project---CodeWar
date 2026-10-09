@@ -26,7 +26,11 @@ class AudioCuePlayer implements CuePlayer {
   @override
   Future<void> play(String asset) async {
     try {
-      if (_pool.length < 4) _pool.add(AudioPlayer()..setPlayerMode(PlayerMode.lowLatency));
+      if (_pool.length < 4) {
+        final created = AudioPlayer();
+        await created.setPlayerMode(PlayerMode.lowLatency);
+        _pool.add(created);
+      }
       final p = _pool[_next++ % _pool.length];
       await p.stop();
       await p.play(AssetSource(asset), volume: 0.7);

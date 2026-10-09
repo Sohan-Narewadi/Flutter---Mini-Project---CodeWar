@@ -24,20 +24,38 @@ class TestCaseTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(result.passed ? Icons.check_circle : Icons.cancel, size: 16, color: color),
+              Icon(
+                result.passed ? Icons.check_circle : Icons.cancel,
+                size: 16,
+                color: color,
+              ),
               const SizedBox(width: 6),
-              Text('Test Case ${index + 1}',
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.text)),
+              Text(
+                'Test Case ${index + 1}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.text,
+                ),
+              ),
               const Spacer(),
-              Text('${result.durationMs}ms', style: AppTheme.mono(fontSize: 11, color: AppColors.textDim)),
+              Text(
+                '${result.durationMs}ms',
+                style: AppTheme.mono(fontSize: 11, color: AppColors.textDim),
+              ),
             ],
           ),
           const SizedBox(height: 6),
-          Text('Input: ${result.input}', style: AppTheme.mono(fontSize: 11, color: AppColors.textDim)),
+          Text(
+            'Input: ${result.input}',
+            style: AppTheme.mono(fontSize: 11, color: AppColors.textDim),
+          ),
           if (!result.passed) ...[
             const SizedBox(height: 4),
-            Text('Expected: ${result.expected}, Got: ${result.actual}',
-                style: AppTheme.mono(fontSize: 11, color: AppColors.danger)),
+            Text(
+              'Expected: ${result.expected}, Got: ${result.actual}',
+              style: AppTheme.mono(fontSize: 11, color: AppColors.danger),
+            ),
           ],
         ],
       ),

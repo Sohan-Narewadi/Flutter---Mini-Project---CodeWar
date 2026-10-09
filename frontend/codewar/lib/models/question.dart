@@ -50,7 +50,8 @@ class Question {
       exampleInput: json['example_input']?.toString() ?? '',
       exampleOutput: json['example_output']?.toString() ?? '',
       starterCode: starter,
-      testCases: (json['test_cases'] as List?)
+      testCases:
+          (json['test_cases'] as List?)
               ?.map((e) => TestCase.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],

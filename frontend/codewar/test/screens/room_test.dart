@@ -82,9 +82,11 @@ class Harness {
   Map<String, dynamic> createResponse = _room('lobby', [_p(_me, 'Ada', host: true)]);
   int joinStatus = 200;
   final calls = <String>[];
+  final createBodies = <String>[];
 
   MockClient get client => MockClient((req) async {
         calls.add('${req.method} ${req.url.path}');
+        if (req.method == 'POST' && req.url.path == '/api/rooms') createBodies.add(req.body);
         http.Response json(Object o, [int code = 200]) => http.Response(jsonEncode(o), code);
         switch (req.url.path) {
           case '/api/player':
@@ -236,6 +238,10 @@ void main() {
     }
     expect(h.calls.where((c) => c == 'POST /api/rooms').length, creates + 1);
     expect(h.channels.length, 2, reason: 'a new socket is opened for the new room');
+    final first = jsonDecode(h.createBodies.first) as Map<String, dynamic>;
+    final again = jsonDecode(h.createBodies.last) as Map<String, dynamic>;
+    expect(again['mode'], first['mode']);
+    expect(again['difficulty'], first['difficulty']);
   });
 
   testWidgets('duel shows HP bars derived from the opponent best score', (tester) async {

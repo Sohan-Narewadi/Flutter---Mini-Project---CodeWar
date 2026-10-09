@@ -16,7 +16,11 @@ Color difficultyColor(Difficulty d) {
 }
 
 class DifficultyChip extends StatelessWidget {
-  const DifficultyChip({super.key, required this.difficulty, this.compact = false});
+  const DifficultyChip({
+    super.key,
+    required this.difficulty,
+    this.compact = false,
+  });
 
   final Difficulty difficulty;
   final bool compact;
@@ -25,7 +29,10 @@ class DifficultyChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = difficultyColor(difficulty);
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 10, vertical: compact ? 3 : 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 10,
+        vertical: compact ? 3 : 4,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(AppRadius.full),
@@ -33,7 +40,12 @@ class DifficultyChip extends StatelessWidget {
       ),
       child: Text(
         difficultyLabel(difficulty).toUpperCase(),
-        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: color, letterSpacing: 0.8),
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+          color: color,
+          letterSpacing: 0.8,
+        ),
       ),
     );
   }
@@ -41,7 +53,11 @@ class DifficultyChip extends StatelessWidget {
 
 /// Filter bar: All / Easy / Medium / Hard / Boss chips.
 class DifficultyFilterBar extends StatelessWidget {
-  const DifficultyFilterBar({super.key, required this.selected, required this.onSelected});
+  const DifficultyFilterBar({
+    super.key,
+    required this.selected,
+    required this.onSelected,
+  });
 
   final Difficulty? selected; // null = All
   final ValueChanged<Difficulty?> onSelected;
@@ -72,7 +88,9 @@ class DifficultyFilterBar extends StatelessWidget {
               fontSize: 12,
             ),
             side: BorderSide(color: isSelected ? color : AppColors.line),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.full)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.full),
+            ),
           );
         },
       ),

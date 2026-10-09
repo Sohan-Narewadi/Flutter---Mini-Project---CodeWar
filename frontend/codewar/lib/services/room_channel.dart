@@ -30,7 +30,8 @@ class WsRoomChannel implements RoomChannel {
       .cast<Map<String, dynamic>>();
 
   @override
-  void send(Map<String, dynamic> message) => _channel.sink.add(jsonEncode(message));
+  void send(Map<String, dynamic> message) =>
+      _channel.sink.add(jsonEncode(message));
 
   @override
   int? get closeCode => _channel.closeCode;

@@ -126,7 +126,9 @@ class BattleStartResult {
 
   factory BattleStartResult.fromJson(Map<String, dynamic> json) {
     return BattleStartResult(
-      battleId: json['battle_id'] is int ? json['battle_id'] as int : int.parse('${json['battle_id']}'),
+      battleId: json['battle_id'] is int
+          ? json['battle_id'] as int
+          : int.parse('${json['battle_id']}'),
       enemyHpRemaining: json['enemy_hp_remaining'] ?? 0,
       timeLimitS: json['time_limit_s'] ?? 300,
       startedAt: json['started_at']?.toString(),

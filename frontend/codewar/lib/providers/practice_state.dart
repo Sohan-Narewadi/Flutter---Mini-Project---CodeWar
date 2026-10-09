@@ -18,6 +18,9 @@ class PracticeState extends ChangeNotifier {
   final Future<void> Function()? onProgress;
 
   PracticeStats stats = PracticeStats.empty;
+
+  /// True once stats really came from the server (so screens can show a dash instead of a fake 0).
+  bool hasStats = false;
   bool loadingStats = false;
   String? statsError;
 
@@ -42,6 +45,7 @@ class PracticeState extends ChangeNotifier {
   /// Forgets everything about the current player (used on sign-out).
   void reset() {
     stats = PracticeStats.empty;
+    hasStats = false;
     statsError = null;
     session = null;
     code = '';
@@ -59,6 +63,7 @@ class PracticeState extends ChangeNotifier {
     notifyListeners();
     try {
       stats = await _api.fetchPracticeStats();
+      hasStats = true;
     } on ApiException catch (e) {
       statsError = e.message;
     }
@@ -89,7 +94,10 @@ class PracticeState extends ChangeNotifier {
         daily: daily,
       );
       session = s;
-      code = s.question.starterCode[language.id] ?? s.question.starterCode.values.firstOrNull ?? '';
+      code =
+          s.question.starterCode[language.id] ??
+          s.question.starterCode.values.firstOrNull ??
+          '';
       lastRun = null;
       lastSubmit = null;
       hints.clear();
@@ -153,6 +161,7 @@ class PracticeState extends ChangeNotifier {
   Future<void> loadStatsQuietly() async {
     try {
       stats = await _api.fetchPracticeStats();
+      hasStats = true;
     } on ApiException {
       // keep old stats
     }

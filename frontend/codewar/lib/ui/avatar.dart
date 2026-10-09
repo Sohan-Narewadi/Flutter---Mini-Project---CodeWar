@@ -6,7 +6,13 @@ import '../utils/theme.dart';
 /// Player avatar: the first letter on a dark disc with a ring in the player's
 /// tier colour (no uploaded images, so nothing to fake).
 class PlayerAvatar extends StatelessWidget {
-  const PlayerAvatar({super.key, required this.name, this.tier, this.size = 44, this.glow = false});
+  const PlayerAvatar({
+    super.key,
+    required this.name,
+    this.tier,
+    this.size = 44,
+    this.glow = false,
+  });
 
   final String name;
   final Tier? tier;
@@ -16,7 +22,9 @@ class PlayerAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = tier?.color ?? AppColors.accent;
-    final initial = name.trim().isEmpty ? '?' : name.trim().characters.first.toUpperCase();
+    final initial = name.trim().isEmpty
+        ? '?'
+        : name.trim().characters.first.toUpperCase();
     return Container(
       width: size,
       height: size,
@@ -25,9 +33,19 @@ class PlayerAvatar extends StatelessWidget {
         shape: BoxShape.circle,
         color: AppColors.surfaceHigh,
         border: Border.all(color: color, width: size >= 64 ? 3 : 2),
-        boxShadow: glow ? [BoxShadow(color: color.withValues(alpha: 0.45), blurRadius: size / 2)] : null,
+        boxShadow: glow
+            ? [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.45),
+                  blurRadius: size / 2,
+                ),
+              ]
+            : null,
       ),
-      child: Text(initial, style: AppTheme.display(fontSize: size * 0.42, color: color)),
+      child: Text(
+        initial,
+        style: AppTheme.display(fontSize: size * 0.42, color: color),
+      ),
     );
   }
 }
@@ -42,7 +60,10 @@ class TierBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 10, vertical: compact ? 2 : 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 10,
+        vertical: compact ? 2 : 4,
+      ),
       decoration: BoxDecoration(
         color: tier.color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(AppRadius.full),
@@ -51,11 +72,20 @@ class TierBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.diamond_rounded, size: compact ? 11 : 13, color: tier.color),
+          Icon(
+            Icons.diamond_rounded,
+            size: compact ? 11 : 13,
+            color: tier.color,
+          ),
           const SizedBox(width: 4),
           Text(
             tier.label.toUpperCase(),
-            style: TextStyle(fontSize: compact ? 10 : 11, fontWeight: FontWeight.w800, letterSpacing: 0.8, color: tier.color),
+            style: TextStyle(
+              fontSize: compact ? 10 : 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+              color: tier.color,
+            ),
           ),
         ],
       ),

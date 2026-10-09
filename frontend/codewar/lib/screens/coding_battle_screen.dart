@@ -43,7 +43,9 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
     // if the user left and returned to an in-progress battle, the clock
     // should reflect real elapsed time, not pretend a full window remains.
     final startedAt = state.battleStartedAt;
-    final elapsed = startedAt != null ? DateTime.now().difference(startedAt).inSeconds : 0;
+    final elapsed = startedAt != null
+        ? DateTime.now().difference(startedAt).inSeconds
+        : 0;
     _secondsLeft = (state.timeLimitS - elapsed).clamp(0, state.timeLimitS);
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
@@ -81,11 +83,22 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.shield_moon_rounded, size: 40, color: AppColors.textFaint),
+              const Icon(
+                Icons.shield_moon_rounded,
+                size: 40,
+                color: AppColors.textFaint,
+              ),
               const SizedBox(height: 12),
-              const Text('No active battle.', style: TextStyle(color: AppColors.textDim)),
+              const Text(
+                'No active battle.',
+                style: TextStyle(color: AppColors.textDim),
+              ),
               const SizedBox(height: 16),
-              NeonButton(label: 'Back to Battle Arena', expanded: false, onPressed: () => context.go('/battle')),
+              NeonButton(
+                label: 'Back to Battle Arena',
+                expanded: false,
+                onPressed: () => context.go('/battle'),
+              ),
             ],
           ),
         ),
@@ -105,22 +118,48 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
                 IconButton(
                   tooltip: 'Back',
                   icon: const Icon(Icons.arrow_back_rounded),
-                  onPressed: () => context.canPop() ? context.pop() : context.go('/battle'),
+                  onPressed: () =>
+                      context.canPop() ? context.pop() : context.go('/battle'),
                 ),
-                Expanded(child: Text('BOSS FIGHT · ${enemy.name.toUpperCase()}', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTheme.overline(color: AppColors.accent))),
+                Expanded(
+                  child: Text(
+                    'BOSS FIGHT · ${enemy.name.toUpperCase()}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTheme.overline(color: AppColors.accent),
+                  ),
+                ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: (lowTime ? AppColors.danger : AppColors.gold).withValues(alpha: 0.12),
+                    color: (lowTime ? AppColors.danger : AppColors.gold)
+                        .withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(AppRadius.full),
-                    border: Border.all(color: (lowTime ? AppColors.danger : AppColors.gold).withValues(alpha: 0.6)),
+                    border: Border.all(
+                      color: (lowTime ? AppColors.danger : AppColors.gold)
+                          .withValues(alpha: 0.6),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.timer_rounded, size: 16, color: lowTime ? AppColors.danger : AppColors.gold),
+                      Icon(
+                        Icons.timer_rounded,
+                        size: 16,
+                        color: lowTime ? AppColors.danger : AppColors.gold,
+                      ),
                       const SizedBox(width: 6),
-                      Text(_clock, key: const Key('battleClock'), style: AppTheme.display(fontSize: 16, color: lowTime ? AppColors.danger : AppColors.gold)),
+                      Text(
+                        _clock,
+                        key: const Key('battleClock'),
+                        style: AppTheme.display(
+                          fontSize: 16,
+                          color: lowTime ? AppColors.danger : AppColors.gold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -129,7 +168,12 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
           ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(AppSpace.page, 8, AppSpace.page, 20),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpace.page,
+                8,
+                AppSpace.page,
+                20,
+              ),
               children: [
                 Row(
                   children: [
@@ -147,10 +191,13 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
                       child: ShakeOnDecrease(
                         trigger: state.enemyHpRemaining,
                         child: HpXpBar(
-                          progress: state.enemyHpMax == 0 ? 0 : state.enemyHpRemaining / state.enemyHpMax,
+                          progress: state.enemyHpMax == 0
+                              ? 0
+                              : state.enemyHpRemaining / state.enemyHpMax,
                           color: AppColors.danger,
                           label: enemy.name.toUpperCase(),
-                          trailing: '${state.enemyHpRemaining}/${state.enemyHpMax}',
+                          trailing:
+                              '${state.enemyHpRemaining}/${state.enemyHpMax}',
                           height: 8,
                         ),
                       ),
@@ -163,15 +210,27 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
                     padding: const EdgeInsets.only(bottom: 12),
                     child: AppCard(
                       accent: AppColors.danger,
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
                       child: const Row(
                         children: [
-                          Icon(Icons.timer_off_rounded, size: 18, color: AppColors.danger),
+                          Icon(
+                            Icons.timer_off_rounded,
+                            size: 18,
+                            color: AppColors.danger,
+                          ),
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               "Time's up! Submit Attack is disabled. You can still run tests for feedback.",
-                              style: TextStyle(fontSize: 13, color: AppColors.danger, fontWeight: FontWeight.w600, height: 1.3),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.danger,
+                                fontWeight: FontWeight.w600,
+                                height: 1.3,
+                              ),
                             ),
                           ),
                         ],
@@ -184,7 +243,8 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
                     children: [
                       InkWell(
                         borderRadius: BorderRadius.circular(AppRadius.xl),
-                        onTap: () => setState(() => _specExpanded = !_specExpanded),
+                        onTap: () =>
+                            setState(() => _specExpanded = !_specExpanded),
                         child: Padding(
                           padding: const EdgeInsets.all(16),
                           child: Row(
@@ -193,21 +253,45 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(question.title, style: AppTheme.display(fontSize: 20, height: 1.15)),
+                                    Text(
+                                      question.title,
+                                      style: AppTheme.display(
+                                        fontSize: 20,
+                                        height: 1.15,
+                                      ),
+                                    ),
                                     const SizedBox(height: 8),
                                     Wrap(
                                       spacing: 8,
                                       runSpacing: 6,
-                                      crossAxisAlignment: WrapCrossAlignment.center,
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
                                       children: [
-                                        DifficultyChip(difficulty: difficultyFromString(question.difficulty), compact: true),
-                                        if (question.tags.isNotEmpty) Text(question.tags.join(' · '), style: const TextStyle(fontSize: 12, color: AppColors.textDim)),
+                                        DifficultyChip(
+                                          difficulty: difficultyFromString(
+                                            question.difficulty,
+                                          ),
+                                          compact: true,
+                                        ),
+                                        if (question.tags.isNotEmpty)
+                                          Text(
+                                            question.tags.join(' · '),
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: AppColors.textDim,
+                                            ),
+                                          ),
                                       ],
                                     ),
                                   ],
                                 ),
                               ),
-                              Icon(_specExpanded ? Icons.expand_less_rounded : Icons.expand_more_rounded, color: AppColors.textDim),
+                              Icon(
+                                _specExpanded
+                                    ? Icons.expand_less_rounded
+                                    : Icons.expand_more_rounded,
+                                color: AppColors.textDim,
+                              ),
                             ],
                           ),
                         ),
@@ -218,22 +302,43 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(question.prompt, style: const TextStyle(fontSize: 14, color: AppColors.text, height: 1.5)),
+                              Text(
+                                question.prompt,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.text,
+                                  height: 1.5,
+                                ),
+                              ),
                               const SizedBox(height: 12),
                               Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
                                   color: AppColors.surfaceLowest,
-                                  borderRadius: BorderRadius.circular(AppRadius.md),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.md,
+                                  ),
                                   border: Border.all(color: AppColors.line),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Input   ${question.exampleInput}', style: AppTheme.mono(fontSize: 12.5, color: AppColors.accent)),
+                                    Text(
+                                      'Input   ${question.exampleInput}',
+                                      style: AppTheme.mono(
+                                        fontSize: 12.5,
+                                        color: AppColors.accent,
+                                      ),
+                                    ),
                                     const SizedBox(height: 4),
-                                    Text('Output  ${question.exampleOutput}', style: AppTheme.mono(fontSize: 12.5, color: AppColors.gold)),
+                                    Text(
+                                      'Output  ${question.exampleOutput}',
+                                      style: AppTheme.mono(
+                                        fontSize: 12.5,
+                                        color: AppColors.gold,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -266,35 +371,69 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
                         '${_lastRun!.passedTests}/${_lastRun!.totalTests} tests passed',
                         style: AppTheme.display(
                           fontSize: 14,
-                          color: _lastRun!.passedTests == _lastRun!.totalTests ? AppColors.success : AppColors.danger,
+                          color: _lastRun!.passedTests == _lastRun!.totalTests
+                              ? AppColors.success
+                              : AppColors.danger,
                         ),
                       ),
                   ],
                 ),
                 const SizedBox(height: 10),
                 if (_lastRun == null)
-                  const Text('Run the tests to see how your code does.', style: TextStyle(fontSize: 13, color: AppColors.textDim))
+                  const Text(
+                    'Run the tests to see how your code does.',
+                    style: TextStyle(fontSize: 13, color: AppColors.textDim),
+                  )
                 else ...[
                   Wrap(
                     spacing: 14,
                     runSpacing: 4,
                     children: [
-                      Text('${_lastRun!.correctnessPercent}% accuracy', style: AppTheme.mono(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.gold)),
+                      Text(
+                        '${_lastRun!.correctnessPercent}% accuracy',
+                        style: AppTheme.mono(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.gold,
+                        ),
+                      ),
                       if (_lastRun!.damageDealt > 0)
-                        Text('${_lastRun!.damageDealt} damage dealt', style: AppTheme.mono(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.danger)),
+                        Text(
+                          '${_lastRun!.damageDealt} damage dealt',
+                          style: AppTheme.mono(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.danger,
+                          ),
+                        ),
                       if (_lastRun!.bestScorePercent > 0)
-                        Text('best ${_lastRun!.bestScorePercent}%', style: AppTheme.mono(fontSize: 12, color: AppColors.textDim)),
+                        Text(
+                          'best ${_lastRun!.bestScorePercent}%',
+                          style: AppTheme.mono(
+                            fontSize: 12,
+                            color: AppColors.textDim,
+                          ),
+                        ),
                     ],
                   ),
                   const SizedBox(height: 10),
-                  for (var i = 0; i < _lastRun!.results.length; i++) TestCaseTile(index: i, result: _lastRun!.results[i]),
+                  for (var i = 0; i < _lastRun!.results.length; i++)
+                    TestCaseTile(index: i, result: _lastRun!.results[i]),
                 ],
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.fromLTRB(AppSpace.page, 12, AppSpace.page, 12),
-            decoration: const BoxDecoration(color: AppColors.surfaceLow, border: Border(top: BorderSide(color: AppColors.line))),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpace.page,
+              12,
+              AppSpace.page,
+              12,
+            ),
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceLow,
+              border: Border(top: BorderSide(color: AppColors.line)),
+            ),
             child: SafeArea(
               top: false,
               child: Row(
@@ -306,7 +445,9 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
                       icon: Icons.play_arrow_rounded,
                       variant: NeonVariant.secondary,
                       loading: _isRunning,
-                      onPressed: (_isRunning || _isSubmitting) ? null : () => _runTests(context),
+                      onPressed: (_isRunning || _isSubmitting)
+                          ? null
+                          : () => _runTests(context),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -317,7 +458,9 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
                       label: _timeUp ? "Time's Up" : 'Submit Attack',
                       icon: Icons.bolt_rounded,
                       loading: _isSubmitting,
-                      onPressed: (_isRunning || _isSubmitting || _timeUp) ? null : () => _submitAttack(context),
+                      onPressed: (_isRunning || _isSubmitting || _timeUp)
+                          ? null
+                          : () => _submitAttack(context),
                     ),
                   ),
                 ],
@@ -338,7 +481,9 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
       setState(() => _lastRun = result);
     } on BattleApiException catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } finally {
       if (mounted) setState(() => _isRunning = false);
     }
@@ -375,7 +520,9 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
       }
     } on BattleApiException catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

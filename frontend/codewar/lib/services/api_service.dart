@@ -44,8 +44,8 @@ class ApiException implements Exception {
 /// data: every failure surfaces as an [ApiException] for the UI to show.
 class ApiService {
   ApiService({http.Client? client, SettingsStore? settings})
-      : _client = client ?? http.Client(),
-        settings = settings ?? SettingsStore.memory();
+    : _client = client ?? http.Client(),
+      settings = settings ?? SettingsStore.memory();
 
   final http.Client _client;
   final SettingsStore settings;
@@ -85,8 +85,8 @@ class ApiService {
       final res = method == 'GET'
           ? await _client.get(uri, headers: headers).timeout(timeout)
           : await _client
-              .post(uri, headers: headers, body: jsonEncode(body ?? {}))
-              .timeout(timeout);
+                .post(uri, headers: headers, body: jsonEncode(body ?? {}))
+                .timeout(timeout);
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return res.body.isEmpty ? null : jsonDecode(res.body);
       }
@@ -123,8 +123,9 @@ class ApiService {
 
   /// Registers a new player and stores the issued token.
   Future<Player> createPlayer(String name) async {
-    final json = await _request('POST', '/api/players', body: {'name': name})
-        as Map<String, dynamic>;
+    final json =
+        await _request('POST', '/api/players', body: {'name': name})
+            as Map<String, dynamic>;
     settings.token = json['token'] as String;
     settings.playerName = name;
     return Player.fromJson(json['player'] as Map<String, dynamic>);
@@ -132,17 +133,22 @@ class ApiService {
 
   // --- Read endpoints -----------------------------------------------------
 
-  Future<Player> fetchPlayer() async =>
-      Player.fromJson(await _request('GET', '/api/player') as Map<String, dynamic>);
+  Future<Player> fetchPlayer() async => Player.fromJson(
+    await _request('GET', '/api/player') as Map<String, dynamic>,
+  );
 
   Future<List<GameWorld>> fetchWorlds() async {
     final list = await _request('GET', '/api/worlds') as List;
-    return list.map((e) => GameWorld.fromJson(e as Map<String, dynamic>)).toList();
+    return list
+        .map((e) => GameWorld.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<LevelNode>> fetchLevels(String worldId) async {
     final list = await _request('GET', '/api/levels?world_id=$worldId') as List;
-    return list.map((e) => LevelNode.fromJson(e as Map<String, dynamic>)).toList();
+    return list
+        .map((e) => LevelNode.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<List<Enemy>> fetchEnemies() async {
@@ -152,28 +158,51 @@ class ApiService {
 
   // --- Rooms ----------------------------------------------------------------
 
-  Future<RoomSnapshot> createRoom({String mode = 'race', String difficulty = 'easy', String language = 'python'}) async =>
-      RoomSnapshot.fromJson(await _request('POST', '/api/rooms',
-          body: {'mode': mode, 'difficulty': difficulty, 'language': language}) as Map<String, dynamic>);
+  Future<RoomSnapshot> createRoom({
+    String mode = 'race',
+    String difficulty = 'easy',
+    String language = 'python',
+  }) async => RoomSnapshot.fromJson(
+    await _request(
+          'POST',
+          '/api/rooms',
+          body: {'mode': mode, 'difficulty': difficulty, 'language': language},
+        )
+        as Map<String, dynamic>,
+  );
 
   Future<RoomSnapshot> joinRoom(String code) async => RoomSnapshot.fromJson(
-      await _request('POST', '/api/rooms/${Uri.encodeComponent(code.trim().toUpperCase())}/join') as Map<String, dynamic>);
+    await _request(
+          'POST',
+          '/api/rooms/${Uri.encodeComponent(code.trim().toUpperCase())}/join',
+        )
+        as Map<String, dynamic>,
+  );
 
   /// WebSocket address for a room: same host as the REST API, ws:// or wss://.
   Uri roomSocketUri(String code) {
     final base = Uri.parse(baseUrl);
     return base.replace(
       scheme: base.scheme == 'https' ? 'wss' : 'ws',
-      path: '${base.path.endsWith('/') ? base.path.substring(0, base.path.length - 1) : base.path}/ws/rooms/${code.toUpperCase()}',
+      path:
+          '${base.path.endsWith('/') ? base.path.substring(0, base.path.length - 1) : base.path}/ws/rooms/${code.toUpperCase()}',
       queryParameters: {'token': settings.token ?? ''},
     );
   }
 
   // --- Leaderboard & friends ----------------------------------------------
 
-  Future<Leaderboard> fetchLeaderboard({String scope = 'global', String metric = 'xp', int limit = 50}) async =>
-      Leaderboard.fromJson(await _request('GET', '/api/leaderboard?scope=$scope&metric=$metric&limit=$limit')
-          as Map<String, dynamic>);
+  Future<Leaderboard> fetchLeaderboard({
+    String scope = 'global',
+    String metric = 'xp',
+    int limit = 50,
+  }) async => Leaderboard.fromJson(
+    await _request(
+          'GET',
+          '/api/leaderboard?scope=$scope&metric=$metric&limit=$limit',
+        )
+        as Map<String, dynamic>,
+  );
 
   Future<void> addFriend(String name) async {
     await _request('POST', '/api/friends', body: {'name': name});
@@ -181,9 +210,10 @@ class ApiService {
 
   // --- Profile ---------------------------------------------------------------
 
-  Future<List<BadgeInfo>> fetchBadges() async => (await _request('GET', '/api/badges') as List)
-      .map((e) => BadgeInfo.fromJson(e as Map<String, dynamic>))
-      .toList();
+  Future<List<BadgeInfo>> fetchBadges() async =>
+      (await _request('GET', '/api/badges') as List)
+          .map((e) => BadgeInfo.fromJson(e as Map<String, dynamic>))
+          .toList();
 
   Future<List<MatchRecord>> fetchMatches({int limit = 20}) async =>
       (await _request('GET', '/api/matches?limit=$limit') as List)
@@ -191,29 +221,72 @@ class ApiService {
           .toList();
 
   Future<PublicProfile> fetchPublicProfile(int playerId) async =>
-      PublicProfile.fromJson(await _request('GET', '/api/players/$playerId/public') as Map<String, dynamic>);
+      PublicProfile.fromJson(
+        await _request('GET', '/api/players/$playerId/public')
+            as Map<String, dynamic>,
+      );
 
   // --- Practice -------------------------------------------------------------
 
-  Future<PracticeStats> fetchPracticeStats() async =>
-      PracticeStats.fromJson(await _request('GET', '/api/practice/stats') as Map<String, dynamic>);
+  Future<PracticeStats> fetchPracticeStats() async => PracticeStats.fromJson(
+    await _request('GET', '/api/practice/stats') as Map<String, dynamic>,
+  );
 
-  Future<PracticeSession> practiceNext({String difficulty = 'easy', String? topic, bool daily = false}) async =>
-      PracticeSession.fromJson(await _request('POST', '/api/practice/next',
-          body: {'difficulty': difficulty, 'topic': topic, 'daily': daily}, timeout: _battleTimeout)
-          as Map<String, dynamic>);
+  Future<PracticeSession> practiceNext({
+    String difficulty = 'easy',
+    String? topic,
+    bool daily = false,
+  }) async => PracticeSession.fromJson(
+    await _request(
+          'POST',
+          '/api/practice/next',
+          body: {'difficulty': difficulty, 'topic': topic, 'daily': daily},
+          timeout: _battleTimeout,
+        )
+        as Map<String, dynamic>,
+  );
 
-  Future<BattleResult> practiceRun(int practiceId, String code, String language) async =>
-      BattleResult.fromRunJson(await _request('POST', '/api/practice/$practiceId/run',
-          body: {'code': code, 'language': language}, timeout: _battleTimeout) as Map<String, dynamic>);
+  Future<BattleResult> practiceRun(
+    int practiceId,
+    String code,
+    String language,
+  ) async => BattleResult.fromRunJson(
+    await _request(
+          'POST',
+          '/api/practice/$practiceId/run',
+          body: {'code': code, 'language': language},
+          timeout: _battleTimeout,
+        )
+        as Map<String, dynamic>,
+  );
 
-  Future<PracticeSubmitResult> practiceSubmit(int practiceId, String code, String language) async =>
-      PracticeSubmitResult.fromJson(await _request('POST', '/api/practice/$practiceId/submit',
-          body: {'code': code, 'language': language}, timeout: _battleTimeout) as Map<String, dynamic>);
+  Future<PracticeSubmitResult> practiceSubmit(
+    int practiceId,
+    String code,
+    String language,
+  ) async => PracticeSubmitResult.fromJson(
+    await _request(
+          'POST',
+          '/api/practice/$practiceId/submit',
+          body: {'code': code, 'language': language},
+          timeout: _battleTimeout,
+        )
+        as Map<String, dynamic>,
+  );
 
-  Future<Hint> practiceHint(int practiceId, String code, String language) async =>
-      Hint.fromJson(await _request('POST', '/api/practice/$practiceId/hint',
-          body: {'code': code, 'language': language}, timeout: _battleTimeout) as Map<String, dynamic>);
+  Future<Hint> practiceHint(
+    int practiceId,
+    String code,
+    String language,
+  ) async => Hint.fromJson(
+    await _request(
+          'POST',
+          '/api/practice/$practiceId/hint',
+          body: {'code': code, 'language': language},
+          timeout: _battleTimeout,
+        )
+        as Map<String, dynamic>,
+  );
 
   // --- Battle endpoints ---------------------------------------------------
   // These surface failures as BattleApiException so battle screens can show
@@ -228,22 +301,46 @@ class ApiService {
   }
 
   Future<BattleStartResult> startBattle(int levelId) => _battle(() async {
-        final json = await _request('POST', '/api/battles/start',
-            body: {'level_id': levelId}, timeout: _battleTimeout) as Map<String, dynamic>;
-        return BattleStartResult.fromJson(json);
-      });
+    final json =
+        await _request(
+              'POST',
+              '/api/battles/start',
+              body: {'level_id': levelId},
+              timeout: _battleTimeout,
+            )
+            as Map<String, dynamic>;
+    return BattleStartResult.fromJson(json);
+  });
 
-  Future<BattleResult> runBattleTests(int battleId, String code, {String language = 'python'}) =>
-      _battle(() async {
-        final json = await _request('POST', '/api/battles/$battleId/run',
-            body: {'code': code, 'language': language}, timeout: _battleTimeout) as Map<String, dynamic>;
-        return BattleResult.fromRunJson(json);
-      });
+  Future<BattleResult> runBattleTests(
+    int battleId,
+    String code, {
+    String language = 'python',
+  }) => _battle(() async {
+    final json =
+        await _request(
+              'POST',
+              '/api/battles/$battleId/run',
+              body: {'code': code, 'language': language},
+              timeout: _battleTimeout,
+            )
+            as Map<String, dynamic>;
+    return BattleResult.fromRunJson(json);
+  });
 
-  Future<BattleResult> submitBattle(int battleId, String code, {String language = 'python'}) =>
-      _battle(() async {
-        final json = await _request('POST', '/api/battles/$battleId/submit',
-            body: {'code': code, 'language': language}, timeout: _battleTimeout) as Map<String, dynamic>;
-        return BattleResult.fromSubmitJson(json);
-      });
+  Future<BattleResult> submitBattle(
+    int battleId,
+    String code, {
+    String language = 'python',
+  }) => _battle(() async {
+    final json =
+        await _request(
+              'POST',
+              '/api/battles/$battleId/submit',
+              body: {'code': code, 'language': language},
+              timeout: _battleTimeout,
+            )
+            as Map<String, dynamic>;
+    return BattleResult.fromSubmitJson(json);
+  });
 }

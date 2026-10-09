@@ -22,11 +22,13 @@ class HomeHeader extends StatelessWidget {
       return const Padding(
         key: Key('hudSkeleton'),
         padding: EdgeInsets.fromLTRB(AppSpace.page, 16, AppSpace.page, 8),
-        child: Row(children: [
-          SkeletonBox(height: 52, width: 52, radius: 26),
-          SizedBox(width: 12),
-          Expanded(child: SkeletonBox(height: 32)),
-        ]),
+        child: Row(
+          children: [
+            SkeletonBox(height: 52, width: 52, radius: 26),
+            SizedBox(width: 12),
+            Expanded(child: SkeletonBox(height: 32)),
+          ],
+        ),
       );
     }
 
@@ -59,11 +61,19 @@ class HomeHeader extends StatelessWidget {
                     Container(
                       width: 40,
                       height: 40,
-                      decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.surfaceHigh),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.surfaceHigh,
+                      ),
                       alignment: Alignment.center,
                       child: Text(
-                        player.displayName.isEmpty ? '?' : player.displayName.characters.first.toUpperCase(),
-                        style: AppTheme.display(fontSize: 18, color: AppColors.accent),
+                        player.displayName.isEmpty
+                            ? '?'
+                            : player.displayName.characters.first.toUpperCase(),
+                        style: AppTheme.display(
+                          fontSize: 18,
+                          color: AppColors.accent,
+                        ),
                       ),
                     ),
                   ],
@@ -96,7 +106,12 @@ class HomeHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          _Pill(icon: Icons.monetization_on_rounded, value: compactNumber(player.gold), color: AppColors.gold, tooltip: 'Gold'),
+          _Pill(
+            icon: Icons.monetization_on_rounded,
+            value: compactNumber(player.gold),
+            color: AppColors.gold,
+            tooltip: 'Gold',
+          ),
           const SizedBox(width: 8),
           _Pill(
             icon: Icons.local_fire_department_rounded,
@@ -111,7 +126,12 @@ class HomeHeader extends StatelessWidget {
 }
 
 class _Pill extends StatelessWidget {
-  const _Pill({required this.icon, required this.value, required this.color, required this.tooltip});
+  const _Pill({
+    required this.icon,
+    required this.value,
+    required this.color,
+    required this.tooltip,
+  });
   final IconData icon;
   final String value;
   final Color color;
@@ -133,7 +153,11 @@ class _Pill extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: color),
             const SizedBox(width: 4),
-            Text(value, textScaler: TextScaler.noScaling, style: AppTheme.display(fontSize: 14)),
+            Text(
+              value,
+              textScaler: TextScaler.noScaling,
+              style: AppTheme.display(fontSize: 14),
+            ),
           ],
         ),
       ),

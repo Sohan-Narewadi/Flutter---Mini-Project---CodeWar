@@ -142,7 +142,9 @@ class _NeonButtonState extends State<NeonButton> {
       excludeSemantics: true,
       onTap: _enabled ? _fire : null,
       child: Opacity(
-        opacity: _enabled || widget.loading ? 1 : (v == NeonVariant.primary ? 0.85 : 0.5),
+        opacity: _enabled || widget.loading
+            ? 1
+            : (v == NeonVariant.primary ? 0.85 : 0.5),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapDown: _enabled ? (_) => setState(() => _down = true) : null,

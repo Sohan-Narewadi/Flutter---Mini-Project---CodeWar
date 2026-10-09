@@ -19,7 +19,8 @@ class LeaderboardEntry {
   final bool isMe;
   final String tier;
 
-  factory LeaderboardEntry.fromJson(Map<String, dynamic> json) => LeaderboardEntry(
+  factory LeaderboardEntry.fromJson(Map<String, dynamic> json) =>
+      LeaderboardEntry(
         rank: json['rank'] ?? 0,
         playerId: json['player_id'] ?? 0,
         name: json['name']?.toString() ?? '?',
@@ -32,7 +33,12 @@ class LeaderboardEntry {
 }
 
 class Leaderboard {
-  const Leaderboard({required this.scope, required this.metric, required this.entries, required this.me});
+  const Leaderboard({
+    required this.scope,
+    required this.metric,
+    required this.entries,
+    required this.me,
+  });
 
   final String scope;
   final String metric;
@@ -43,11 +49,11 @@ class Leaderboard {
   bool get meOutsideList => !entries.any((e) => e.isMe);
 
   factory Leaderboard.fromJson(Map<String, dynamic> json) => Leaderboard(
-        scope: json['scope']?.toString() ?? 'global',
-        metric: json['metric']?.toString() ?? 'xp',
-        entries: (json['entries'] as List? ?? [])
-            .map((e) => LeaderboardEntry.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        me: LeaderboardEntry.fromJson(json['me'] as Map<String, dynamic>),
-      );
+    scope: json['scope']?.toString() ?? 'global',
+    metric: json['metric']?.toString() ?? 'xp',
+    entries: (json['entries'] as List? ?? [])
+        .map((e) => LeaderboardEntry.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    me: LeaderboardEntry.fromJson(json['me'] as Map<String, dynamic>),
+  );
 }

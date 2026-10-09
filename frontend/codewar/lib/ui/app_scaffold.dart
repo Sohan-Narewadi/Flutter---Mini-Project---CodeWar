@@ -33,7 +33,10 @@ class AppScaffold extends StatelessWidget {
           bottom: bottom == null,
           child: Align(
             alignment: Alignment.topCenter,
-            child: ConstrainedBox(constraints: BoxConstraints(maxWidth: maxWidth), child: body),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: maxWidth),
+              child: body,
+            ),
           ),
         ),
       ),
@@ -42,7 +45,10 @@ class AppScaffold extends StatelessWidget {
           : Align(
               alignment: Alignment.bottomCenter,
               heightFactor: 1,
-              child: ConstrainedBox(constraints: BoxConstraints(maxWidth: maxWidth), child: bottom),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: bottom,
+              ),
             ),
     );
   }
@@ -51,7 +57,12 @@ class AppScaffold extends StatelessWidget {
 /// Standard page header used on tab screens: big display title with an
 /// optional subtitle and trailing action.
 class PageHeader extends StatelessWidget {
-  const PageHeader({super.key, required this.title, this.subtitle, this.trailing});
+  const PageHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+  });
   final String title;
   final String? subtitle;
   final Widget? trailing;
@@ -70,7 +81,13 @@ class PageHeader extends StatelessWidget {
                 Text(title, style: AppTheme.display(fontSize: 30, height: 1.1)),
                 if (subtitle != null) ...[
                   const SizedBox(height: 4),
-                  Text(subtitle!, style: const TextStyle(color: AppColors.textDim, fontSize: 14)),
+                  Text(
+                    subtitle!,
+                    style: const TextStyle(
+                      color: AppColors.textDim,
+                      fontSize: 14,
+                    ),
+                  ),
                 ],
               ],
             ),

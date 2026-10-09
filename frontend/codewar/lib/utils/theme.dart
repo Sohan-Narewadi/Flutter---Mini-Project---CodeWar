@@ -117,10 +117,9 @@ class AppTheme {
 
   static ThemeData get darkTheme {
     final base = ThemeData.dark(useMaterial3: true);
-    final body = GoogleFonts.interTextTheme(base.textTheme).apply(
-      bodyColor: AppColors.text,
-      displayColor: AppColors.text,
-    );
+    final body = GoogleFonts.interTextTheme(
+      base.textTheme,
+    ).apply(bodyColor: AppColors.text, displayColor: AppColors.text);
     final textTheme = body.copyWith(
       displayLarge: display(fontSize: 40),
       displayMedium: display(fontSize: 32),
@@ -129,8 +128,16 @@ class AppTheme {
       headlineMedium: display(fontSize: 24),
       headlineSmall: display(fontSize: 20),
       titleLarge: display(fontSize: 20),
-      titleMedium: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.text),
-      titleSmall: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text),
+      titleMedium: GoogleFonts.inter(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: AppColors.text,
+      ),
+      titleSmall: GoogleFonts.inter(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: AppColors.text,
+      ),
     );
 
     final colorScheme = const ColorScheme.dark().copyWith(
@@ -151,7 +158,9 @@ class AppTheme {
       outlineVariant: AppColors.line,
     );
 
-    final buttonShape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md));
+    final buttonShape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadius.md),
+    );
     final inputBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppRadius.md),
       borderSide: const BorderSide(color: AppColors.line),
@@ -181,7 +190,11 @@ class AppTheme {
         ),
       ),
       dividerColor: AppColors.line,
-      dividerTheme: const DividerThemeData(color: AppColors.line, space: 1, thickness: 1),
+      dividerTheme: const DividerThemeData(
+        color: AppColors.line,
+        space: 1,
+        thickness: 1,
+      ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.accent,
@@ -222,21 +235,36 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surfaceLow,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         border: inputBorder,
         enabledBorder: inputBorder,
-        focusedBorder: inputBorder.copyWith(borderSide: const BorderSide(color: AppColors.accent, width: 1.5)),
-        errorBorder: inputBorder.copyWith(borderSide: const BorderSide(color: AppColors.danger)),
-        focusedErrorBorder: inputBorder.copyWith(borderSide: const BorderSide(color: AppColors.danger, width: 1.5)),
+        focusedBorder: inputBorder.copyWith(
+          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+        ),
+        errorBorder: inputBorder.copyWith(
+          borderSide: const BorderSide(color: AppColors.danger),
+        ),
+        focusedErrorBorder: inputBorder.copyWith(
+          borderSide: const BorderSide(color: AppColors.danger, width: 1.5),
+        ),
         labelStyle: GoogleFonts.inter(color: AppColors.textDim),
         hintStyle: GoogleFonts.inter(color: AppColors.textFaint),
       ),
       chipTheme: base.chipTheme.copyWith(
         backgroundColor: AppColors.surfaceHigh,
         selectedColor: AppColors.accent.withValues(alpha: 0.16),
-        labelStyle: GoogleFonts.inter(color: AppColors.text, fontSize: 13, fontWeight: FontWeight.w600),
+        labelStyle: GoogleFonts.inter(
+          color: AppColors.text,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
         side: const BorderSide(color: AppColors.line),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.full)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.full),
+        ),
         showCheckmark: false,
       ),
       dialogTheme: DialogThemeData(
@@ -252,13 +280,20 @@ class AppTheme {
         backgroundColor: AppColors.surfaceHigh,
         surfaceTintColor: Colors.transparent,
         showDragHandle: true,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.surfaceHighest,
-        contentTextStyle: GoogleFonts.inter(color: AppColors.text, fontWeight: FontWeight.w600),
+        contentTextStyle: GoogleFonts.inter(
+          color: AppColors.text,
+          fontWeight: FontWeight.w600,
+        ),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
       ),
       tooltipTheme: TooltipThemeData(
         decoration: BoxDecoration(
@@ -273,10 +308,14 @@ class AppTheme {
       ),
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected) ? AppColors.onAccent : AppColors.textDim,
+          (s) => s.contains(WidgetState.selected)
+              ? AppColors.onAccent
+              : AppColors.textDim,
         ),
         trackColor: WidgetStateProperty.resolveWith(
-          (s) => s.contains(WidgetState.selected) ? AppColors.accent : AppColors.surfaceHighest,
+          (s) => s.contains(WidgetState.selected)
+              ? AppColors.accent
+              : AppColors.surfaceHighest,
         ),
         trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
       ),

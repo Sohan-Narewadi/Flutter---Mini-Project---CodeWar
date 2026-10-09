@@ -3,7 +3,12 @@ import 'profile_models.dart';
 import 'question.dart';
 
 class TopicStat {
-  const TopicStat({required this.id, required this.label, required this.solved, required this.masteryPercent});
+  const TopicStat({
+    required this.id,
+    required this.label,
+    required this.solved,
+    required this.masteryPercent,
+  });
 
   final String id;
   final String label;
@@ -11,11 +16,11 @@ class TopicStat {
   final int masteryPercent;
 
   factory TopicStat.fromJson(Map<String, dynamic> json) => TopicStat(
-        id: json['id']?.toString() ?? '',
-        label: json['label']?.toString() ?? '',
-        solved: json['solved'] ?? 0,
-        masteryPercent: json['mastery_percent'] ?? 0,
-      );
+    id: json['id']?.toString() ?? '',
+    label: json['label']?.toString() ?? '',
+    solved: json['solved'] ?? 0,
+    masteryPercent: json['mastery_percent'] ?? 0,
+  );
 }
 
 class PracticeStats {
@@ -26,6 +31,7 @@ class PracticeStats {
     this.totalSolved = 0,
     this.dailyDone = false,
     this.dailyResetsIn = 0,
+    this.fetchedAt,
   });
 
   final int streak;
@@ -37,30 +43,46 @@ class PracticeStats {
   /// Seconds until the daily challenge changes (0 when unknown).
   final int dailyResetsIn;
 
+  /// When [dailyResetsIn] was measured, so the label keeps counting down.
+  final DateTime? fetchedAt;
+
   static const empty = PracticeStats(streak: 0, solvedToday: 0, topics: []);
 
   /// "5h 12m" / "42m": human text for [dailyResetsIn], empty when unknown.
-  String get dailyResetsLabel {
+  String dailyLabel({DateTime? now}) {
     if (dailyResetsIn <= 0) return '';
-    final h = dailyResetsIn ~/ 3600;
-    final m = (dailyResetsIn % 3600) ~/ 60;
+    final elapsed = fetchedAt == null
+        ? 0
+        : (now ?? DateTime.now()).difference(fetchedAt!).inSeconds;
+    final left = (dailyResetsIn - elapsed).clamp(60, 1 << 30);
+    final h = left ~/ 3600;
+    final m = (left % 3600) ~/ 60;
     return h > 0 ? '${h}h ${m}m' : '${m < 1 ? 1 : m}m';
   }
 
+  /// Same as [dailyLabel] at the current time.
+  String get dailyResetsLabel => dailyLabel();
+
   factory PracticeStats.fromJson(Map<String, dynamic> json) => PracticeStats(
-        streak: json['streak'] ?? 0,
-        solvedToday: json['solved_today'] ?? 0,
-        totalSolved: json['total_solved'] ?? 0,
-        dailyDone: json['daily_done'] == true,
-        dailyResetsIn: json['daily_resets_in'] ?? 0,
-        topics: (json['topics'] as List? ?? [])
-            .map((e) => TopicStat.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    streak: json['streak'] ?? 0,
+    solvedToday: json['solved_today'] ?? 0,
+    totalSolved: json['total_solved'] ?? 0,
+    dailyDone: json['daily_done'] == true,
+    dailyResetsIn: json['daily_resets_in'] ?? 0,
+    fetchedAt: DateTime.now(),
+    topics: (json['topics'] as List? ?? [])
+        .map((e) => TopicStat.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 class PracticeSession {
-  const PracticeSession({required this.practiceId, required this.daily, required this.question, this.topic = ''});
+  const PracticeSession({
+    required this.practiceId,
+    required this.daily,
+    required this.question,
+    this.topic = '',
+  });
 
   final int practiceId;
   final bool daily;
@@ -97,7 +119,8 @@ class PracticeSubmitResult {
   /// Badges unlocked by this very submission.
   final List<BadgeInfo> newBadges;
 
-  factory PracticeSubmitResult.fromJson(Map<String, dynamic> json) => PracticeSubmitResult(
+  factory PracticeSubmitResult.fromJson(Map<String, dynamic> json) =>
+      PracticeSubmitResult(
         run: BattleResult.fromRunJson(json),
         solved: json['solved'] == true,
         xpEarned: json['xp_earned'] ?? 0,
