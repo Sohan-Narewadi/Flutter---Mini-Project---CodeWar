@@ -58,7 +58,7 @@ class _NeonButtonState extends State<NeonButton> {
     final v = widget.variant;
     final height = widget.compact ? 44.0 : 54.0;
     final fg = switch (v) {
-      NeonVariant.primary => AppColors.onAccent,
+      NeonVariant.primary => _enabled ? AppColors.onAccent : AppColors.textDim,
       NeonVariant.secondary => AppColors.text,
       NeonVariant.ghost => AppColors.accent,
       NeonVariant.danger => AppColors.danger,
@@ -142,7 +142,7 @@ class _NeonButtonState extends State<NeonButton> {
       excludeSemantics: true,
       onTap: _enabled ? _fire : null,
       child: Opacity(
-        opacity: _enabled || widget.loading ? 1 : 0.5,
+        opacity: _enabled || widget.loading ? 1 : (v == NeonVariant.primary ? 0.85 : 0.5),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTapDown: _enabled ? (_) => setState(() => _down = true) : null,

@@ -176,7 +176,7 @@ class _ActionBar extends StatelessWidget {
         child: Row(
           children: [
             SizedBox(
-              width: 54,
+              width: 52,
               child: NeonButton(
                 key: const Key('hintButton'),
                 label: 'Hint',
@@ -189,6 +189,7 @@ class _ActionBar extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Expanded(
+              flex: 3,
               child: NeonButton(
                 key: const Key('runButton'),
                 label: 'Run',
@@ -200,7 +201,7 @@ class _ActionBar extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Expanded(
-              flex: 2,
+              flex: 4,
               child: NeonButton(
                 key: const Key('submitButton'),
                 label: 'Submit',
