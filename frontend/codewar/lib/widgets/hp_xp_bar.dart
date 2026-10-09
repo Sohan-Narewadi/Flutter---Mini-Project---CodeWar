@@ -29,17 +29,28 @@ class HpXpBar extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 if (label != null)
-                  Text(
-                    label!,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.onSurfaceVariant,
-                      letterSpacing: 0.5,
+                  Flexible(
+                    child: Text(
+                      label!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.onSurfaceVariant,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
+                const SizedBox(width: 8),
                 if (trailing != null)
-                  Text(trailing!, style: AppTheme.mono(fontSize: 11, color: AppColors.onSurfaceVariant)),
+                  Text(
+                    trailing!,
+                    style: AppTheme.mono(
+                      fontSize: 11,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
               ],
             ),
           ),

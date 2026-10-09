@@ -4,15 +4,21 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../models/battle.dart';
+import '../models/level_node.dart';
 import '../providers/game_state.dart';
-import '../utils/theme.dart';
+import '../services/sfx.dart';
+import '../ui/app_card.dart';
+import '../ui/app_scaffold.dart';
+import '../ui/neon_button.dart';
 import '../ui/shake.dart';
+import '../utils/theme.dart';
 import '../widgets/code_editor_panel.dart';
+import '../widgets/difficulty_chip.dart';
 import '../widgets/hp_xp_bar.dart';
 import '../widgets/test_case_tile.dart';
 
 /// Coding Battle IDE: live timer, dual HP gauges, challenge spec, code
-/// editor, test runner panel, and the Run Tests / Submit Attack actions.
+/// editor, test runner panel, and the Run / Submit Attack actions.
 class CodingBattleScreen extends StatefulWidget {
   const CodingBattleScreen({super.key});
 
@@ -70,18 +76,16 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
     final player = state.player;
 
     if (question == null || enemy == null || state.battleId == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Coding Battle')),
+      return AppScaffold(
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('No active battle.', style: TextStyle(color: AppColors.onSurfaceVariant)),
+              const Icon(Icons.shield_moon_rounded, size: 40, color: AppColors.textFaint),
+              const SizedBox(height: 12),
+              const Text('No active battle.', style: TextStyle(color: AppColors.textDim)),
               const SizedBox(height: 16),
-              OutlinedButton(
-                onPressed: () => context.go('/battle'),
-                child: const Text('Back to Battle Arena'),
-              ),
+              NeonButton(label: 'Back to Battle Arena', expanded: false, onPressed: () => context.go('/battle')),
             ],
           ),
         ),
@@ -89,245 +93,238 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
     }
 
     _seedTimerIfNeeded(state);
+    final lowTime = _secondsLeft <= 30;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.timer, size: 18, color: AppColors.tertiary),
-            const SizedBox(width: 6),
-            Text(_clock, style: AppTheme.mono(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.tertiary)),
-          ],
-        ),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  // Dual HP gauges
-                  Row(
+    return AppScaffold(
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, AppSpace.page, 4),
+            child: Row(
+              children: [
+                IconButton(
+                  tooltip: 'Back',
+                  icon: const Icon(Icons.arrow_back_rounded),
+                  onPressed: () => context.canPop() ? context.pop() : context.go('/battle'),
+                ),
+                Expanded(child: Text('BOSS FIGHT · ${enemy.name.toUpperCase()}', maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTheme.overline(color: AppColors.accent))),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: (lowTime ? AppColors.danger : AppColors.gold).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(AppRadius.full),
+                    border: Border.all(color: (lowTime ? AppColors.danger : AppColors.gold).withValues(alpha: 0.6)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: HpXpBar(
-                          progress: player.hpProgress,
-                          color: AppColors.secondary,
-                          label: 'YOU',
-                          trailing: '${player.hp}/${player.hpMax}',
-                          height: 6,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ShakeOnDecrease(
-                          trigger: state.enemyHpRemaining,
-                          child: HpXpBar(
-                            progress: state.enemyHpMax == 0 ? 0 : state.enemyHpRemaining / state.enemyHpMax,
-                            color: AppColors.error,
-                            label: enemy.name.toUpperCase(),
-                            trailing: '${state.enemyHpRemaining}/${state.enemyHpMax}',
-                            height: 6,
-                          ),
-                        ),
-                      ),
+                      Icon(Icons.timer_rounded, size: 16, color: lowTime ? AppColors.danger : AppColors.gold),
+                      const SizedBox(width: 6),
+                      Text(_clock, key: const Key('battleClock'), style: AppTheme.display(fontSize: 16, color: lowTime ? AppColors.danger : AppColors.gold)),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  if (_timeUp)
-                    Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.error.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(AppRadius.lg),
-                        border: Border.all(color: AppColors.error),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(AppSpace.page, 8, AppSpace.page, 20),
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: HpXpBar(
+                        progress: player.hpProgress,
+                        color: AppColors.accent,
+                        label: 'YOU',
+                        trailing: '${player.hp}/${player.hpMax}',
+                        height: 8,
                       ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: ShakeOnDecrease(
+                        trigger: state.enemyHpRemaining,
+                        child: HpXpBar(
+                          progress: state.enemyHpMax == 0 ? 0 : state.enemyHpRemaining / state.enemyHpMax,
+                          color: AppColors.danger,
+                          label: enemy.name.toUpperCase(),
+                          trailing: '${state.enemyHpRemaining}/${state.enemyHpMax}',
+                          height: 8,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                if (_timeUp)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: AppCard(
+                      accent: AppColors.danger,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       child: const Row(
                         children: [
-                          Icon(Icons.timer_off, size: 14, color: AppColors.error),
-                          SizedBox(width: 6),
+                          Icon(Icons.timer_off_rounded, size: 18, color: AppColors.danger),
+                          SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              "Time's up! Submit Attack is disabled - you can still Run Tests for feedback.",
-                              style: TextStyle(fontSize: 11, color: AppColors.error, fontWeight: FontWeight.w700),
+                              "Time's up! Submit Attack is disabled. You can still run tests for feedback.",
+                              style: TextStyle(fontSize: 13, color: AppColors.danger, fontWeight: FontWeight.w600, height: 1.3),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.errorContainer.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(AppRadius.lg),
-                      border: Border.all(color: AppColors.error.withValues(alpha: 0.4)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.warning_amber, size: 14, color: AppColors.error),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            'Dazed by ${enemy.vulnerability}, -15% DEF',
-                            style: const TextStyle(fontSize: 11, color: AppColors.error, fontWeight: FontWeight.w600),
+                  ),
+                AppCard(
+                  padding: EdgeInsets.zero,
+                  child: Column(
+                    children: [
+                      InkWell(
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
+                        onTap: () => setState(() => _specExpanded = !_specExpanded),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(question.title, style: AppTheme.display(fontSize: 20, height: 1.15)),
+                                    const SizedBox(height: 8),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 6,
+                                      crossAxisAlignment: WrapCrossAlignment.center,
+                                      children: [
+                                        DifficultyChip(difficulty: difficultyFromString(question.difficulty), compact: true),
+                                        if (question.tags.isNotEmpty) Text(question.tags.join(' · '), style: const TextStyle(fontSize: 12, color: AppColors.textDim)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(_specExpanded ? Icons.expand_less_rounded : Icons.expand_more_rounded, color: AppColors.textDim),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Challenge spec card
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainer,
-                      borderRadius: BorderRadius.circular(AppRadius.xl),
-                      border: Border.all(color: AppColors.outlineVariant),
-                    ),
-                    child: Column(
-                      children: [
-                        InkWell(
-                          onTap: () => setState(() => _specExpanded = !_specExpanded),
-                          child: Padding(
-                            padding: const EdgeInsets.all(14),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(question.title,
-                                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: AppColors.onSurface)),
-                                      const SizedBox(height: 4),
-                                      Text('${question.difficulty} · ${question.tags.join(" · ")}',
-                                          style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
-                                    ],
-                                  ),
+                      ),
+                      if (_specExpanded)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(question.prompt, style: const TextStyle(fontSize: 14, color: AppColors.text, height: 1.5)),
+                              const SizedBox(height: 12),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceLowest,
+                                  borderRadius: BorderRadius.circular(AppRadius.md),
+                                  border: Border.all(color: AppColors.line),
                                 ),
-                                Icon(_specExpanded ? Icons.expand_less : Icons.expand_more, color: AppColors.onSurfaceVariant),
-                              ],
-                            ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Input   ${question.exampleInput}', style: AppTheme.mono(fontSize: 12.5, color: AppColors.accent)),
+                                    const SizedBox(height: 4),
+                                    Text('Output  ${question.exampleOutput}', style: AppTheme.mono(fontSize: 12.5, color: AppColors.gold)),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        if (_specExpanded)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(question.prompt, style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant, height: 1.5)),
-                                const SizedBox(height: 10),
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.surfaceContainerLowest,
-                                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Input: ${question.exampleInput}', style: AppTheme.mono(fontSize: 11, color: AppColors.secondary)),
-                                      const SizedBox(height: 4),
-                                      Text('Output: ${question.exampleOutput}', style: AppTheme.mono(fontSize: 11, color: AppColors.tertiary)),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  CodeEditorPanel(
-                    // A new key (new battle or language switch) remounts the
-                    // editor with fresh starter code; otherwise this same
-                    // instance - and its TextEditingController - persists
-                    // across the timer's per-second rebuilds, so typing never
-                    // gets fought by a reset cursor. See CodeEditorPanel's
-                    // own doc comment for why this matters.
-                    key: ValueKey('${state.battleId}_${state.currentLanguage}'),
-                    filename: 'SOLUTION.${_ext(state.currentLanguage)}',
-                    initialCode: state.currentCode ?? '',
-                    onChanged: state.updateCode,
-                  ),
-                  const SizedBox(height: 16),
-                  Text('Test Cases', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.onSurface)),
-                  const SizedBox(height: 10),
-                  if (_lastRun == null)
-                    const Text('Run tests to see results.', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant))
-                  else ...[
-                    Text('${_lastRun!.passedTests}/${_lastRun!.totalTests} TESTS PASSED',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: _lastRun!.passedTests == _lastRun!.totalTests ? AppColors.secondary : AppColors.error,
-                        )),
-                    const SizedBox(height: 4),
-                    Text('${_lastRun!.correctnessPercent}% SOLUTION ACCURACY',
-                        style: AppTheme.mono(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.tertiary)),
-                    if (_lastRun!.damageDealt > 0) ...[
-                      const SizedBox(height: 4),
-                      Text('DEALT ${_lastRun!.damageDealt} DAMAGE',
-                          style: AppTheme.mono(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.error)),
                     ],
-                    if (_lastRun!.bestScorePercent > 0)
-                      Text('BEST SCORE: ${_lastRun!.bestScorePercent}%',
-                          style: AppTheme.mono(fontSize: 10, color: AppColors.onSurfaceVariant)),
-                    const SizedBox(height: 8),
-                    for (var i = 0; i < _lastRun!.results.length; i++)
-                      TestCaseTile(index: i, result: _lastRun!.results[i]),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                CodeEditorPanel(
+                  // A new key (new battle or language switch) remounts the
+                  // editor with fresh starter code; otherwise this same
+                  // instance - and its TextEditingController - persists
+                  // across the timer's per-second rebuilds, so typing never
+                  // gets fought by a reset cursor. See CodeEditorPanel's
+                  // own doc comment for why this matters.
+                  key: ValueKey('${state.battleId}_${state.currentLanguage}'),
+                  filename: 'solution.${_ext(state.currentLanguage)}',
+                  initialCode: state.currentCode ?? '',
+                  onChanged: state.updateCode,
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Text('RESULTS', style: AppTheme.overline()),
+                    const Spacer(),
+                    if (_lastRun != null)
+                      Text(
+                        '${_lastRun!.passedTests}/${_lastRun!.totalTests} tests passed',
+                        style: AppTheme.display(
+                          fontSize: 14,
+                          color: _lastRun!.passedTests == _lastRun!.totalTests ? AppColors.success : AppColors.danger,
+                        ),
+                      ),
                   ],
-                  const SizedBox(height: 90),
+                ),
+                const SizedBox(height: 10),
+                if (_lastRun == null)
+                  const Text('Run the tests to see how your code does.', style: TextStyle(fontSize: 13, color: AppColors.textDim))
+                else ...[
+                  Wrap(
+                    spacing: 14,
+                    runSpacing: 4,
+                    children: [
+                      Text('${_lastRun!.correctnessPercent}% accuracy', style: AppTheme.mono(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.gold)),
+                      if (_lastRun!.damageDealt > 0)
+                        Text('${_lastRun!.damageDealt} damage dealt', style: AppTheme.mono(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.danger)),
+                      if (_lastRun!.bestScorePercent > 0)
+                        Text('best ${_lastRun!.bestScorePercent}%', style: AppTheme.mono(fontSize: 12, color: AppColors.textDim)),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  for (var i = 0; i < _lastRun!.results.length; i++) TestCaseTile(index: i, result: _lastRun!.results[i]),
+                ],
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.fromLTRB(AppSpace.page, 12, AppSpace.page, 12),
+            decoration: const BoxDecoration(color: AppColors.surfaceLow, border: Border(top: BorderSide(color: AppColors.line))),
+            child: SafeArea(
+              top: false,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: NeonButton(
+                      key: const Key('battleRun'),
+                      label: 'Run',
+                      icon: Icons.play_arrow_rounded,
+                      variant: NeonVariant.secondary,
+                      loading: _isRunning,
+                      onPressed: (_isRunning || _isSubmitting) ? null : () => _runTests(context),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: NeonButton(
+                      key: const Key('battleSubmit'),
+                      label: _timeUp ? "Time's Up" : 'Submit Attack',
+                      icon: Icons.bolt_rounded,
+                      loading: _isSubmitting,
+                      onPressed: (_isRunning || _isSubmitting || _timeUp) ? null : () => _submitAttack(context),
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: AppColors.surfaceContainerLow,
-          border: Border(top: BorderSide(color: AppColors.outlineVariant)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: (_isRunning || _isSubmitting) ? null : () => _runTests(context),
-                  child: _isRunning
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Run Tests'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                flex: 2,
-                child: ElevatedButton(
-                  onPressed: (_isRunning || _isSubmitting || _timeUp) ? null : () => _submitAttack(context),
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(_timeUp ? "Time's Up" : 'Submit Attack'),
-                ),
-              ),
-            ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -350,11 +347,11 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
   String _ext(String lang) {
     switch (lang) {
       case 'typescript':
-        return 'TS';
+        return 'ts';
       case 'cpp':
-        return 'CPP';
+        return 'cpp';
       default:
-        return 'PY';
+        return 'py';
     }
   }
 
@@ -365,6 +362,7 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
       final result = await state.submitAttack();
       if (!context.mounted) return;
       setState(() => _lastRun = result);
+      Sfx.play(result.damageDealt > 0 ? Cue.success : Cue.error);
       // Only navigate away when the battle is actually finalized - an
       // ordinary partial-credit submit that leaves the battle "in_progress"
       // just updates the on-screen HP bar/stats so the user can keep

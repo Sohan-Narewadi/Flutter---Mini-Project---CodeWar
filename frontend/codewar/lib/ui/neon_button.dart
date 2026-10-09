@@ -21,6 +21,7 @@ class NeonButton extends StatefulWidget {
     this.loading = false,
     this.expanded = true,
     this.compact = false,
+    this.iconOnly = false,
   });
 
   final String label;
@@ -34,6 +35,9 @@ class NeonButton extends StatefulWidget {
   /// Fill the available width (default) or hug the content.
   final bool expanded;
   final bool compact;
+
+  /// Shows only [icon] (the label is still used for accessibility).
+  final bool iconOnly;
 
   @override
   State<NeonButton> createState() => _NeonButtonState();
@@ -61,7 +65,10 @@ class _NeonButtonState extends State<NeonButton> {
     };
     final border = switch (v) {
       NeonVariant.secondary => Border.all(color: AppColors.line, width: 1.5),
-      NeonVariant.danger => Border.all(color: AppColors.danger.withValues(alpha: 0.6), width: 1.5),
+      NeonVariant.danger => Border.all(
+        color: AppColors.danger.withValues(alpha: 0.6),
+        width: 1.5,
+      ),
       _ => null,
     };
 
@@ -78,16 +85,21 @@ class _NeonButtonState extends State<NeonButton> {
         else ...[
           if (widget.icon != null) ...[
             Icon(widget.icon, size: 20, color: fg),
-            const SizedBox(width: 8),
+            if (!widget.iconOnly) const SizedBox(width: 8),
           ],
-          Flexible(
-            child: Text(
-              widget.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTheme.display(fontSize: widget.compact ? 14 : 16, color: fg, letterSpacing: 0.5),
+          if (!widget.iconOnly || widget.icon == null)
+            Flexible(
+              child: Text(
+                widget.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTheme.display(
+                  fontSize: widget.compact ? 14 : 16,
+                  color: fg,
+                  letterSpacing: 0.5,
+                ),
+              ),
             ),
-          ),
         ],
       ],
     );
@@ -95,16 +107,24 @@ class _NeonButtonState extends State<NeonButton> {
     final box = AnimatedContainer(
       duration: const Duration(milliseconds: 120),
       height: height,
-      padding: EdgeInsets.symmetric(horizontal: widget.compact ? 16 : 22),
+      padding: EdgeInsets.symmetric(
+        horizontal: widget.iconOnly ? 0 : (widget.compact ? 16 : 22),
+      ),
       decoration: BoxDecoration(
-        gradient: v == NeonVariant.primary && _enabled ? AppColors.accentGradient : null,
-        color: v == NeonVariant.primary && !_enabled ? AppColors.surfaceHighest : null,
+        gradient: v == NeonVariant.primary && _enabled
+            ? AppColors.accentGradient
+            : null,
+        color: v == NeonVariant.primary && !_enabled
+            ? AppColors.surfaceHighest
+            : null,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: border,
         boxShadow: v == NeonVariant.primary && _enabled
             ? [
                 BoxShadow(
-                  color: AppColors.accent.withValues(alpha: _down ? 0.12 : 0.32),
+                  color: AppColors.accent.withValues(
+                    alpha: _down ? 0.12 : 0.32,
+                  ),
                   blurRadius: _down ? 8 : 22,
                   offset: const Offset(0, 6),
                 ),
@@ -132,7 +152,9 @@ class _NeonButtonState extends State<NeonButton> {
           child: AnimatedScale(
             scale: _down ? 0.97 : 1,
             duration: const Duration(milliseconds: 90),
-            child: widget.expanded ? SizedBox(width: double.infinity, child: box) : box,
+            child: widget.expanded
+                ? SizedBox(width: double.infinity, child: box)
+                : box,
           ),
         ),
       ),

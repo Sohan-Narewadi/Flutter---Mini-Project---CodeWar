@@ -3,15 +3,18 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../models/battle.dart';
-import '../models/enemy.dart';
 import '../models/level_node.dart';
 import '../providers/game_state.dart';
+import '../ui/app_card.dart';
+import '../ui/app_scaffold.dart';
+import '../ui/neon_button.dart';
+import '../ui/segmented_tabs.dart';
+import '../ui/stat_tile.dart';
 import '../utils/theme.dart';
 import '../widgets/hp_xp_bar.dart';
 
-/// Battle Preparation / Loadout screen: match-up card, weakness readout,
-/// loadout slots, language picker, rewards preview, and the CTA that kicks
-/// off the actual coding battle.
+/// Battle preparation: the match-up, the enemy's topic, language choice, the
+/// rewards on offer, and the button that starts the real (server-issued) battle.
 class BattlePreparationScreen extends StatefulWidget {
   const BattlePreparationScreen({super.key, required this.enemyId, this.levelId});
 
@@ -31,149 +34,122 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
     final state = context.watch<GameState>();
     final enemy = state.enemyById(widget.enemyId);
     final player = state.player;
+    final lowHp = player.hp <= player.hpMax * 0.25;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Battle Preparation')),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // Match-up card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceContainer,
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-                border: Border.all(color: AppColors.outlineVariant),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('YOU', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.secondary)),
-                            const SizedBox(height: 4),
-                            Text(player.displayName, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.onSurface)),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.bolt, color: AppColors.tertiary),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            const Text('ENEMY', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.error)),
-                            const SizedBox(height: 4),
-                            Text(enemy.name, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.onSurface)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  HpXpBar(progress: player.hpProgress, color: AppColors.secondary, label: 'HP', trailing: '${player.hp}/${player.hpMax}'),
-                  const SizedBox(height: 10),
-                  HpXpBar(progress: enemy.hpProgress, color: AppColors.error, label: 'ENEMY HP', trailing: '${enemy.hpCurrent}/${enemy.hpMax}'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            _infoGrid(enemy),
-            const SizedBox(height: 20),
-            const Text('Language', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.onSurface)),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
+    return AppScaffold(
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, AppSpace.page, 0),
+            child: Row(
               children: [
-                _langChip('python', 'Python 3'),
-                _langChip('typescript', 'TypeScript'),
+                IconButton(tooltip: 'Back', icon: const Icon(Icons.arrow_back_rounded), onPressed: () => context.canPop() ? context.pop() : context.go('/home')),
+                Text('Battle preparation', style: AppTheme.display(fontSize: 22)),
               ],
             ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _rewardMini(Icons.bolt, '+${enemy.xpReward} XP', AppColors.secondary),
-                  _rewardMini(Icons.monetization_on, '+${enemy.goldReward} Coins', AppColors.tertiary),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _starting ? null : () => _confirmAndFight(context, enemy.id),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text(_starting ? 'Loading Battle...' : 'Start Battle'),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(AppSpace.page, 12, AppSpace.page, 24),
+              children: [
+                AppCard(
+                  accent: AppColors.danger,
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('YOU', style: AppTheme.overline(color: AppColors.accent)),
+                                const SizedBox(height: 4),
+                                Text(player.displayName, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTheme.display(fontSize: 18)),
+                              ],
+                            ),
+                          ),
+                          const Icon(Icons.flash_on_rounded, color: AppColors.gold),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text('ENEMY', style: AppTheme.overline(color: AppColors.danger)),
+                                const SizedBox(height: 4),
+                                Text(enemy.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTheme.display(fontSize: 18)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      HpXpBar(progress: player.hpProgress, color: AppColors.accent, label: 'YOUR HP', trailing: '${player.hp}/${player.hpMax}', height: 8),
+                      const SizedBox(height: 12),
+                      HpXpBar(progress: enemy.hpProgress, color: AppColors.danger, label: 'ENEMY HP', trailing: '${enemy.hpCurrent}/${enemy.hpMax}', height: 8),
+                    ],
+                  ),
                 ),
-              ),
+                if (lowHp) ...[
+                  const SizedBox(height: 12),
+                  AppCard(
+                    accent: AppColors.gold,
+                    padding: const EdgeInsets.all(14),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.favorite_rounded, color: AppColors.gold, size: 20),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Your HP is low. A wrong submission costs HP and can end the fight. HP regenerates slowly over time, or practice instead (no HP at stake).',
+                            style: TextStyle(color: AppColors.text, fontSize: 13, height: 1.35),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(child: _InfoTile(label: 'Topic', value: enemy.vulnerability.isEmpty ? 'Mixed' : enemy.vulnerability)),
+                    const SizedBox(width: 10),
+                    Expanded(child: _InfoTile(label: 'Tier', value: enemy.tier.isEmpty ? 'Minion' : '${enemy.tier[0].toUpperCase()}${enemy.tier.substring(1)}')),
+                    const SizedBox(width: 10),
+                    Expanded(child: _InfoTile(label: 'Difficulty', value: difficultyLabel(enemy.difficulty))),
+                  ],
+                ),
+                const SizedBox(height: 22),
+                Text('LANGUAGE', style: AppTheme.overline()),
+                const SizedBox(height: 8),
+                SegmentedTabs<String>(
+                  options: const {'python': 'Python 3', 'typescript': 'TypeScript'},
+                  value: _language,
+                  onChanged: (v) => setState(() => _language = v),
+                ),
+                const SizedBox(height: 22),
+                Text('REWARDS', style: AppTheme.overline()),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: StatTile(icon: Icons.bolt_rounded, color: AppColors.accent, value: '+${enemy.xpReward}', label: 'XP')),
+                    const SizedBox(width: 10),
+                    Expanded(child: StatTile(icon: Icons.monetization_on_rounded, color: AppColors.gold, value: '+${enemy.goldReward}', label: 'Gold')),
+                  ],
+                ),
+                const SizedBox(height: 26),
+                NeonButton(
+                  key: const Key('startBattle'),
+                  label: 'Start battle',
+                  icon: Icons.sports_martial_arts_rounded,
+                  loading: _starting,
+                  onPressed: _starting ? null : () => _confirmAndFight(context, enemy.id),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _infoGrid(Enemy enemy) {
-    return Row(
-      children: [
-        Expanded(child: _infoTile('Weakness', enemy.vulnerability, AppColors.secondary)),
-        const SizedBox(width: 10),
-        Expanded(child: _infoTile('Tier', enemy.tier.isEmpty ? 'Minion' : '${enemy.tier[0].toUpperCase()}${enemy.tier.substring(1)}', AppColors.tertiary)),
-        const SizedBox(width: 10),
-        Expanded(child: _infoTile('Level', 'Lv.${enemy.level}', AppColors.error)),
-      ],
-    );
-  }
-
-  Widget _infoTile(String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 10, color: AppColors.onSurfaceVariant, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 4),
-          Text(value, style: AppTheme.mono(fontSize: 13, fontWeight: FontWeight.w800, color: color)),
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _langChip(String value, String label) {
-    final selected = _language == value;
-    return ChoiceChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => setState(() => _language = value),
-      selectedColor: AppColors.primary.withValues(alpha: 0.25),
-      labelStyle: TextStyle(color: selected ? AppColors.primary : AppColors.onSurfaceVariant, fontWeight: FontWeight.w700),
-      side: BorderSide(color: selected ? AppColors.primary : AppColors.outlineVariant),
-    );
-  }
-
-  Widget _rewardMini(IconData icon, String label, Color color) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 18),
-        const SizedBox(height: 4),
-        Text(label, style: AppTheme.mono(fontSize: 11, fontWeight: FontWeight.w700, color: color)),
-      ],
     );
   }
 
@@ -201,5 +177,26 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
     } finally {
       if (mounted) setState(() => _starting = false);
     }
+  }
+}
+
+class _InfoTile extends StatelessWidget {
+  const _InfoTile({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label.toUpperCase(), style: AppTheme.overline()),
+          const SizedBox(height: 6),
+          Text(value, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppTheme.display(fontSize: 14, height: 1.15)),
+        ],
+      ),
+    );
   }
 }

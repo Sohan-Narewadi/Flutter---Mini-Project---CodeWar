@@ -2,195 +2,155 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../models/battle.dart';
 import '../providers/game_state.dart';
+import '../services/sfx.dart';
+import '../ui/app_card.dart';
+import '../ui/app_scaffold.dart';
+import '../ui/neon_button.dart';
+import '../ui/stat_tile.dart';
 import '../utils/theme.dart';
+import '../widgets/hp_xp_bar.dart';
 import '../widgets/no_result_redirect.dart';
 
-class BattleDefeatScreen extends StatelessWidget {
+/// Shown when the server ends the battle as lost (HP reached 0) or expired.
+/// It only reports what actually happened: the outcome, the real numbers and
+/// the first failing test (if the judge returned one).
+class BattleDefeatScreen extends StatefulWidget {
   const BattleDefeatScreen({super.key});
+
+  @override
+  State<BattleDefeatScreen> createState() => _BattleDefeatScreenState();
+}
+
+class _BattleDefeatScreenState extends State<BattleDefeatScreen> {
+  bool _retrying = false;
+
+  /// The result this screen was opened with. Starting a retry clears
+  /// `GameState.lastResult`; holding our own copy stops that rebuild from
+  /// bouncing the player home before the new battle opens.
+  late final BattleResult? _result = context.read<GameState>().lastResult;
+
+  @override
+  void initState() {
+    super.initState();
+    Sfx.play(Cue.lose);
+  }
+
+  Future<void> _retry(GameState state) async {
+    setState(() => _retrying = true);
+    try {
+      await state.startBattle(enemy: state.currentEnemy, level: state.currentLevel);
+      if (!mounted) return;
+      context.pushReplacement('/ide');
+    } on BattleApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } finally {
+      if (mounted) setState(() => _retrying = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<GameState>();
-    final result = state.lastResult;
+    final result = _result;
     if (result == null) return const NoResultRedirect();
     final enemy = state.currentEnemy;
-    final failedIndex = result.results.indexWhere((r) => !r.passed);
-    final failedResult = failedIndex >= 0 ? result.results[failedIndex] : null;
-    // An expired battle reports 0 total tests; avoid dividing by zero.
-    final passedPct = result.totalTests == 0 ? 0 : ((result.passedTests / result.totalTests) * 100).round();
+    final player = state.player;
+    final failed = result.results.where((r) => !r.passed).firstOrNull;
+    final expired = result.outcome == 'expired';
+    final enemyDamagePct = state.enemyHpMax == 0 ? 0 : (100 * (state.enemyHpMax - state.enemyHpRemaining) / state.enemyHpMax).round();
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
+    return AppScaffold(
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(AppSpace.page, 32, AppSpace.page, 24),
+        children: [
+          Center(
+            child: Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.danger.withValues(alpha: 0.12),
+                border: Border.all(color: AppColors.danger.withValues(alpha: 0.8), width: 3),
+                boxShadow: [BoxShadow(color: AppColors.danger.withValues(alpha: 0.35), blurRadius: 36)],
+              ),
+              child: Icon(expired ? Icons.timer_off_rounded : Icons.heart_broken_rounded, color: AppColors.danger, size: 48),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Center(child: Text('DEFEAT', style: AppTheme.display(fontSize: 36, letterSpacing: 6, color: AppColors.danger))),
+          const SizedBox(height: 6),
+          Center(
+            child: Text(
+              expired ? "Time ran out against ${enemy?.name ?? 'the enemy'}." : '${enemy?.name ?? 'The enemy'} wore you down.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.textDim, fontSize: 14),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
             children: [
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(AppRadius.full),
-                  border: Border.all(color: AppColors.error),
-                ),
-                child: Text(
-                  'DEFEAT · ${result.passedTests}/${result.totalTests} TESTS PASSED',
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.error),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Icon(Icons.heart_broken, color: AppColors.error, size: 72),
-              const SizedBox(height: 12),
-              const Text('Battle Defeated', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.onSurface)),
-              const SizedBox(height: 6),
-              Text(
-                '${enemy?.name ?? "Enemy"} (Lvl ${enemy?.level ?? 1}) · Encounter Lost',
-                style: const TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant),
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: ListView(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainer,
-                        borderRadius: BorderRadius.circular(AppRadius.xl),
-                        border: Border.all(color: AppColors.outlineVariant),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: _statCol('Assertions', '${result.passedTests}/${result.totalTests}', '$passedPct%', AppColors.error),
-                          ),
-                          Expanded(
-                            child: _statCol('Damage Taken', '${result.hpLost} HP', '3 ticks', AppColors.tertiary),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.errorContainer.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(AppRadius.xl),
-                        border: Border.all(color: AppColors.error.withValues(alpha: 0.4)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Test ${(failedIndex >= 0 ? failedIndex : 2) + 1} Failed',
-                              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.error)),
-                          const SizedBox(height: 6),
-                          Text(
-                            failedResult != null
-                                ? 'Expected: ${failedResult.expected}, Got: ${failedResult.actual}'
-                                : 'IndexError: list index out of range on empty list []',
-                            style: AppTheme.mono(fontSize: 12, color: AppColors.error),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text('Tactical Debrief', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.onSurface)),
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceContainer,
-                        borderRadius: BorderRadius.circular(AppRadius.xl),
-                        border: Border.all(color: AppColors.outlineVariant),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Pattern Flaw', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: AppColors.onSurface)),
-                          const SizedBox(height: 6),
-                          const Text(
-                            'Your solution assumes the input array always has at least one element. Edge cases like an empty array need an explicit guard clause before indexing.',
-                            style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant, height: 1.5),
-                          ),
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(AppRadius.lg),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text('Recommended Drill', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: AppColors.onSurface)),
-                                      Text('Edge Case Handling · +40 XP', style: AppTheme.mono(fontSize: 11, color: AppColors.secondary)),
-                                    ],
-                                  ),
-                                ),
-                                OutlinedButton(
-                                  onPressed: () => context.go('/practice'),
-                                  child: const Text('Practice Drill'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => context.pushReplacement('/ide'),
-                  child: const Text('Retry Battle (1 Energy or 50 Coins)'),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
+              Expanded(child: StatTile(icon: Icons.rule_rounded, color: AppColors.accent, value: '${result.passedTests}/${result.totalTests}', label: 'Tests passed')),
+              const SizedBox(width: 10),
+              Expanded(child: StatTile(icon: Icons.flash_on_rounded, color: AppColors.gold, value: '$enemyDamagePct%', label: 'Enemy damaged')),
+            ],
+          ),
+          const SizedBox(height: 14),
+          AppCard(
+            child: HpXpBar(progress: player.hpProgress, color: AppColors.accent, label: 'YOUR HP', trailing: '${player.hp}/${player.hpMax}', height: 8),
+          ),
+          if (failed != null) ...[
+            const SizedBox(height: 14),
+            AppCard(
+              accent: AppColors.danger,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => context.go('/practice'),
-                      child: const Text('Practice Topic'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => context.go('/home'),
-                      child: const Text('Return to Camp'),
-                    ),
-                  ),
+                  Text('FIRST FAILING TEST', style: AppTheme.overline(color: AppColors.danger)),
+                  const SizedBox(height: 10),
+                  Text('Input    ${failed.input}', style: AppTheme.mono(fontSize: 12.5, color: AppColors.textDim)),
+                  const SizedBox(height: 4),
+                  Text('Expected ${failed.expected}', style: AppTheme.mono(fontSize: 12.5, color: AppColors.success)),
+                  const SizedBox(height: 4),
+                  Text('Got      ${failed.actual}', style: AppTheme.mono(fontSize: 12.5, color: AppColors.danger)),
                 ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
+          const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.info_outline_rounded, size: 16, color: AppColors.textFaint),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'HP slowly regenerates over time. Practice mode never costs HP, so it is a safe place to sharpen up before you try again.',
+                  style: TextStyle(color: AppColors.textFaint, fontSize: 12, height: 1.4),
+                ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 24),
+          NeonButton(
+            key: const Key('retryBattle'),
+            label: 'Try again',
+            icon: Icons.replay_rounded,
+            loading: _retrying,
+            onPressed: _retrying ? null : () => _retry(state),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: NeonButton(label: 'Practice', variant: NeonVariant.secondary, onPressed: () => context.go('/practice'))),
+              const SizedBox(width: 10),
+              Expanded(child: NeonButton(label: 'Home', variant: NeonVariant.secondary, onPressed: () => context.go('/home'))),
+            ],
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _statCol(String label, String value, String sub, Color color) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 10, color: AppColors.onSurfaceVariant, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 4),
-        Text(value, style: AppTheme.mono(fontSize: 18, fontWeight: FontWeight.w800, color: color)),
-        Text(sub, style: AppTheme.mono(fontSize: 10, color: AppColors.onSurfaceVariant)),
-      ],
     );
   }
 }

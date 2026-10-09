@@ -4,6 +4,7 @@ import '../models/battle.dart';
 import '../models/language.dart';
 import '../models/practice.dart';
 import '../services/api_service.dart';
+import '../services/sfx.dart';
 
 /// Practice mode: topic mastery, the endless problem stream, and the active
 /// problem (code, test runs, hints). The server is authoritative for solving,
@@ -137,6 +138,7 @@ class PracticeState extends ChangeNotifier {
       final r = await _api.practiceSubmit(s.practiceId, code, language.id);
       lastSubmit = r;
       lastRun = r.run;
+      Sfx.play(r.solved ? Cue.success : Cue.error);
       if (r.solved) {
         await loadStatsQuietly();
         await onProgress?.call();

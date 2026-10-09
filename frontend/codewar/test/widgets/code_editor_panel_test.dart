@@ -220,4 +220,16 @@ void main() {
     expect(find.text('2'), findsOneWidget);
     expect(find.text('3'), findsOneWidget);
   });
+
+  testWidgets('a very long line scrolls sideways instead of wrapping, so line numbers stay aligned', (tester) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    final longLine = 'def find_maximum(nums: list[int]) -> int:  # ${'x' * 120}';
+    await pumpEditor(tester, initialCode: '$longLine\n    pass\n', onChanged: (_) {});
+    final field = find.byType(TextField);
+    // three lines (the last one empty) at 21px each: a wrapped line would be much taller.
+    expect(tester.getSize(field).height, closeTo(3 * 21, 4));
+    expect(find.text('3'), findsOneWidget);
+  });
 }

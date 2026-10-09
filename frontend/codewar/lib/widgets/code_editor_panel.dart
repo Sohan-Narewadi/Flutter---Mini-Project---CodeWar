@@ -88,8 +88,12 @@ class CodeEditorPanel extends StatefulWidget {
     required this.initialCode,
     required this.onChanged,
     required this.filename,
+    this.minHeight = 180,
+    this.maxHeight = 360,
   });
 
+  final double minHeight;
+  final double maxHeight;
   final String initialCode;
   final ValueChanged<String> onChanged;
   final String filename;
@@ -183,14 +187,35 @@ class _CodeEditorPanelState extends State<CodeEditorPanel> {
     _setValue(newText, newSelection);
   }
 
+  static const double _fontSize = 13.5;
+  static const double _lineHeight = 21;
+
+  TextStyle get _codeStyle =>
+      AppTheme.mono(fontSize: _fontSize, color: AppColors.text)
+          .copyWith(height: _lineHeight / _fontSize, letterSpacing: 0);
+
+  /// Width of one monospace character at the code font size.
+  double get _charWidth {
+    final tp = TextPainter(text: TextSpan(text: '0', style: _codeStyle), textDirection: TextDirection.ltr)..layout();
+    return tp.width;
+  }
+
+  double _textWidth(String line) {
+    final tp = TextPainter(text: TextSpan(text: line, style: _codeStyle), textDirection: TextDirection.ltr, maxLines: 1)..layout();
+    return tp.width;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final lineCount = _controller.text.split('\n').length;
+    final lines = _controller.text.split('\n');
+    final lineCount = lines.length;
+    final longest = lines.fold<String>('', (m, l) => l.length > m.length ? l : m);
+    final gutterWidth = 14.0 + (lineCount.toString().length * _charWidth) + 10;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerLowest,
+        color: AppColors.surfaceLowest,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.outlineVariant),
+        border: Border.all(color: AppColors.line),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -199,60 +224,86 @@ class _CodeEditorPanelState extends State<CodeEditorPanel> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            color: AppColors.surfaceContainerHigh,
+            color: AppColors.surfaceHigh,
             child: Row(
               children: [
-                const Icon(Icons.description, size: 14, color: AppColors.secondary),
-                const SizedBox(width: 6),
-                Text(widget.filename, style: AppTheme.mono(fontSize: 12, color: AppColors.secondary, fontWeight: FontWeight.w700)),
+                const Icon(Icons.code_rounded, size: 16, color: AppColors.accent),
+                const SizedBox(width: 8),
+                Text(widget.filename, style: AppTheme.mono(fontSize: 12, color: AppColors.accent, fontWeight: FontWeight.w700)),
+                const Spacer(),
+                Text('$lineCount ${lineCount == 1 ? 'line' : 'lines'}', style: AppTheme.mono(fontSize: 11, color: AppColors.textFaint)),
               ],
             ),
           ),
           ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 320, minHeight: 180),
+            constraints: BoxConstraints(maxHeight: widget.maxHeight, minHeight: widget.minHeight),
             child: SingleChildScrollView(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                    width: gutterWidth,
+                    padding: const EdgeInsets.only(top: 12, bottom: 12, right: 10),
+                    color: AppColors.surfaceLow,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: List.generate(
                         lineCount,
-                        (i) => Text(
-                          '${i + 1}',
-                          style: AppTheme.mono(fontSize: 13, color: AppColors.outline),
+                        (i) => SizedBox(
+                          height: _lineHeight,
+                          child: Text('${i + 1}', style: AppTheme.mono(fontSize: 12, color: AppColors.textFaint).copyWith(height: _lineHeight / 12)),
                         ),
                       ),
                     ),
                   ),
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                      child: Shortcuts(
-                        shortcuts: <ShortcutActivator, Intent>{
-                          LogicalKeySet(LogicalKeyboardKey.tab): const _IndentIntent(),
-                          LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.tab): const _OutdentIntent(),
-                        },
-                        child: Actions(
-                          actions: <Type, Action<Intent>>{
-                            _IndentIntent: CallbackAction<_IndentIntent>(onInvoke: (_) => _indent()),
-                            _OutdentIntent: CallbackAction<_OutdentIntent>(onInvoke: (_) => _outdent()),
-                          },
-                          child: TextField(
-                            controller: _controller,
-                            onChanged: widget.onChanged,
-                            inputFormatters: const [_AutoIndentFormatter()],
-                            maxLines: null,
-                            style: AppTheme.mono(fontSize: 13, color: AppColors.onSurface),
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              isDense: true,
+                    child: LayoutBuilder(
+                      builder: (context, c) {
+                        // Never wrap: long lines scroll sideways so the line
+                        // numbers always match what is on screen.
+                        final width = (_textWidth(longest) + 56).clamp(c.maxWidth, double.infinity);
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: SizedBox(
+                            width: width,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                              child: Shortcuts(
+                                shortcuts: <ShortcutActivator, Intent>{
+                                  LogicalKeySet(LogicalKeyboardKey.tab): const _IndentIntent(),
+                                  LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.tab): const _OutdentIntent(),
+                                },
+                                child: Actions(
+                                  actions: <Type, Action<Intent>>{
+                                    _IndentIntent: CallbackAction<_IndentIntent>(onInvoke: (_) => _indent()),
+                                    _OutdentIntent: CallbackAction<_OutdentIntent>(onInvoke: (_) => _outdent()),
+                                  },
+                                  child: TextField(
+                                    controller: _controller,
+                                    onChanged: widget.onChanged,
+                                    inputFormatters: const [_AutoIndentFormatter()],
+                                    maxLines: null,
+                                    keyboardType: TextInputType.multiline,
+                                    autocorrect: false,
+                                    enableSuggestions: false,
+                                    cursorColor: AppColors.accent,
+                                    style: _codeStyle,
+                                    strutStyle: const StrutStyle(fontSize: _fontSize, height: _lineHeight / _fontSize, forceStrutHeight: true),
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      filled: false,
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ],
