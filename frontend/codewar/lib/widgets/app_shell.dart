@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'app_hud.dart';
+import 'offline_banner.dart';
 import 'bottom_nav_bar.dart';
 
 /// Wraps a top-level tab screen (Home/Battle/Practice/Rank/Profile) with the
@@ -26,6 +27,7 @@ class AppShell extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
+            const OfflineBanner(),
             if (showHud) const AppHud(),
             Expanded(child: body),
           ],

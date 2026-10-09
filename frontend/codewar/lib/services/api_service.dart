@@ -9,8 +9,10 @@ import '../models/player.dart';
 import '../models/world.dart';
 import '../models/level_node.dart';
 import '../models/enemy.dart';
-import '../models/question.dart';
-import 'seed_data.dart';
+import 'settings_store.dart';
+
+/// Compile-time override: `flutter run --dart-define=API_URL=https://...`
+const _envApiUrl = String.fromEnvironment('API_URL');
 
 /// The Android emulator reaches the host machine's localhost via 10.0.2.2;
 /// every other target (Windows/macOS/Linux desktop, web, iOS simulator)
@@ -20,179 +22,158 @@ String _defaultBaseUrl() {
   return 'http://127.0.0.1:8000';
 }
 
-/// Thin REST client for the CodeWar backend.
-///
-/// Every method has a short timeout and falls back to local seed data on
-/// any failure (timeout, connection refused, bad shape) so the demo never
-/// shows a blank or broken screen even if the backend isn't running.
-class ApiService {
-  ApiService({String? baseUrl}) : baseUrl = baseUrl ?? _defaultBaseUrl();
+/// Any failed backend call. [unauthorized] means the stored token is no
+/// longer valid; [network] means the server could not be reached at all.
+class ApiException implements Exception {
+  ApiException(this.message, {this.statusCode, this.network = false});
+  final String message;
+  final int? statusCode;
+  final bool network;
 
-  final String baseUrl;
-  // The very first HTTP call after a cold app start can take noticeably
-  // longer than later ones on the emulator's NAT'd 10.0.2.2 path (ARP/route
-  // warm-up), which was causing GameState.load()'s first request to time
-  // out and silently fall back to seed data even while every later request
-  // in the same load() succeeded. 5s comfortably covers that cold-start
-  // cost while still failing fast if the backend is genuinely unreachable.
-  static const _timeout = Duration(seconds: 5);
-  // Battle submissions spawn a fresh sandboxed process per test case (see
-  // backend judge.py), so they're slower than a plain GET - give them real
-  // headroom rather than a generous-looking-but-still-too-short timeout.
+  bool get unauthorized => statusCode == 401;
+
+  @override
+  String toString() => message;
+}
+
+/// Thin REST client for the CodeWar backend. Nothing here ever fabricates
+/// data: every failure surfaces as an [ApiException] for the UI to show.
+class ApiService {
+  ApiService({http.Client? client, SettingsStore? settings})
+      : _client = client ?? http.Client(),
+        settings = settings ?? SettingsStore.memory();
+
+  final http.Client _client;
+  final SettingsStore settings;
+
+  // The first request after a cold start can be slow on the emulator's NAT
+  // path, and a tunnel adds latency, so keep GETs generous but bounded.
+  static const _timeout = Duration(seconds: 8);
+  // Battle submissions spawn a fresh process per test case on the server.
   static const _battleTimeout = Duration(seconds: 20);
 
-  Future<Player> fetchPlayer() async {
-    try {
-      final res = await http
-          .get(Uri.parse('$baseUrl/api/player'))
-          .timeout(_timeout);
-      if (res.statusCode == 200) {
-        return Player.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
-      }
-    } catch (_) {
-      // fall through to seed data
-    }
-    return SeedData.player;
+  static const _offlineMessage =
+      'Cannot reach the CodeWar server. Check your connection or the server address in Settings.';
+
+  bool get hasToken => settings.hasToken;
+
+  String get baseUrl {
+    final stored = settings.apiUrl;
+    final raw = (stored != null && stored.isNotEmpty)
+        ? stored
+        : (_envApiUrl.isNotEmpty ? _envApiUrl : _defaultBaseUrl());
+    return raw.endsWith('/') ? raw.substring(0, raw.length - 1) : raw;
   }
 
-  Future<List<GameWorld>> fetchWorlds() async {
+  Future<dynamic> _request(
+    String method,
+    String path, {
+    Object? body,
+    Duration timeout = _timeout,
+  }) async {
+    final uri = Uri.parse('$baseUrl$path');
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      if (settings.token != null) 'Authorization': 'Bearer ${settings.token}',
+    };
     try {
-      final res =
-          await http.get(Uri.parse('$baseUrl/api/worlds')).timeout(_timeout);
-      if (res.statusCode == 200) {
-        final list = jsonDecode(res.body) as List;
-        return list
-            .map((e) => GameWorld.fromJson(e as Map<String, dynamic>))
-            .toList();
+      final res = method == 'GET'
+          ? await _client.get(uri, headers: headers).timeout(timeout)
+          : await _client
+              .post(uri, headers: headers, body: jsonEncode(body ?? {}))
+              .timeout(timeout);
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        return res.body.isEmpty ? null : jsonDecode(res.body);
       }
-    } catch (_) {}
-    return SeedData.worlds;
-  }
-
-  Future<List<LevelNode>> fetchLevels(String worldId) async {
-    try {
-      final res = await http
-          .get(Uri.parse('$baseUrl/api/levels?world_id=$worldId'))
-          .timeout(_timeout);
-      if (res.statusCode == 200) {
-        final list = jsonDecode(res.body) as List;
-        return list
-            .map((e) => LevelNode.fromJson(e as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (_) {}
-    return SeedData.world2Nodes;
-  }
-
-  Future<List<Enemy>> fetchEnemies() async {
-    try {
-      final res =
-          await http.get(Uri.parse('$baseUrl/api/enemies')).timeout(_timeout);
-      if (res.statusCode == 200) {
-        final list = jsonDecode(res.body) as List;
-        return list
-            .map((e) => Enemy.fromJson(e as Map<String, dynamic>))
-            .toList();
-      }
-    } catch (_) {}
-    return SeedData.enemies;
-  }
-
-  Future<Question> fetchQuestion(String id) async {
-    try {
-      final res = await http
-          .get(Uri.parse('$baseUrl/api/questions/$id'))
-          .timeout(_timeout);
-      if (res.statusCode == 200) {
-        return Question.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
-      }
-    } catch (_) {}
-    return SeedData.questionById(id);
-  }
-
-  // --- Battle submission endpoints ---------------------------------------
-  // Unlike the read-only GETs above, these NEVER silently fall back to fake
-  // local data on failure: a real battle submission requires the backend to
-  // be reachable, so any failure throws a BattleApiException with a message
-  // the UI can surface directly (e.g. as a snackbar).
-
-  Future<BattleStartResult> startBattle(int levelId) async {
-    try {
-      final res = await http
-          .post(
-            Uri.parse('$baseUrl/api/battles/start'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'level_id': levelId}),
-          )
-          .timeout(_battleTimeout);
-      if (res.statusCode == 200) {
-        return BattleStartResult.fromJson(jsonDecode(res.body) as Map<String, dynamic>);
-      }
-      throw BattleApiException(_readableError(res));
-    } on BattleApiException {
+      throw ApiException(_readableError(res), statusCode: res.statusCode);
+    } on ApiException {
       rethrow;
-    } on SocketException {
-      throw BattleApiException('Connection to battle server lost — check the backend is running.');
     } on TimeoutException {
-      throw BattleApiException('Connection to battle server lost — check the backend is running.');
-    } catch (e) {
-      throw BattleApiException('Could not start battle: $e');
-    }
-  }
-
-  Future<BattleResult> runBattleTests(int battleId, String code, {String language = 'python'}) async {
-    try {
-      final res = await http
-          .post(
-            Uri.parse('$baseUrl/api/battles/$battleId/run'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'code': code, 'language': language}),
-          )
-          .timeout(_battleTimeout);
-      if (res.statusCode == 200) {
-        return BattleResult.fromRunJson(jsonDecode(res.body) as Map<String, dynamic>);
-      }
-      throw BattleApiException(_readableError(res));
-    } on BattleApiException {
-      rethrow;
+      throw ApiException(_offlineMessage, network: true);
     } on SocketException {
-      throw BattleApiException('Connection to battle server lost — check the backend is running.');
-    } on TimeoutException {
-      throw BattleApiException('Connection to battle server lost — check the backend is running.');
-    } catch (e) {
-      throw BattleApiException('Could not run tests: $e');
-    }
-  }
-
-  Future<BattleResult> submitBattle(int battleId, String code, {String language = 'python'}) async {
-    try {
-      final res = await http
-          .post(
-            Uri.parse('$baseUrl/api/battles/$battleId/submit'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'code': code, 'language': language}),
-          )
-          .timeout(_battleTimeout);
-      if (res.statusCode == 200) {
-        return BattleResult.fromSubmitJson(jsonDecode(res.body) as Map<String, dynamic>);
-      }
-      throw BattleApiException(_readableError(res));
-    } on BattleApiException {
-      rethrow;
-    } on SocketException {
-      throw BattleApiException('Connection to battle server lost — check the backend is running.');
-    } on TimeoutException {
-      throw BattleApiException('Connection to battle server lost — check the backend is running.');
-    } catch (e) {
-      throw BattleApiException('Could not submit attack: $e');
+      throw ApiException(_offlineMessage, network: true);
+    } on http.ClientException {
+      throw ApiException(_offlineMessage, network: true);
+    } on FormatException {
+      throw ApiException('The server sent an unexpected response.');
     }
   }
 
   String _readableError(http.Response res) {
     try {
       final body = jsonDecode(res.body);
-      if (body is Map && body['detail'] != null) return body['detail'].toString();
+      if (body is Map && body['detail'] != null) {
+        final d = body['detail'];
+        if (d is String) return d;
+        if (d is List && d.isNotEmpty && d.first is Map) {
+          return (d.first as Map)['msg']?.toString() ?? 'Invalid request.';
+        }
+        return d.toString();
+      }
     } catch (_) {}
-    return 'Battle server returned an error (HTTP ${res.statusCode}).';
+    return 'The server returned an error (HTTP ${res.statusCode}).';
   }
+
+  // --- Accounts -----------------------------------------------------------
+
+  /// Registers a new player and stores the issued token.
+  Future<Player> createPlayer(String name) async {
+    final json = await _request('POST', '/api/players', body: {'name': name})
+        as Map<String, dynamic>;
+    settings.token = json['token'] as String;
+    settings.playerName = name;
+    return Player.fromJson(json['player'] as Map<String, dynamic>);
+  }
+
+  // --- Read endpoints -----------------------------------------------------
+
+  Future<Player> fetchPlayer() async =>
+      Player.fromJson(await _request('GET', '/api/player') as Map<String, dynamic>);
+
+  Future<List<GameWorld>> fetchWorlds() async {
+    final list = await _request('GET', '/api/worlds') as List;
+    return list.map((e) => GameWorld.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<LevelNode>> fetchLevels(String worldId) async {
+    final list = await _request('GET', '/api/levels?world_id=$worldId') as List;
+    return list.map((e) => LevelNode.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<Enemy>> fetchEnemies() async {
+    final list = await _request('GET', '/api/enemies') as List;
+    return list.map((e) => Enemy.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  // --- Battle endpoints ---------------------------------------------------
+  // These surface failures as BattleApiException so battle screens can show
+  // the message directly.
+
+  Future<T> _battle<T>(Future<T> Function() call) async {
+    try {
+      return await call();
+    } on ApiException catch (e) {
+      throw BattleApiException(e.message);
+    }
+  }
+
+  Future<BattleStartResult> startBattle(int levelId) => _battle(() async {
+        final json = await _request('POST', '/api/battles/start',
+            body: {'level_id': levelId}, timeout: _battleTimeout) as Map<String, dynamic>;
+        return BattleStartResult.fromJson(json);
+      });
+
+  Future<BattleResult> runBattleTests(int battleId, String code, {String language = 'python'}) =>
+      _battle(() async {
+        final json = await _request('POST', '/api/battles/$battleId/run',
+            body: {'code': code, 'language': language}, timeout: _battleTimeout) as Map<String, dynamic>;
+        return BattleResult.fromRunJson(json);
+      });
+
+  Future<BattleResult> submitBattle(int battleId, String code, {String language = 'python'}) =>
+      _battle(() async {
+        final json = await _request('POST', '/api/battles/$battleId/submit',
+            body: {'code': code, 'language': language}, timeout: _battleTimeout) as Map<String, dynamic>;
+        return BattleResult.fromSubmitJson(json);
+      });
 }

@@ -9,6 +9,9 @@ class Player {
   final int hpMax;
   final int gold;
   final int streak;
+  final int rating;
+  final int wins;
+  final int losses;
 
   const Player({
     required this.id,
@@ -21,6 +24,9 @@ class Player {
     required this.hpMax,
     required this.gold,
     required this.streak,
+    this.rating = 1000,
+    this.wins = 0,
+    this.losses = 0,
   });
 
   double get xpProgress => xpToNext == 0 ? 0 : xp / xpToNext;
@@ -38,6 +44,9 @@ class Player {
       hpMax: json['hp_max'] ?? 100,
       gold: json['gold'] ?? 0,
       streak: json['streak'] ?? 0,
+      rating: json['rating'] ?? 1000,
+      wins: json['wins'] ?? 0,
+      losses: json['losses'] ?? 0,
     );
   }
 
@@ -53,6 +62,9 @@ class Player {
       hpMax: hpMax,
       gold: gold ?? this.gold,
       streak: streak,
+      rating: rating,
+      wins: wins,
+      losses: losses,
     );
   }
 }

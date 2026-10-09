@@ -50,33 +50,87 @@ class GameState extends ChangeNotifier {
   int timeLimitS = 300;
   DateTime? battleStartedAt;
 
+  /// True when the last refresh could not reach the server. The data shown
+  /// is then the last known (or placeholder) state, and the UI says so.
+  bool offline = false;
+  String? error;
+
+  ApiService get api => _api;
+  bool get hasToken => _api.hasToken;
+
+  /// Loads everything for the signed-in player. Without a token there is
+  /// nothing to load: the router sends the user to onboarding.
   Future<void> load() async {
+    if (!hasToken) {
+      isLoading = false;
+      notifyListeners();
+      return;
+    }
     isLoading = true;
     notifyListeners();
     try {
-      // Worlds must resolve first: the backend's real World 2 id (e.g. "2")
-      // is needed to fetch its levels - the seed data's placeholder id
-      // ("w2") is not a valid backend world_id and was previously being
-      // sent straight through, silently failing every levels request.
       final fetchedPlayer = await _api.fetchPlayer();
       final fetchedWorlds = await _api.fetchWorlds();
-      final resolvedWorldId = fetchedWorlds.isEmpty
-          ? SeedData.world2.id
-          : fetchedWorlds
-              .firstWhere((w) => w.order == 2, orElse: () => fetchedWorlds.length > 1 ? fetchedWorlds[1] : fetchedWorlds.first)
-              .id;
+      final world = _pickActiveWorld(fetchedWorlds);
       final results = await Future.wait([
-        _api.fetchLevels(resolvedWorldId),
+        world == null ? Future.value(<LevelNode>[]) : _api.fetchLevels(world.id),
         _api.fetchEnemies(),
       ]);
       player = fetchedPlayer;
       worlds = fetchedWorlds;
       levels = results[0] as List<LevelNode>;
       enemies = results[1] as List<Enemy>;
-    } catch (_) {
-      // Guaranteed fallback: keep seed data already set above.
+      offline = false;
+      error = null;
+    } on ApiException catch (e) {
+      if (e.unauthorized) {
+        // Token no longer valid (e.g. server reset): start over at onboarding.
+        _api.settings.token = null;
+      }
+      offline = e.network;
+      error = e.message;
     }
     isLoading = false;
+    notifyListeners();
+  }
+
+  GameWorld? _pickActiveWorld(List<GameWorld> list) {
+    if (list.isEmpty) return null;
+    return list.firstWhere((w) => w.order == 2, orElse: () => list.length > 1 ? list[1] : list.first);
+  }
+
+  /// Creates the player on the server, stores the token, and loads the game.
+  /// Throws [ApiException] (e.g. name taken) for the onboarding screen.
+  Future<void> register(String name) async {
+    await _api.createPlayer(name);
+    await load();
+  }
+
+  void signOut() {
+    _api.settings.token = null;
+    notifyListeners();
+  }
+
+  /// Re-fetches progress after a battle so the map, enemies and world
+  /// progress reflect what the server now says.
+  Future<void> refreshProgress() async {
+    try {
+      final w = await _api.fetchWorlds();
+      final world = _pickActiveWorld(w);
+      final results = await Future.wait([
+        world == null ? Future.value(<LevelNode>[]) : _api.fetchLevels(world.id),
+        _api.fetchEnemies(),
+        _api.fetchPlayer(),
+      ]);
+      worlds = w;
+      levels = results[0] as List<LevelNode>;
+      enemies = results[1] as List<Enemy>;
+      player = results[2] as Player;
+      offline = false;
+    } on ApiException catch (e) {
+      offline = e.network;
+      error = e.message;
+    }
     notifyListeners();
   }
 
@@ -178,42 +232,13 @@ class GameState extends ChangeNotifier {
     enemyHpRemaining = result.enemyHpRemaining;
     if (result.enemyHpMax > 0) enemyHpMax = result.enemyHpMax;
 
-    // Refresh the player from the backend rather than recomputing xp/gold/hp
-    // locally - the backend owns leveling, and this keeps HUD/Profile/Rank
-    // screens (which all read GameState.player) consistent with the server.
-    if (result.xpEarned > 0 || result.goldEarned > 0 || result.hpLost > 0) {
-      player = await _api.fetchPlayer();
-    }
-
-    if (result.enemyDefeated && currentEnemy != null) {
-      _markDefeated(currentEnemy!.id);
+    // Refresh from the backend rather than recomputing locally: the server
+    // owns leveling, unlocks and progress.
+    if (result.finalized || result.xpEarned > 0 || result.goldEarned > 0 || result.hpLost > 0) {
+      await refreshProgress();
     }
 
     notifyListeners();
     return result;
-  }
-
-  void _markDefeated(String enemyId) {
-    enemies = enemies.map((e) {
-      if (e.id == enemyId) {
-        return Enemy(
-          id: e.id,
-          name: e.name,
-          level: e.level,
-          difficulty: e.difficulty,
-          hpMax: e.hpMax,
-          hpCurrent: 0,
-          vulnerability: e.vulnerability,
-          tier: e.tier,
-          locked: e.locked,
-          unlockHint: e.unlockHint,
-          xpReward: e.xpReward,
-          goldReward: e.goldReward,
-          questionId: e.questionId,
-          defeated: true,
-        );
-      }
-      return e;
-    }).toList();
   }
 }

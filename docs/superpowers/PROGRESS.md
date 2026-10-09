@@ -25,8 +25,8 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 ### Stage 1: Identity + fixes
 - [x] 1.1 Player accounts + bearer auth (backend)
 - [x] 1.2 Per-player progress, ownership, unlocks, HP regen, strict judge equality
-- [ ] 1.3 Configurable API URL, token storage, offline banner (app)
-- [ ] 1.4 Onboarding + settings screen
+- [x] 1.3 Configurable API URL, token storage, offline banner (app)
+- [x] 1.4 Onboarding + settings screen
 - [ ] 1.5 Frontend gameplay fixes (language enum, no fake victory data, refresh after win)
 - [ ] 1.6 Close-out
 
@@ -71,3 +71,5 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - Ruling (1.2): no PlayerEnemy table; `EnemyOut.defeated` is derived from the player's completed levels. Level status stays "current"/"locked"/"completed". Seed level statuses are now ignored (per-player `player_levels` rows override; first level of a world is current by default).
 - Old local `backend/codewar.db` predates the new columns: delete it once and restart the server (create_all does not migrate).
 - Edit tip: multi-line python heredocs with triple quotes break in the Bash tool; write a script file and run it instead.
+- Flutter SDK is at `D:\flutter\bin` (not on PATH in bash): `export PATH="/d/flutter/bin:$PATH"`. Bash tool also chokes on big multi-file heredocs: use the Write tool (after Read for existing files).
+- 1.3/1.4 done: `ApiService` no longer falls back to seed data (throws `ApiException`); `GameState` has `offline/error`, `register`, `signOut`, `refreshProgress`; router is `buildRouter(GameState)` with onboarding redirect.
