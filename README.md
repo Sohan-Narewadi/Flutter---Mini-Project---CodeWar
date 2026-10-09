@@ -25,6 +25,15 @@ A Flutter game where you fight enemies by solving coding problems. Climb a campa
 - **Unlimited problems**: an LLM writes new problems when `ANTHROPIC_API_KEY` is set; otherwise a built-in generator with 34 templates and randomized inputs is used. Expected outputs always come from running a reference solution through the judge, never from the model.
 - In-app code editor (Python and TypeScript), judged server-side.
 
+## Play locally in the browser (free, no hosting)
+
+Double-click **`play.bat`** (or run `.un_server.ps1 -NoTunnel`). It starts the server, which also serves the web app, and prints the addresses:
+
+- This PC: `http://127.0.0.1:8000`
+- Friends on the same Wi-Fi: `http://<your-PC-IP>:8000` (shown in the console; allow Python through Windows Firewall if asked)
+
+Everyone opens the address in a browser, picks a name, and joins rooms with the 6-character code. The web app must be built once: `cd frontend/codewar && flutter build web` (no extra flags). Close the console window to stop.
+
 ## Getting started
 
 ### Prerequisites

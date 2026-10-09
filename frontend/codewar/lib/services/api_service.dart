@@ -22,6 +22,11 @@ const _envApiUrl = String.fromEnvironment('API_URL');
 /// every other target (Windows/macOS/Linux desktop, web, iOS simulator)
 /// reaches it directly via 127.0.0.1.
 String _defaultBaseUrl() {
+  // On the web the app is normally served by the CodeWar server itself, so the
+  // API lives at the very address the page was loaded from (this also makes it
+  // work for friends opening the PC's Wi-Fi address). A separate dev server on
+  // another port passes --dart-define=API_URL=... instead.
+  if (kIsWeb && Uri.base.hasAuthority) return Uri.base.origin;
   if (!kIsWeb && Platform.isAndroid) return 'http://10.0.2.2:8000';
   return 'http://127.0.0.1:8000';
 }

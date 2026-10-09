@@ -8,7 +8,7 @@ import argparse, os, sys, time
 from playwright.sync_api import sync_playwright
 
 ROUTES = ['home', 'practice', 'online', 'rank', 'profile', 'battle', 'settings']
-BASE = 'http://localhost:8080'
+BASE = os.environ.get('CODEWAR_URL', 'http://localhost:8080')
 
 def enable_semantics(pg):
     pg.evaluate("document.querySelector('flt-semantics-placeholder')?.click()")

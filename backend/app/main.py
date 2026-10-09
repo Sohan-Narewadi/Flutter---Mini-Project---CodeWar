@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine, SessionLocal
 from app import models  # noqa: F401 (registers models with Base.metadata)
+from app.webmount import mount_web
 from app.migrate import backfill_after_upgrade, ensure_columns
 from app.seed import seed_if_empty
 from app.routers import player, worlds, levels, enemies, questions, battles, leaderboard, practice, rooms, profile
@@ -46,3 +47,7 @@ app.include_router(profile.router)
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+# Last, so every /api and /ws route above wins over the static files.
+mount_web(app)

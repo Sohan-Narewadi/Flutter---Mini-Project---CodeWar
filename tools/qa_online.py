@@ -7,7 +7,7 @@ Same prerequisites as qa_shots.py. Usage: python tools/qa_online.py [--out docs/
 import argparse, os, re, sqlite3, time
 from playwright.sync_api import sync_playwright
 
-BASE = 'http://localhost:8080'
+BASE = os.environ.get('CODEWAR_URL', 'http://localhost:8080')
 DB = os.path.join(os.path.dirname(__file__), '..', 'backend', 'codewar.db')
 
 
@@ -63,7 +63,10 @@ def main():
         # B joins with the code
         B.goto(f'{BASE}/#/online'); time.sleep(3)
         B.get_by_role('textbox').fill(code); time.sleep(.3)
-        B.get_by_role('button', name='Join room').click()
+        try:
+            B.get_by_role('button', name='Join room').click(timeout=8000)
+        except Exception:
+            B.screenshot(path=f'{a.out}/fail_B.png'); A.screenshot(path=f'{a.out}/fail_A.png'); print('B text:', semantics_text(B)[:400]); raise
         wait_for(B, lambda t: code in t, what='B in the lobby')
         wait_for(A, lambda t: ('Bob' + stamp) in t, what='A sees Bob join')
         print('both players are in the lobby')

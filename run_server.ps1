@@ -18,7 +18,8 @@
 #>
 param(
   [int]$Port = 8000,
-  [switch]$NoTunnel
+  [switch]$NoTunnel,
+  [switch]$NoOpen
 )
 
 $ErrorActionPreference = 'Stop'
@@ -58,12 +59,17 @@ try {
     exit 1
   }
   Write-Host ''
-  Write-Host "API running:  http://127.0.0.1:$Port" -ForegroundColor Green
+  Write-Host "CodeWar running:  http://127.0.0.1:$Port   (web app + API)" -ForegroundColor Green
+  if (-not (Test-Path (Join-Path $root 'frontend/codewar/build/web/index.html'))) {
+    Write-Host '  (web app not built yet: run  flutter build web  inside frontend\codewar, then restart this script)' -ForegroundColor Yellow
+  }
   Write-Host '  Android emulator: http://10.0.2.2:' -NoNewline; Write-Host $Port
   $lan = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
     Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' } |
     Select-Object -ExpandProperty IPAddress
   foreach ($ip in $lan) { Write-Host "  Same Wi-Fi:       http://${ip}:$Port" }
+
+  if (-not $NoOpen) { Start-Process "http://127.0.0.1:$Port" }
 
   $publicUrl = $null
   if (-not $NoTunnel) {

@@ -4,7 +4,7 @@ Usage: python tools/qa_flow.py [--width 390] [--out docs/qa]"""
 import argparse, os, time
 from playwright.sync_api import sync_playwright
 
-BASE = 'http://localhost:8080'
+BASE = os.environ.get('CODEWAR_URL', 'http://localhost:8080')
 
 
 def main():
