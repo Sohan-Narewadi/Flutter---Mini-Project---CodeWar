@@ -15,16 +15,16 @@ class OfflineBanner extends StatelessWidget {
     final state = context.watch<GameState>();
     if (!state.offline) return const SizedBox.shrink();
     return Material(
-      color: AppColors.errorContainer,
+      color: AppColors.dangerDim,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            const Icon(Icons.cloud_off, size: 18, color: AppColors.error),
+            const Icon(Icons.cloud_off, size: 18, color: AppColors.danger),
             const SizedBox(width: 8),
             const Expanded(
               child: Text('Server unreachable. Showing last known data.',
-                  style: TextStyle(color: AppColors.onSurface, fontSize: 13)),
+                  style: TextStyle(color: AppColors.text, fontSize: 13)),
             ),
             TextButton(onPressed: () => state.load(), child: const Text('Retry')),
             IconButton(

@@ -11,12 +11,12 @@ class RewardRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? AppColors.tertiary;
+    final c = color ?? AppColors.gold;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh,
+        color: AppColors.surfaceHigh,
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
@@ -28,7 +28,7 @@ class RewardRow extends StatelessWidget {
             child: Icon(icon, size: 16, color: c),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant))),
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textDim))),
           Text(value, style: AppTheme.mono(fontSize: 14, fontWeight: FontWeight.w700, color: c)),
         ],
       ),

@@ -33,7 +33,7 @@ class _SkeletonBoxState extends State<SkeletonBox> with SingleTickerProviderStat
         height: widget.height,
         width: widget.width,
         decoration: BoxDecoration(
-          color: Color.lerp(AppColors.surfaceContainer, AppColors.surfaceContainerHighest, _c.value),
+          color: Color.lerp(AppColors.surface, AppColors.surfaceHighest, _c.value),
           borderRadius: BorderRadius.circular(widget.radius),
         ),
       ),

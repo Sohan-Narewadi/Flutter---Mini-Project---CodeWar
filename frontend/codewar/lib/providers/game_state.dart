@@ -7,7 +7,6 @@ import '../models/enemy.dart';
 import '../models/question.dart';
 import '../models/battle.dart';
 import '../services/api_service.dart';
-import '../services/seed_data.dart';
 
 class GameState extends ChangeNotifier {
   GameState({ApiService? api}) : _api = api ?? ApiService();
@@ -19,10 +18,10 @@ class GameState extends ChangeNotifier {
   /// True once the first successful load has replaced the placeholder data.
   bool hasLoaded = false;
 
-  Player player = SeedData.player;
-  List<GameWorld> worlds = SeedData.worlds;
-  List<LevelNode> levels = SeedData.world2Nodes;
-  List<Enemy> enemies = SeedData.enemies;
+  Player player = Player.placeholder;
+  List<GameWorld> worlds = const [];
+  List<LevelNode> levels = const [];
+  List<Enemy> enemies = const [];
 
   /// The world this app's single-world demo flow (World Map / Sector Path)
   /// is built around ("Array Ruins", world order 2). Resolved from whatever
@@ -30,7 +29,7 @@ class GameState extends ChangeNotifier {
   /// than assumed to be `worlds.first` - the backend returns World 1 before
   /// World 2 in its list.
   GameWorld get activeWorld {
-    if (worlds.isEmpty) return SeedData.world2;
+    if (worlds.isEmpty) return GameWorld.placeholder;
     return worlds.firstWhere(
       (w) => w.order == 2,
       orElse: () => worlds.length > 1 ? worlds[1] : worlds.first,
@@ -144,7 +143,7 @@ class GameState extends ChangeNotifier {
   }
 
   Enemy enemyById(String id) =>
-      enemies.firstWhere((e) => e.id == id, orElse: () => enemies.first);
+      enemies.firstWhere((e) => e.id == id, orElse: () => Enemy.unknown);
 
   /// Resolves the backend Level for a given enemy via the backend's own
   /// Level.enemy_id association, for entry points into Battle Preparation

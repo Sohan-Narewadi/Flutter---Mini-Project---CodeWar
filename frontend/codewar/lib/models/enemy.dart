@@ -35,6 +35,23 @@ class Enemy {
     this.defeated = false,
   });
 
+  /// Stand-in when an enemy id is not in the loaded list (should not happen).
+  static const unknown = Enemy(
+    id: '',
+    name: 'Unknown enemy',
+    level: 1,
+    difficulty: Difficulty.easy,
+    hpMax: 1,
+    hpCurrent: 1,
+    vulnerability: '',
+    tier: 'minion',
+    locked: true,
+    unlockHint: '',
+    xpReward: 0,
+    goldReward: 0,
+    questionId: '',
+  );
+
   double get hpProgress => hpMax == 0 ? 0 : hpCurrent / hpMax;
 
   factory Enemy.fromJson(Map<String, dynamic> json) {

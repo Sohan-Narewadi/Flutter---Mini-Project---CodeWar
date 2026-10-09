@@ -13,6 +13,8 @@ class GameWorld {
     required this.clearedPercent,
   });
 
+  static const placeholder = GameWorld(id: '', name: '', order: 0, description: '', clearedPercent: 0);
+
   factory GameWorld.fromJson(Map<String, dynamic> json) {
     return GameWorld(
       id: json['id']?.toString() ?? 'w1',

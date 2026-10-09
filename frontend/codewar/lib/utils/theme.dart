@@ -39,26 +39,6 @@ class AppColors {
   static const silver = Color(0xFFC9D2E8);
   static const bronze = Color(0xFFD9915B);
 
-  // ---- Legacy aliases (kept so screens migrate gradually; remove in 9.5) ----
-  static const surfaceContainerLowest = surfaceLowest;
-  static const surfaceContainerLow = surfaceLow;
-  static const surfaceContainer = surface;
-  static const surfaceContainerHigh = surfaceHigh;
-  static const surfaceContainerHighest = surfaceHighest;
-  static const primary = accent;
-  static const onPrimary = onAccent;
-  static const primaryContainer = accentDeep;
-  static const secondary = accent;
-  static const secondaryContainer = accentDim;
-  static const tertiary = gold;
-  static const tertiaryContainer = goldDim;
-  static const error = danger;
-  static const errorContainer = dangerDim;
-  static const onSurface = text;
-  static const onSurfaceVariant = textDim;
-  static const outline = textFaint;
-  static const outlineVariant = line;
-
   /// The signature gradient used by primary buttons and hero accents.
   static const accentGradient = LinearGradient(
     colors: [accent, accentDeep],

@@ -33,6 +33,20 @@ class Player {
     this.bestStreak = 0,
   });
 
+  /// Shown only before the first successful load; never real data.
+  static const placeholder = Player(
+    id: '',
+    username: '',
+    displayName: '',
+    level: 1,
+    xp: 0,
+    xpToNext: 1000,
+    hp: 0,
+    hpMax: 100,
+    gold: 0,
+    streak: 0,
+  );
+
   double get xpProgress => xpToNext == 0 ? 0 : xp / xpToNext;
   double get hpProgress => hpMax == 0 ? 0 : hp / hpMax;
 

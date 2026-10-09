@@ -37,7 +37,7 @@ class HpXpBar extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.onSurfaceVariant,
+                        color: AppColors.textDim,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -48,7 +48,7 @@ class HpXpBar extends StatelessWidget {
                     trailing!,
                     style: AppTheme.mono(
                       fontSize: 11,
-                      color: AppColors.onSurfaceVariant,
+                      color: AppColors.textDim,
                     ),
                   ),
               ],
@@ -63,7 +63,7 @@ class HpXpBar extends StatelessWidget {
             builder: (context, value, _) => LinearProgressIndicator(
               value: value,
               minHeight: height,
-              backgroundColor: AppColors.surfaceContainerHigh,
+              backgroundColor: AppColors.surfaceHigh,
               valueColor: AlwaysStoppedAnimation(color),
             ),
           ),

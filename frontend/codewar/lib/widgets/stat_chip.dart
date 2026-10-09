@@ -16,13 +16,13 @@ class StatChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? AppColors.onSurfaceVariant;
+    final c = color ?? AppColors.textDim;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh,
+        color: AppColors.surfaceHigh,
         borderRadius: BorderRadius.circular(AppRadius.full),
-        border: Border.all(color: AppColors.outlineVariant),
+        border: Border.all(color: AppColors.line),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -4,11 +4,14 @@ import 'package:provider/provider.dart';
 
 import '../models/level_node.dart';
 import '../providers/game_state.dart';
+import '../ui/app_card.dart';
+import '../ui/app_scaffold.dart';
+import '../utils/theme.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/difficulty_chip.dart';
 import '../widgets/enemy_card.dart';
 
-/// Battle Arena: browse-all-encounters screen, filterable by difficulty.
+/// Battle Arena: every encounter in one list, filterable by difficulty.
 class BattleArenaScreen extends StatefulWidget {
   const BattleArenaScreen({super.key});
 
@@ -27,63 +30,37 @@ class _BattleArenaScreenState extends State<BattleArenaScreen> {
     return AppShell(
       title: 'Battle Arena',
       navIndex: -1,
-      body: Column(
+      body: ListView(
+        padding: const EdgeInsets.only(bottom: 24),
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: InkWell(
-              key: const Key('playOnlineBanner'),
-              borderRadius: BorderRadius.circular(12),
-              onTap: () => context.push('/online'),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFA078FF), Color(0xFF00A6E0)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.public, color: Colors.white, size: 32),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Play Online', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16)),
-                          Text('Race or duel friends with a room code', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                        ],
-                      ),
-                    ),
-                    Icon(Icons.chevron_right, color: Colors.white),
-                  ],
-                ),
-              ),
+          PageHeader(
+            title: 'Battle Arena',
+            subtitle: 'Take on enemies for XP and gold. Wrong answers cost HP.',
+            trailing: IconButton(
+              tooltip: 'Back',
+              icon: const Icon(Icons.close_rounded),
+              onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
             child: DifficultyFilterBar(selected: _filter, onSelected: (d) => setState(() => _filter = d)),
           ),
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              itemCount: enemies.length,
-              itemBuilder: (context, i) {
-                final enemy = enemies[i];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: EnemyCard(
-                    enemy: enemy,
-                    onFight: enemy.locked ? null : () => context.push('/prepare/${enemy.id}'),
-                  ),
-                );
-              },
-            ),
-          ),
+          const SizedBox(height: 14),
+          if (enemies.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppSpace.page),
+              child: AppCard(child: Text('No enemies match this filter.', style: TextStyle(color: AppColors.textDim))),
+            )
+          else
+            for (final enemy in enemies)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(AppSpace.page, 0, AppSpace.page, 12),
+                child: EnemyCard(
+                  enemy: enemy,
+                  onFight: enemy.locked ? null : () => context.push('/prepare/${enemy.id}'),
+                ),
+              ),
         ],
       ),
     );

@@ -59,19 +59,19 @@ class DifficultyFilterBar extends StatelessWidget {
           final d = options[i];
           final isSelected = d == selected;
           final label = d == null ? 'All' : difficultyLabel(d);
-          final color = d == null ? AppColors.primary : difficultyColor(d);
+          final color = d == null ? AppColors.accent : difficultyColor(d);
           return ChoiceChip(
             label: Text(label),
             selected: isSelected,
             onSelected: (_) => onSelected(d),
             selectedColor: color.withValues(alpha: 0.25),
-            backgroundColor: AppColors.surfaceContainerHigh,
+            backgroundColor: AppColors.surfaceHigh,
             labelStyle: TextStyle(
-              color: isSelected ? color : AppColors.onSurfaceVariant,
+              color: isSelected ? color : AppColors.textDim,
               fontWeight: FontWeight.w700,
               fontSize: 12,
             ),
-            side: BorderSide(color: isSelected ? color : AppColors.outlineVariant),
+            side: BorderSide(color: isSelected ? color : AppColors.line),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.full)),
           );
         },
