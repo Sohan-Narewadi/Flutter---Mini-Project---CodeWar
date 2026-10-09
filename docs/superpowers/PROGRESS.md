@@ -27,8 +27,8 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - [x] 1.2 Per-player progress, ownership, unlocks, HP regen, strict judge equality
 - [x] 1.3 Configurable API URL, token storage, offline banner (app)
 - [x] 1.4 Onboarding + settings screen
-- [ ] 1.5 Frontend gameplay fixes (language enum, no fake victory data, refresh after win)
-- [ ] 1.6 Close-out
+- [x] 1.5 Frontend gameplay fixes (language enum, no fake victory data, refresh after win)
+- [x] 1.6 Close-out
 
 ### Stage 2: Question engine
 - [ ] 2.1 Model additions + cache
@@ -73,3 +73,5 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - Edit tip: multi-line python heredocs with triple quotes break in the Bash tool; write a script file and run it instead.
 - Flutter SDK is at `D:\flutter\bin` (not on PATH in bash): `export PATH="/d/flutter/bin:$PATH"`. Bash tool also chokes on big multi-file heredocs: use the Write tool (after Read for existing files).
 - 1.3/1.4 done: `ApiService` no longer falls back to seed data (throws `ApiException`); `GameState` has `offline/error`, `register`, `signOut`, `refreshProgress`; router is `buildRouter(GameState)` with onboarding redirect.
+- Ruling (1.5): `Language` enum and model `copyWith` deferred (cosmetic; `_markDefeated` was removed in favor of `refreshProgress()`). C++ chip removed; victory/defeat now redirect home when there is no result (`NoResultRedirect`).
+- Stage 1 verified: backend 47 tests pass, `flutter analyze` clean, `flutter test` 19 pass.

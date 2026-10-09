@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/game_state.dart';
 import '../utils/theme.dart';
+import '../widgets/no_result_redirect.dart';
 
 class BattleDefeatScreen extends StatelessWidget {
   const BattleDefeatScreen({super.key});
@@ -12,10 +13,12 @@ class BattleDefeatScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<GameState>();
     final result = state.lastResult;
+    if (result == null) return const NoResultRedirect();
     final enemy = state.currentEnemy;
-    final failedIndex = result?.results.indexWhere((r) => !r.passed) ?? -1;
-    final failedResult = (failedIndex >= 0 && result != null) ? result.results[failedIndex] : null;
-    final passedPct = result == null ? 66 : ((result.passedTests / result.totalTests) * 100).round();
+    final failedIndex = result.results.indexWhere((r) => !r.passed);
+    final failedResult = failedIndex >= 0 ? result.results[failedIndex] : null;
+    // An expired battle reports 0 total tests; avoid dividing by zero.
+    final passedPct = result.totalTests == 0 ? 0 : ((result.passedTests / result.totalTests) * 100).round();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -33,7 +36,7 @@ class BattleDefeatScreen extends StatelessWidget {
                   border: Border.all(color: AppColors.error),
                 ),
                 child: Text(
-                  'DEFEAT · ${result?.passedTests ?? 2}/${result?.totalTests ?? 3} TESTS PASSED',
+                  'DEFEAT · ${result.passedTests}/${result.totalTests} TESTS PASSED',
                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.error),
                 ),
               ),
@@ -43,7 +46,7 @@ class BattleDefeatScreen extends StatelessWidget {
               const Text('Battle Defeated', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.onSurface)),
               const SizedBox(height: 6),
               Text(
-                '${enemy?.name ?? "Array Beast"} (Lvl ${enemy?.level ?? 10}) · Encounter Lost',
+                '${enemy?.name ?? "Enemy"} (Lvl ${enemy?.level ?? 1}) · Encounter Lost',
                 style: const TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant),
               ),
               const SizedBox(height: 24),
@@ -60,10 +63,10 @@ class BattleDefeatScreen extends StatelessWidget {
                       child: Row(
                         children: [
                           Expanded(
-                            child: _statCol('Assertions', '${result?.passedTests ?? 2}/${result?.totalTests ?? 3}', '$passedPct%', AppColors.error),
+                            child: _statCol('Assertions', '${result.passedTests}/${result.totalTests}', '$passedPct%', AppColors.error),
                           ),
                           Expanded(
-                            child: _statCol('Damage Taken', '${result?.hpLost ?? 85} HP', '3 ticks', AppColors.tertiary),
+                            child: _statCol('Damage Taken', '${result.hpLost} HP', '3 ticks', AppColors.tertiary),
                           ),
                         ],
                       ),

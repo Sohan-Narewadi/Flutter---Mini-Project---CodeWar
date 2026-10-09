@@ -96,7 +96,6 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
               children: [
                 _langChip('python', 'Python 3'),
                 _langChip('typescript', 'TypeScript'),
-                _langChip('cpp', 'C++ 20'),
               ],
             ),
             const SizedBox(height: 20),

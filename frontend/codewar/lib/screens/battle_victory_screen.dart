@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/game_state.dart';
 import '../utils/theme.dart';
+import '../widgets/no_result_redirect.dart';
 import '../widgets/reward_row.dart';
 
 class BattleVictoryScreen extends StatelessWidget {
@@ -13,6 +14,7 @@ class BattleVictoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<GameState>();
     final result = state.lastResult;
+    if (result == null) return const NoResultRedirect();
     final enemy = state.currentEnemy;
     final level = state.currentLevel;
 
@@ -32,7 +34,7 @@ class BattleVictoryScreen extends StatelessWidget {
                   border: Border.all(color: AppColors.secondary),
                 ),
                 child: Text(
-                  'VICTORY · ${result?.passedTests ?? 3}/${result?.totalTests ?? 3} TESTS PASSED',
+                  'VICTORY · ${result.passedTests}/${result.totalTests} TESTS PASSED',
                   style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.secondary),
                 ),
               ),
@@ -42,7 +44,7 @@ class BattleVictoryScreen extends StatelessWidget {
               const Text('Battle Won', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.onSurface)),
               const SizedBox(height: 6),
               Text(
-                '${enemy?.name ?? "Array Beast"} (Lvl ${enemy?.level ?? 10}) · Sector ${level?.order.toString().padLeft(2, '0') ?? "04"} Cleared',
+                '${enemy?.name ?? "Enemy"} (Lvl ${enemy?.level ?? 1}) · Sector ${level?.order.toString().padLeft(2, '0') ?? "--"} Cleared',
                 style: const TextStyle(fontSize: 13, color: AppColors.onSurfaceVariant),
               ),
               const SizedBox(height: 24),
@@ -58,15 +60,15 @@ class BattleVictoryScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Expanded(child: _telemetry('Accuracy', '${result?.correctnessPercent ?? 100}%', 'solution', AppColors.secondary)),
-                        Expanded(child: _telemetry('Damage Dealt', '${result?.damageDealt ?? enemy?.hpMax ?? 0}', 'this hit', AppColors.tertiary)),
+                        Expanded(child: _telemetry('Accuracy', '${result.correctnessPercent}%', 'solution', AppColors.secondary)),
+                        Expanded(child: _telemetry('Damage Dealt', '${result.damageDealt}', 'this hit', AppColors.tertiary)),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(child: _telemetry('Coverage', '${result?.passedTests ?? 3}/${result?.totalTests ?? 3}', 'tests', AppColors.primary)),
-                        Expanded(child: _telemetry('Best Score', '${result?.bestScorePercent ?? 100}%', 'this battle', AppColors.secondary)),
+                        Expanded(child: _telemetry('Coverage', '${result.passedTests}/${result.totalTests}', 'tests', AppColors.primary)),
+                        Expanded(child: _telemetry('Best Score', '${result.bestScorePercent}%', 'this battle', AppColors.secondary)),
                       ],
                     ),
                   ],
@@ -78,8 +80,8 @@ class BattleVictoryScreen extends StatelessWidget {
                 child: Text('Rewards', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.onSurface)),
               ),
               const SizedBox(height: 10),
-              RewardRow(icon: Icons.bolt, label: 'Experience', value: '+${result?.xpEarned ?? enemy?.xpReward ?? 250} XP', color: AppColors.secondary),
-              RewardRow(icon: Icons.monetization_on, label: 'Coins', value: '+${result?.goldEarned ?? enemy?.goldReward ?? 100}', color: AppColors.tertiary),
+              RewardRow(icon: Icons.bolt, label: 'Experience', value: '+${result.xpEarned} XP', color: AppColors.secondary),
+              RewardRow(icon: Icons.monetization_on, label: 'Coins', value: '+${result.goldEarned}', color: AppColors.tertiary),
               const Spacer(),
               SizedBox(
                 width: double.infinity,
