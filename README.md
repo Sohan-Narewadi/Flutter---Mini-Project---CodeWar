@@ -97,6 +97,8 @@ More documentation:
 - [Architecture](docs/ARCHITECTURE.md): how the pieces fit together
 - [API reference](docs/API.md): every endpoint, and the [room protocol](docs/rooms-protocol.md) for live matches
 - [Development guide](docs/DEVELOPMENT.md): tests, tools, the code judge, the design system, running on a phone
+- [Roadmap and known limitations](docs/ROADMAP.md): what is unfinished, what to build next, and where to change what
+- [Changelog](CHANGELOG.md)
 - [Design notes](docs/design/): the original specs
 
 ## Good to know
