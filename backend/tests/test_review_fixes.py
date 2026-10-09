@@ -109,7 +109,7 @@ def test_missing_runtime_is_a_failed_case_not_a_crash(monkeypatch):
 
     def boom(*a, **k):
         raise FileNotFoundError("node")
-    monkeypatch.setattr(subprocess, "run", boom)
+    monkeypatch.setattr(subprocess, "Popen", boom)
     r = execute_case("typescript", "function f(){return 1}", "f", [])
     assert r["ok"] is False and "not available" in r["error"]
 
