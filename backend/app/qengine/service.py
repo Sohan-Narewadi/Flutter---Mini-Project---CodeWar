@@ -5,6 +5,7 @@ Every returned question is judge-verified and stored, and marked as seen by
 the player so they are not served the same one twice.
 """
 import random
+from datetime import date
 from typing import Callable
 
 from sqlalchemy.orm import Session
@@ -98,5 +99,24 @@ def get_question(
     if question is None:
         raise RuntimeError("Could not generate a question.")
 
+    _mark_seen(db, player_id, question.id)
+    return question
+
+
+def get_daily_question(db: Session, player_id: int, today: date | None = None) -> Question:
+    """The same medium problem for every player on a given day (templates only,
+    seeded by the date, so no LLM and no per-player repeat filtering)."""
+    today = today or date.today()
+    ordinal = today.toordinal()
+    topic = TOPICS[ordinal % len(TOPICS)]
+    rng = random.Random(ordinal)
+    payload = None
+    for _ in range(5):
+        payload = finalize(generate_from_template(rng, "medium", topic))
+        if payload is not None:
+            break
+    if payload is None:
+        raise RuntimeError("Could not generate the daily question.")
+    question = _save(db, payload)
     _mark_seen(db, player_id, question.id)
     return question

@@ -1,5 +1,5 @@
 """Per-player progress helpers: HP regeneration, level status, unlocks."""
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy.orm import Session
 
@@ -7,6 +7,27 @@ from app.models.level import Level
 from app.models.progress import PlayerLevel
 
 HP_REGEN_SECONDS = 30
+
+
+def current_week(today: date | None = None) -> str:
+    iso = (today or date.today()).isocalendar()
+    return f"{iso.year}-W{iso.week:02d}"
+
+
+def award_xp(player, xp: int, gold: int) -> None:
+    """Adds XP/gold, tracks lifetime and weekly XP, and handles level-ups."""
+    player.xp += xp
+    player.gold += gold
+    player.total_xp = (player.total_xp or 0) + xp
+    week = current_week()
+    if player.weekly_week != week:
+        player.weekly_week = week
+        player.weekly_xp = 0
+    player.weekly_xp = (player.weekly_xp or 0) + xp
+    while player.xp >= player.xp_to_next:
+        player.xp -= player.xp_to_next
+        player.level += 1
+        player.xp_to_next = round(player.xp_to_next * 1.2)
 
 
 def _naive_utcnow() -> datetime:

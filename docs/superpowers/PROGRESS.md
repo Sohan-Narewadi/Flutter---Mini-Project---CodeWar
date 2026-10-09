@@ -38,8 +38,8 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - [x] 2.5 Service + endpoints
 
 ### Stage 3: Leaderboard + Practice
-- [ ] 3.1 Leaderboard API
-- [ ] 3.2 Practice API
+- [x] 3.1 Leaderboard API
+- [x] 3.2 Practice API
 - [ ] 3.3 Rank screen
 - [ ] 3.4 Practice screen
 
@@ -76,3 +76,4 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - Ruling (1.5): `Language` enum and model `copyWith` deferred (cosmetic; `_markDefeated` was removed in favor of `refreshProgress()`). C++ chip removed; victory/defeat now redirect home when there is no result (`NoResultRedirect`).
 - Stage 1 verified: backend 47 tests pass, `flutter analyze` clean, `flutter test` 19 pass.
 - Stage 2 done: `backend/app/qengine/` (types, verify, templates [34], llm, service). Endpoints: `POST /api/questions/generate {difficulty: easy|medium|hard, topic?}`, `GET /api/topics`. `anthropic` is optional (`ANTHROPIC_API_KEY`, `CODEWAR_LLM_MODEL`). Question rows gained source/topic/content_hash/reference_solution (delete old codewar.db). Judge now has `execute_case` (returns actual value) used for verification.
+- Stage 3 backend done (3.1, 3.2): `GET /api/leaderboard?scope=global|weekly|friends&metric=xp|rating&limit=`, `POST /api/friends {name}`, `POST /api/practice/next {difficulty, topic?, daily?}`, `/api/practice/{id}/run|submit|hint`, `GET /api/practice/stats`. XP rules: practice XP only on the first solve of a question (easy 20/medium 40/hard 80, x2 for the daily), mastery points 5/10/20 per topic (100 = full). `progress.award_xp` is the single place XP/level/total/weekly are updated. Player gained total_xp, weekly_xp, weekly_week, last_solve_date. Remaining for Stage 3: Flutter Rank screen (3.3) and Practice screen (3.4).

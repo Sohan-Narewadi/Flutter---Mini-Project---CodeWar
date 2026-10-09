@@ -144,3 +144,62 @@ class BattleSubmitOut(BattleRunOut):
     enemy_defeated: bool = False
     is_new_best: bool = False
     best_score_percent: int = 0
+
+
+class LeaderboardEntry(BaseModel):
+    rank: int
+    player_id: int
+    name: str
+    level: int
+    rating: int
+    value: int
+    is_me: bool = False
+
+
+class LeaderboardOut(BaseModel):
+    scope: str
+    metric: str
+    entries: list[LeaderboardEntry]
+    me: LeaderboardEntry
+
+
+class FriendIn(BaseModel):
+    name: str
+
+
+class PracticeNextIn(BaseModel):
+    difficulty: str = "easy"
+    topic: str | None = None
+    daily: bool = False
+
+
+class PracticeNextOut(BaseModel):
+    practice_id: int
+    daily: bool = False
+    question: GeneratedQuestionOut
+
+
+class PracticeSubmitOut(BattleRunOut):
+    solved: bool
+    xp_earned: int = 0
+    gold_earned: int = 0
+    streak: int = 0
+    hints_used: int = 0
+
+
+class HintOut(BaseModel):
+    level: int
+    hint: str
+
+
+class TopicStatOut(BaseModel):
+    id: str
+    label: str
+    solved: int
+    mastery_percent: int
+
+
+class PracticeStatsOut(BaseModel):
+    streak: int
+    solved_today: int
+    topics: list[TopicStatOut]

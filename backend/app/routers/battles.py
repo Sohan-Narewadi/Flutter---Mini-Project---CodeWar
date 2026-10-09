@@ -15,8 +15,8 @@ from app.schemas import (
     BattleStartIn, BattleStartOut, QuestionOut,
     CodeSubmitIn, BattleRunOut, BattleSubmitOut, TestResultOut,
 )
-from app.progress import complete_level, level_states, regen_hp
-from app.judge import run_all_cases, UnsupportedLanguageError
+from app.progress import award_xp, complete_level, level_states, regen_hp
+from app.judging import judge_question
 
 router = APIRouter()
 
@@ -67,26 +67,7 @@ def _owned_battle(db: Session, battle_id: int, player: Player) -> Battle:
     return battle
 
 
-def _judge(question: Question, code: str, language: str) -> tuple[list[TestResultOut], int, int]:
-    try:
-        entry_point = question.entry_point.get(language, "")
-        results = run_all_cases(language, code, entry_point, question.judge_cases)
-    except UnsupportedLanguageError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-
-    display = question.test_cases
-    out = [
-        TestResultOut(
-            input=display[i]["input"],
-            expected=display[i]["expected_output"],
-            actual=results[i]["actual"],
-            passed=results[i]["passed"],
-            duration_ms=results[i]["duration_ms"],
-        )
-        for i in range(len(results))
-    ]
-    passed_tests = sum(1 for r in out if r.passed)
-    return out, passed_tests, len(out)
+_judge = judge_question
 
 
 @router.post("/api/battles/{battle_id}/run", response_model=BattleRunOut)
@@ -153,12 +134,7 @@ def submit_battle(battle_id: int, body: CodeSubmitIn, player: Player = Depends(g
         player.wins += 1
         xp_earned = level.xp_reward
         gold_earned = level.gold_reward
-        player.xp += xp_earned
-        player.gold += gold_earned
-        while player.xp >= player.xp_to_next:
-            player.xp -= player.xp_to_next
-            player.level += 1
-            player.xp_to_next = round(player.xp_to_next * 1.2)
+        award_xp(player, xp_earned, gold_earned)
     elif player.hp == 0:
         outcome = "lost"
         battle.status = "lost"
