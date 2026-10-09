@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/game_state.dart';
+import 'providers/practice_state.dart';
 import 'routing/app_router.dart';
 import 'services/api_service.dart';
 import 'services/settings_store.dart';
@@ -27,6 +28,7 @@ class CodeWarApp extends StatefulWidget {
 
 class _CodeWarAppState extends State<CodeWarApp> {
   late final GameState _state;
+  late final PracticeState _practice;
   late final GoRouter _router;
 
   @override
@@ -34,20 +36,25 @@ class _CodeWarAppState extends State<CodeWarApp> {
     super.initState();
     final api = widget.api ?? ApiService(settings: widget.settings ?? SettingsStore.memory());
     _state = GameState(api: api)..load();
+    _practice = PracticeState(api, onProgress: _state.refreshProgress);
     _router = buildRouter(_state);
   }
 
   @override
   void dispose() {
     _router.dispose();
+    _practice.dispose();
     _state.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _state,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<GameState>.value(value: _state),
+        ChangeNotifierProvider<PracticeState>.value(value: _practice),
+      ],
       child: MaterialApp.router(
         title: 'CodeWar',
         debugShowCheckedModeBanner: false,

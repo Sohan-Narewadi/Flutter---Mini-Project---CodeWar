@@ -4,6 +4,7 @@ import '../providers/game_state.dart';
 import '../screens/world_map_screen.dart';
 import '../screens/battle_arena_screen.dart';
 import '../screens/practice_screen.dart';
+import '../screens/practice_play_screen.dart';
 import '../screens/rank_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/battle_preparation_screen.dart';
@@ -31,6 +32,7 @@ GoRouter buildRouter(GameState state) {
       GoRoute(path: '/home', builder: (context, state) => const WorldMapScreen()),
       GoRoute(path: '/battle', builder: (context, state) => const BattleArenaScreen()),
       GoRoute(path: '/practice', builder: (context, state) => const PracticeScreen()),
+      GoRoute(path: '/practice/play', builder: (context, state) => const PracticePlayScreen()),
       GoRoute(path: '/rank', builder: (context, state) => const RankScreen()),
       GoRoute(path: '/profile', builder: (context, state) => const ProfileScreen()),
       GoRoute(

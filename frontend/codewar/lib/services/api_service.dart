@@ -9,6 +9,8 @@ import '../models/player.dart';
 import '../models/world.dart';
 import '../models/level_node.dart';
 import '../models/enemy.dart';
+import '../models/leaderboard.dart';
+import '../models/practice.dart';
 import 'settings_store.dart';
 
 /// Compile-time override: `flutter run --dart-define=API_URL=https://...`
@@ -144,6 +146,38 @@ class ApiService {
     final list = await _request('GET', '/api/enemies') as List;
     return list.map((e) => Enemy.fromJson(e as Map<String, dynamic>)).toList();
   }
+
+  // --- Leaderboard & friends ----------------------------------------------
+
+  Future<Leaderboard> fetchLeaderboard({String scope = 'global', String metric = 'xp', int limit = 50}) async =>
+      Leaderboard.fromJson(await _request('GET', '/api/leaderboard?scope=$scope&metric=$metric&limit=$limit')
+          as Map<String, dynamic>);
+
+  Future<void> addFriend(String name) async {
+    await _request('POST', '/api/friends', body: {'name': name});
+  }
+
+  // --- Practice -------------------------------------------------------------
+
+  Future<PracticeStats> fetchPracticeStats() async =>
+      PracticeStats.fromJson(await _request('GET', '/api/practice/stats') as Map<String, dynamic>);
+
+  Future<PracticeSession> practiceNext({String difficulty = 'easy', String? topic, bool daily = false}) async =>
+      PracticeSession.fromJson(await _request('POST', '/api/practice/next',
+          body: {'difficulty': difficulty, 'topic': topic, 'daily': daily}, timeout: _battleTimeout)
+          as Map<String, dynamic>);
+
+  Future<BattleResult> practiceRun(int practiceId, String code, String language) async =>
+      BattleResult.fromRunJson(await _request('POST', '/api/practice/$practiceId/run',
+          body: {'code': code, 'language': language}, timeout: _battleTimeout) as Map<String, dynamic>);
+
+  Future<PracticeSubmitResult> practiceSubmit(int practiceId, String code, String language) async =>
+      PracticeSubmitResult.fromJson(await _request('POST', '/api/practice/$practiceId/submit',
+          body: {'code': code, 'language': language}, timeout: _battleTimeout) as Map<String, dynamic>);
+
+  Future<Hint> practiceHint(int practiceId, String code, String language) async =>
+      Hint.fromJson(await _request('POST', '/api/practice/$practiceId/hint',
+          body: {'code': code, 'language': language}, timeout: _battleTimeout) as Map<String, dynamic>);
 
   // --- Battle endpoints ---------------------------------------------------
   // These surface failures as BattleApiException so battle screens can show
