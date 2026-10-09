@@ -22,6 +22,7 @@ class Player(Base):
     hp_max = Column(Integer, nullable=False, default=100)
     gold = Column(Integer, nullable=False, default=0)
     streak = Column(Integer, nullable=False, default=0)
+    best_streak = Column(Integer, nullable=False, default=0)
     rating = Column(Integer, nullable=False, default=1000)
     wins = Column(Integer, nullable=False, default=0)
     losses = Column(Integer, nullable=False, default=0)

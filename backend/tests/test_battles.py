@@ -132,3 +132,13 @@ def test_submit_after_deadline_expires(auth_client):
 def test_submit_unknown_battle(auth_client):
     res = auth_client.post("/api/battles/9999/submit", json={"code": "x", "language": "python"})
     assert res.status_code == 404
+
+
+def test_campaign_win_does_not_count_as_an_online_win_but_earns_badges(auth_client):
+    battle_id = auth_client.post("/api/battles/start", json={"level_id": 3}).json()["battle_id"]
+    for _ in range(3):
+        auth_client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"})
+    me = auth_client.get("/api/player").json()
+    assert me["wins"] == 0 and me["losses"] == 0  # the online record is online-only
+    earned = {b["key"] for b in auth_client.get("/api/badges").json() if b["earned_at"]}
+    assert "first_solve" in earned  # a cleared campaign level counts as a first solve

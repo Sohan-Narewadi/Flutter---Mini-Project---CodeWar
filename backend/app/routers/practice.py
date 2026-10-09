@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_player
+from app.badges import award_badges, badge_view
 from app.database import get_db
 from app.judging import judge_question
 from app.models.player import Player
@@ -41,6 +42,7 @@ def _touch_streak(player: Player, today: date) -> None:
     yesterday = (today - timedelta(days=1)).isoformat()
     player.streak = (player.streak + 1) if player.last_solve_date == yesterday else 1
     player.last_solve_date = today.isoformat()
+    player.best_streak = max(player.best_streak or 0, player.streak)
 
 
 @router.post("/api/practice/next", response_model=PracticeNextOut)
@@ -127,10 +129,12 @@ def practice_submit(
                 db.add(stat)
             stat.points += MASTERY_POINTS[attempt.difficulty]
             stat.solved += 1
+    new_badges = [badge_view(k) for k in award_badges(db, player)] if solved else []
     db.commit()
     return PracticeSubmitOut(
         passed_tests=passed, total_tests=total, results=results, correctness_percent=pct,
         solved=solved, xp_earned=xp, gold_earned=gold, streak=player.streak, hints_used=attempt.hints_used,
+        new_badges=new_badges,
     )
 
 

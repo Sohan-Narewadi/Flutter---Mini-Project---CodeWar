@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.models.player import Player
 from app.models.room import RoomResult
 from app.models.social import Friend
+from app.badges import award_badges
 from app.progress import award_xp
 from app.rooms.rating import update_ratings
 
@@ -48,6 +49,8 @@ def persist_results(
             room_code=code, mode=mode, player_id=player.id, rank=s["rank"], best_pct=s["best_pct"],
             rating_before=rating_before, rating_delta=delta, xp=xp, gold=gold,
         ))
+        db.flush()
+        award_badges(db, player)
         rewards[player.id] = {"rating_delta": delta, "xp": xp, "gold": gold, "rating": player.rating}
 
     ids = [s["player_id"] for s in standings]

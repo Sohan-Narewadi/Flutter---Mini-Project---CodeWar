@@ -1,4 +1,5 @@
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import computed_field, BaseModel, ConfigDict, field_validator
+from app.tiers import tier_for
 
 # Only this many example test cases are shown to players; the rest are
 # hidden judge cases so a lookup table of the examples cannot pass.
@@ -20,6 +21,11 @@ class PlayerOut(BaseModel):
     rating: int = 1000
     wins: int = 0
     losses: int = 0
+
+    @computed_field
+    @property
+    def tier(self) -> str:
+        return tier_for(self.rating)["key"]
 
 
 class PlayerCreateIn(BaseModel):
@@ -170,6 +176,11 @@ class LeaderboardEntry(BaseModel):
     value: int
     is_me: bool = False
 
+    @computed_field
+    @property
+    def tier(self) -> str:
+        return tier_for(self.rating)["key"]
+
 
 class LeaderboardOut(BaseModel):
     scope: str
@@ -200,6 +211,7 @@ class PracticeSubmitOut(BattleRunOut):
     gold_earned: int = 0
     streak: int = 0
     hints_used: int = 0
+    new_badges: list[dict] = []
 
 
 class HintOut(BaseModel):

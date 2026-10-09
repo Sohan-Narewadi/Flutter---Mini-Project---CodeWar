@@ -15,6 +15,7 @@ from app.schemas import (
     BattleStartIn, BattleStartOut, QuestionOut,
     CodeSubmitIn, BattleRunOut, BattleSubmitOut, TestResultOut,
 )
+from app.badges import award_badges
 from app.progress import award_xp, complete_level, level_states, regen_hp
 from app.judging import judge_question
 
@@ -131,14 +132,13 @@ def submit_battle(battle_id: int, body: CodeSubmitIn, player: Player = Depends(g
         level = db.query(Level).filter(Level.id == battle.level_id).first()
         stars = 3 if correctness_percent == 100 else (2 if correctness_percent >= 70 else 1)
         complete_level(db, player, level, stars)
-        player.wins += 1
         xp_earned = level.xp_reward
         gold_earned = level.gold_reward
         award_xp(player, xp_earned, gold_earned)
+        award_badges(db, player)
     elif player.hp == 0:
         outcome = "lost"
         battle.status = "lost"
-        player.losses += 1
 
     db.commit()
 

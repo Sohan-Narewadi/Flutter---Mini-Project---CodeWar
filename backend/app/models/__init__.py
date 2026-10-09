@@ -8,5 +8,6 @@ from app.models.progress import PlayerLevel
 from app.models.practice import PracticeAttempt, PracticeStat
 from app.models.social import Friend
 from app.models.room import RoomResult
+from app.models.badge import PlayerBadge
 
-__all__ = ["Player", "World", "Level", "Enemy", "Question", "Battle", "PlayerLevel", "SeenQuestion", "PracticeAttempt", "PracticeStat", "Friend", "RoomResult"]
+__all__ = ["Player", "World", "Level", "Enemy", "Question", "Battle", "PlayerLevel", "SeenQuestion", "PracticeAttempt", "PracticeStat", "Friend", "RoomResult", "PlayerBadge"]
