@@ -52,8 +52,9 @@ class ApiService {
   // The first request after a cold start can be slow on the emulator's NAT
   // path, and a tunnel adds latency, so keep GETs generous but bounded.
   static const _timeout = Duration(seconds: 8);
-  // Battle submissions spawn a fresh process per test case on the server.
-  static const _battleTimeout = Duration(seconds: 20);
+  // Judging runs one process per test case (5s cap each, 6+ cases, plus problem
+  // generation), so give it real headroom before calling the server unreachable.
+  static const _battleTimeout = Duration(seconds: 60);
 
   static const _offlineMessage =
       'Cannot reach the CodeWar server. Check your connection or the server address in Settings.';

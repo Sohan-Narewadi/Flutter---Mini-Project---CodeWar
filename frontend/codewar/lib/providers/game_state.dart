@@ -110,9 +110,13 @@ class GameState extends ChangeNotifier {
     await load();
   }
 
+  /// Lets other state objects (practice, rooms) drop the old player's data.
+  VoidCallback? onSignOut;
+
   void signOut() {
     _api.settings.token = null;
     hasLoaded = false;
+    onSignOut?.call();
     notifyListeners();
   }
 

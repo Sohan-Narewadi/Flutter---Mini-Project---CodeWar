@@ -42,6 +42,10 @@ class _CodeWarAppState extends State<CodeWarApp> {
     _state = GameState(api: api)..load();
     _practice = PracticeState(api, onProgress: _state.refreshProgress);
     _rooms = RoomState(api, channelFactory: widget.channelFactory, onFinished: _state.refreshProgress);
+    _state.onSignOut = () {
+      _practice.reset();
+      _rooms.reset();
+    };
     _router = buildRouter(_state);
   }
 

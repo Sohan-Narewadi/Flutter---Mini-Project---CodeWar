@@ -30,7 +30,7 @@ class RoomState extends ChangeNotifier {
   final Future<void> Function()? onFinished;
 
   // Application close codes (see rooms-protocol.md).
-  static const _terminalCodes = {4401, 4403, 4404};
+  static const _terminalCodes = {4000, 4401, 4403, 4404};
 
   RoomSnapshot? room;
   Question? question;
@@ -124,6 +124,8 @@ class RoomState extends ChangeNotifier {
   void _openChannel() {
     final c = _code;
     if (c == null) return;
+    // A result owed by the previous socket will never arrive.
+    judging = false;
     final channel = _factory(_api.roomSocketUri(c));
     _channel = channel;
     _sub = channel.messages.listen(
@@ -131,6 +133,19 @@ class RoomState extends ChangeNotifier {
       onError: (_) => _onClosed(channel),
       onDone: () => _onClosed(channel),
     );
+  }
+
+  /// Drops all room state without telling the server (used on sign-out).
+  Future<void> reset() async {
+    _leaving = true;
+    await _teardown();
+    _reset();
+    _code = null;
+    room = null;
+    question = null;
+    error = null;
+    connection = RoomConnection.idle;
+    notifyListeners();
   }
 
   Future<void> leave() async {
@@ -195,13 +210,17 @@ class RoomState extends ChangeNotifier {
   }
 
   void _onClosed(RoomChannel channel) {
-    if (!identical(channel, _channel)) return; // an old, replaced socket
+    if (!identical(channel, _channel)) return; // an old, replaced, or already-handled socket
+    // web_socket_channel reports one failed connection as an error AND a done
+    // event; handle it once so it costs one retry, not two.
+    _channel = null;
     final closeCode = channel.closeCode;
     if (_leaving) return;
     final finished = room?.status == 'finished';
     if (_terminalCodes.contains(closeCode) || finished || room == null) {
       if (closeCode == 4401) error = 'Your session is no longer valid. Please sign in again.';
       if (closeCode == 4404) error = 'That room no longer exists.';
+      if (closeCode == 4000) error = 'This account joined the room from another device.';
       connection = finished ? RoomConnection.closed : RoomConnection.closed;
       notifyListeners();
       return;

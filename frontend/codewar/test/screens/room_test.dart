@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:codewar/main.dart';
+import 'package:codewar/providers/game_state.dart';
 import 'package:codewar/providers/room_state.dart';
 import 'package:codewar/services/api_service.dart';
 import 'package:codewar/services/room_channel.dart';
@@ -62,6 +63,12 @@ class FakeChannel implements RoomChannel {
 
   void push(Map<String, dynamic> m) => _controller.add(m);
   void snapshot(Map<String, dynamic> room) => push({'type': 'snapshot', 'room': room});
+  void failAndDrop(int? code) {
+    closeCode = code;
+    _controller.addError(StateError('connect failed'));
+    _controller.close();
+  }
+
   void dropWith(int? code) {
     closeCode = code;
     _controller.close();
@@ -272,6 +279,96 @@ void main() {
     expect(channels, hasLength(2));
     expect(rooms.connection, RoomConnection.closed);
     expect(rooms.error, 'That room no longer exists.');
+    rooms.dispose();
+  });
+
+  test('one failed connect uses one backoff slot (error + done are the same failure)', () async {
+    final channels = <FakeChannel>[];
+    final api = ApiService(
+      settings: SettingsStore.memory()..token = 'tok',
+      client: MockClient((req) async => http.Response(jsonEncode(_room('running', [_p(_me, 'Ada', host: true)], secondsLeft: 100)), 201)),
+    );
+    final rooms = RoomState(api, channelFactory: (u) {
+      final c = FakeChannel(u);
+      channels.add(c);
+      return c;
+    }, backoff: const [Duration(milliseconds: 30), Duration(milliseconds: 30), Duration(milliseconds: 30), Duration(milliseconds: 30)]);
+    await rooms.create();
+    channels.last.snapshot(_room('running', [_p(_me, 'Ada', host: true)], secondsLeft: 100));
+    await Future<void>.delayed(Duration.zero);
+
+    channels.last.failAndDrop(1006);
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    expect(channels, hasLength(2), reason: 'exactly one reconnect attempt');
+    channels.last.failAndDrop(1006);
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    expect(channels, hasLength(3));
+    expect(rooms.connection, isNot(RoomConnection.closed), reason: 'still has retries left');
+    rooms.dispose();
+  });
+
+  test('a reconnect clears a stuck judging flag', () async {
+    final channels = <FakeChannel>[];
+    final api = ApiService(
+      settings: SettingsStore.memory()..token = 'tok',
+      client: MockClient((req) async => http.Response(jsonEncode(_room('running', [_p(_me, 'Ada', host: true)], secondsLeft: 100)), 201)),
+    );
+    final rooms = RoomState(api, channelFactory: (u) {
+      final c = FakeChannel(u);
+      channels.add(c);
+      return c;
+    }, backoff: const [Duration(milliseconds: 10)]);
+    await rooms.create();
+    channels.last.snapshot(_room('running', [_p(_me, 'Ada', host: true)], secondsLeft: 100));
+    await Future<void>.delayed(Duration.zero);
+    rooms.submit();
+    expect(rooms.judging, isTrue);
+    channels.last.dropWith(1006); // result goes to the dead socket
+    await Future<void>.delayed(const Duration(milliseconds: 40));
+    expect(channels, hasLength(2));
+    expect(rooms.judging, isFalse);
+    rooms.dispose();
+  });
+
+  test('being replaced by another device is terminal (no reconnect fight)', () async {
+    final channels = <FakeChannel>[];
+    final api = ApiService(
+      settings: SettingsStore.memory()..token = 'tok',
+      client: MockClient((req) async => http.Response(jsonEncode(_room('running', [_p(_me, 'Ada', host: true)], secondsLeft: 100)), 201)),
+    );
+    final rooms = RoomState(api, channelFactory: (u) {
+      final c = FakeChannel(u);
+      channels.add(c);
+      return c;
+    }, backoff: const [Duration(milliseconds: 10)]);
+    await rooms.create();
+    channels.last.snapshot(_room('running', [_p(_me, 'Ada', host: true)], secondsLeft: 100));
+    await Future<void>.delayed(Duration.zero);
+    channels.last.dropWith(4000);
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect(channels, hasLength(1));
+    expect(rooms.connection, RoomConnection.closed);
+    expect(rooms.error, contains('another device'));
+    rooms.dispose();
+  });
+
+  test('sign out clears practice and room state and notifies listeners', () async {
+    final api = ApiService(
+      settings: SettingsStore.memory()..token = 'tok',
+      client: MockClient((req) async => http.Response(jsonEncode(_room('lobby', [_p(_me, 'Ada', host: true)])), 201)),
+    );
+    final rooms = RoomState(api, channelFactory: (u) => FakeChannel(u));
+    await rooms.create();
+    expect(rooms.room, isNotNull);
+    final game = GameState(api: api);
+    var called = 0;
+    game.onSignOut = () => called++;
+    game.signOut();
+    expect(called, 1);
+    expect(api.hasToken, isFalse);
+    await rooms.reset();
+    expect(rooms.room, isNull);
+    expect(rooms.connection, RoomConnection.idle);
     rooms.dispose();
   });
 }

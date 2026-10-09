@@ -38,6 +38,20 @@ class PracticeState extends ChangeNotifier {
 
   bool get busy => starting || running || submitting || hinting;
 
+  /// Forgets everything about the current player (used on sign-out).
+  void reset() {
+    stats = PracticeStats.empty;
+    statsError = null;
+    session = null;
+    code = '';
+    error = null;
+    lastRun = null;
+    lastSubmit = null;
+    hints.clear();
+    starting = running = submitting = hinting = false;
+    notifyListeners();
+  }
+
   Future<void> loadStats() async {
     loadingStats = true;
     statsError = null;
