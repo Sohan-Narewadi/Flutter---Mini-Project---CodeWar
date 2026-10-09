@@ -83,11 +83,14 @@ class HomeHeader extends StatelessWidget {
                   style: AppTheme.display(fontSize: 18),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  'LEVEL ${player.level}  ·  ${player.xp}/${player.xpToNext} XP',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTheme.overline(color: AppColors.textDim),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'LEVEL ${player.level}  ·  ${player.xp}/${player.xpToNext} XP',
+                    maxLines: 1,
+                    style: AppTheme.overline(color: AppColors.textDim),
+                  ),
                 ),
               ],
             ),

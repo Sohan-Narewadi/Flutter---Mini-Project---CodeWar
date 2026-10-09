@@ -198,7 +198,8 @@ class _Shortcut extends StatelessWidget {
     return AppCard(
       onTap: onTap,
       padding: const EdgeInsets.all(14),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 40,
@@ -206,16 +207,10 @@ class _Shortcut extends StatelessWidget {
             decoration: BoxDecoration(color: AppColors.accent.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(AppRadius.md)),
             child: Icon(icon, color: AppColors.accent, size: 22),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTheme.display(fontSize: 15)),
-                Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.textDim, fontSize: 12)),
-              ],
-            ),
-          ),
+          const SizedBox(height: 10),
+          Text(title, style: AppTheme.display(fontSize: 16)),
+          const SizedBox(height: 2),
+          Text(subtitle, style: const TextStyle(color: AppColors.textDim, fontSize: 12)),
         ],
       ),
     );
