@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/game_state.dart';
@@ -71,38 +72,41 @@ class ProfileScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          const Text('Loadout', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.onSurface)),
+          const Text('Online record', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.onSurface)),
           const SizedBox(height: 10),
-          _loadoutRow(Icons.gavel, 'Logic Blade Mk II', 'Primary Weapon · Equipped'),
-          _loadoutRow(Icons.shield, 'Debug Shield', 'Defense · Locked'),
-          _loadoutRow(Icons.smart_toy, 'Byte Bot v1.4', 'Support · Equipped'),
+          Row(
+            children: [
+              Expanded(child: _recordTile('Rating', '${player.rating}', AppColors.primary)),
+              const SizedBox(width: 10),
+              Expanded(child: _recordTile('Wins', '${player.wins}', AppColors.secondary)),
+              const SizedBox(width: 10),
+              Expanded(child: _recordTile('Losses', '${player.losses}', AppColors.error)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          OutlinedButton.icon(
+            onPressed: () => context.push('/settings'),
+            icon: const Icon(Icons.settings, size: 18),
+            label: const Text('Settings & server'),
+          ),
         ],
       ),
     );
   }
 
-  Widget _loadoutRow(IconData icon, String name, String subtitle) {
+  Widget _recordTile(String label, String value, Color color) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: AppColors.outlineVariant),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Icon(icon, color: AppColors.primary, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.onSurface)),
-                Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
-              ],
-            ),
-          ),
+          Text(value, style: AppTheme.mono(fontSize: 22, fontWeight: FontWeight.w900, color: color)),
+          const SizedBox(height: 2),
+          Text(label, style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
         ],
       ),
     );

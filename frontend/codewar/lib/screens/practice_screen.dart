@@ -41,7 +41,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
     final p = context.watch<PracticeState>();
     return AppShell(
       title: 'Practice',
-      navIndex: 2,
+      navIndex: 1,
       body: RefreshIndicator(
         onRefresh: p.loadStats,
         child: ListView(

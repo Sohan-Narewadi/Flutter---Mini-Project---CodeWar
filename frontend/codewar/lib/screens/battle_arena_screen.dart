@@ -26,7 +26,7 @@ class _BattleArenaScreenState extends State<BattleArenaScreen> {
 
     return AppShell(
       title: 'Battle Arena',
-      navIndex: 1,
+      navIndex: -1,
       body: Column(
         children: [
           Padding(

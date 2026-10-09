@@ -7,6 +7,8 @@ import '../providers/game_state.dart';
 import '../utils/theme.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/sector_tile.dart';
+import '../ui/app_card.dart';
+import '../ui/skeleton.dart';
 
 /// Home / World Map: shows World 2 "Array Ruins" sector progress and the
 /// linear node spine. Tapping an unlocked node routes into the battle flow.
@@ -19,6 +21,32 @@ class WorldMapScreen extends StatelessWidget {
     final world = state.activeWorld;
     final nodes = state.world2Levels;
     final defeatedCount = nodes.where((n) => n.status == NodeStatus.done).length;
+
+    if (!state.hasLoaded) {
+      return AppShell(
+        title: 'World Map',
+        navIndex: 0,
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            if (state.error != null && !state.isLoading)
+              AppCard(
+                accent: AppColors.error,
+                margin: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(state.error!, key: const Key('homeError'), style: const TextStyle(color: AppColors.onSurface)),
+                    const SizedBox(height: 8),
+                    FilledButton(onPressed: state.load, child: const Text('Try again')),
+                  ],
+                ),
+              ),
+            const SkeletonList(rows: 5, rowHeight: 78),
+          ],
+        ),
+      );
+    }
 
     return AppShell(
       title: 'World Map',
@@ -68,6 +96,27 @@ class WorldMapScreen extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  key: const Key('openArena'),
+                  onPressed: () => context.push('/battle'),
+                  icon: const Icon(Icons.gavel, size: 18),
+                  label: const Text('Battle Arena'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push('/online'),
+                  icon: const Icon(Icons.public, size: 18),
+                  label: const Text('Play Online'),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           const Text('Sector Path', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.onSurface)),

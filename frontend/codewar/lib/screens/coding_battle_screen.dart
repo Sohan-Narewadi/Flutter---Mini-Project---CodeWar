@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../models/battle.dart';
 import '../providers/game_state.dart';
 import '../utils/theme.dart';
+import '../ui/shake.dart';
 import '../widgets/code_editor_panel.dart';
 import '../widgets/hp_xp_bar.dart';
 import '../widgets/test_case_tile.dart';
@@ -121,12 +122,15 @@ class _CodingBattleScreenState extends State<CodingBattleScreen> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: HpXpBar(
-                          progress: state.enemyHpMax == 0 ? 0 : state.enemyHpRemaining / state.enemyHpMax,
-                          color: AppColors.error,
-                          label: enemy.name.toUpperCase(),
-                          trailing: '${state.enemyHpRemaining}/${state.enemyHpMax}',
-                          height: 6,
+                        child: ShakeOnDecrease(
+                          trigger: state.enemyHpRemaining,
+                          child: HpXpBar(
+                            progress: state.enemyHpMax == 0 ? 0 : state.enemyHpRemaining / state.enemyHpMax,
+                            color: AppColors.error,
+                            label: enemy.name.toUpperCase(),
+                            trailing: '${state.enemyHpRemaining}/${state.enemyHpMax}',
+                            height: 6,
+                          ),
                         ),
                       ),
                     ],

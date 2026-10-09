@@ -1,5 +1,5 @@
 name: codewar
-description: "A new Flutter project."
+description: "CodeWar: fight enemies, practice endlessly and race friends by solving coding problems."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/game_state.dart';
 import '../utils/theme.dart';
 import 'hp_xp_bar.dart';
 import 'stat_chip.dart';
+import '../ui/skeleton.dart';
 
 /// Persistent player header used at the top of top-level screens: avatar,
 /// name/level, HP + XP bars, gold and streak chips.
@@ -16,6 +18,28 @@ class AppHud extends StatelessWidget {
     final state = context.watch<GameState>();
     final player = state.player;
 
+    if (!state.hasLoaded) {
+      return Container(
+        key: const Key('hudSkeleton'),
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          color: AppColors.surfaceContainerLow,
+          border: Border(bottom: BorderSide(color: AppColors.outlineVariant)),
+        ),
+        child: const Column(
+          children: [
+            Row(children: [
+              SkeletonBox(height: 48, width: 48, radius: 24),
+              SizedBox(width: 12),
+              Expanded(child: SkeletonBox(height: 28)),
+            ]),
+            SizedBox(height: 12),
+            SkeletonBox(height: 10),
+          ],
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       decoration: const BoxDecoration(
@@ -26,15 +50,20 @@ class AppHud extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.primaryContainer.withValues(alpha: 0.25),
-                  border: Border.all(color: AppColors.primary, width: 2),
+              InkWell(
+                key: const Key('hudAvatar'),
+                customBorder: const CircleBorder(),
+                onTap: () => context.go('/profile'),
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primaryContainer.withValues(alpha: 0.25),
+                    border: Border.all(color: AppColors.primary, width: 2),
+                  ),
+                  child: const Icon(Icons.shield, color: AppColors.primary),
                 ),
-                child: const Icon(Icons.shield, color: AppColors.primary),
               ),
               const SizedBox(width: 12),
               Expanded(

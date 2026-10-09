@@ -120,9 +120,7 @@ Future<void> pump2(WidgetTester tester) async {
 }
 
 Future<void> openOnline(WidgetTester tester) async {
-  await tester.tap(find.text('Battle').last);
-  await tester.pumpAndSettle();
-  await tester.tap(find.byKey(const Key('playOnlineBanner')));
+  await tester.tap(find.byKey(const Key('navPlay')));
   await tester.pumpAndSettle();
 }
 

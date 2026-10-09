@@ -36,8 +36,12 @@ class AppShell extends StatelessWidget {
       bottomNavigationBar: BottomNavBar(
         currentIndex: navIndex,
         onTap: (i) {
-          const routes = ['/home', '/battle', '/practice', '/rank', '/profile'];
-          if (i != navIndex) context.go(routes[i]);
+          const routes = ['/home', '/practice', '/online', '/rank', '/profile'];
+          if (i == kPlayIndex) {
+            context.push(routes[i]);
+          } else if (i != navIndex) {
+            context.go(routes[i]);
+          }
         },
       ),
     );

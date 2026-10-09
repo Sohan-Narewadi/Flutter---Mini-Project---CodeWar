@@ -16,6 +16,9 @@ class GameState extends ChangeNotifier {
 
   bool isLoading = true;
 
+  /// True once the first successful load has replaced the placeholder data.
+  bool hasLoaded = false;
+
   Player player = SeedData.player;
   List<GameWorld> worlds = SeedData.worlds;
   List<LevelNode> levels = SeedData.world2Nodes;
@@ -82,6 +85,7 @@ class GameState extends ChangeNotifier {
       enemies = results[1] as List<Enemy>;
       offline = false;
       error = null;
+      hasLoaded = true;
     } on ApiException catch (e) {
       if (e.unauthorized) {
         // Token no longer valid (e.g. server reset): start over at onboarding.
@@ -108,6 +112,7 @@ class GameState extends ChangeNotifier {
 
   void signOut() {
     _api.settings.token = null;
+    hasLoaded = false;
     notifyListeners();
   }
 

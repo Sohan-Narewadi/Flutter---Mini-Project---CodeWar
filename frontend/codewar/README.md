@@ -1,17 +1,31 @@
-# codewar
+# CodeWar app (Flutter)
 
-A new Flutter project.
+The Flutter client for CodeWar: campaign battles, endless Practice, online Race/Duel rooms and a live leaderboard. See the [root README](../../README.md) for setup of the whole project.
 
-## Getting Started
+## Run
 
-This project is a starting point for a Flutter application.
+```bash
+flutter pub get
+flutter run                       # uses http://127.0.0.1:8000 (Android emulator: http://10.0.2.2:8000)
+flutter run --dart-define=API_URL=https://your-tunnel.trycloudflare.com
+```
 
-A few resources to get you started if this is your first Flutter project:
+The server address can also be changed in the app: onboarding > Advanced, or Profile > Settings.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Layout
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+| Path | What |
+|------|------|
+| `lib/services/` | `ApiService` (REST), `RoomChannel` (WebSocket seam), `SettingsStore` (token + server URL) |
+| `lib/providers/` | `GameState` (campaign), `PracticeState`, `RoomState` (online rooms) |
+| `lib/screens/` | one file per screen; `room_screen.dart` covers lobby, countdown, match and results |
+| `lib/ui/` | shared building blocks: `AppCard`, skeleton loaders, shake effect |
+| `lib/widgets/` | HUD, bottom nav, editor panel, bars and tiles |
+| `test/` | unit and widget tests (fake HTTP client and fake socket, no server needed) |
+
+## Checks
+
+```bash
+flutter analyze
+flutter test
+```

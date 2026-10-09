@@ -45,11 +45,16 @@ class HpXpBar extends StatelessWidget {
           ),
         ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.full),
-          child: LinearProgressIndicator(
-            value: progress.clamp(0, 1),
-            minHeight: height,
-            backgroundColor: AppColors.surfaceContainerHigh,
-            valueColor: AlwaysStoppedAnimation(color),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(end: progress.clamp(0.0, 1.0)),
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, _) => LinearProgressIndicator(
+              value: value,
+              minHeight: height,
+              backgroundColor: AppColors.surfaceContainerHigh,
+              valueColor: AlwaysStoppedAnimation(color),
+            ),
           ),
         ),
       ],

@@ -57,11 +57,11 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - [x] 5.4 Tests
 
 ### Stage 6: Polish + tooling
-- [ ] 6.1 Design system
-- [ ] 6.2 Motion
-- [ ] 6.3 Navigation/profile
-- [ ] 6.4 run_server.ps1, docs, CI
-- [ ] 6.5 Final verification
+- [x] 6.1 Design system
+- [x] 6.2 Motion
+- [x] 6.3 Navigation/profile
+- [x] 6.4 run_server.ps1, docs, CI
+- [x] 6.5 Final verification
 
 ## Notes / gotchas
 - Existing `Level.status/stars` and enemy-defeated state are global; Task 1.2 moves them per-player.
@@ -80,3 +80,5 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - Stage 3 done: Flutter `RankScreen` (live, tabs Global/Weekly/Friends, XP vs rating, add friend), `PracticeScreen` hub (streak, daily, topic mastery) + `PracticePlayScreen` (`/practice/play`) driven by `PracticeState`. Added `Language` enum (new code only). Flutter: 23 tests pass; backend: 124 pass.
 - Stage 4 done (rooms backend): `backend/app/rooms/{engine,rating,persist,manager}.py`, `backend/app/routers/rooms.py`, model `RoomResult`. Wire protocol is documented in `docs/superpowers/rooms-protocol.md` (read it before Stage 5). Rulings: `run` is private/unscored, `submit` is scored; duel is a 2-player race shown with HP bars; lobby disconnect removes the player, running disconnect has a 30s grace. Test DB is now a temp file (shared in-memory connection made threaded tests flaky). Backend: 165 tests pass (about 70s).
 - Stage 5 done (rooms UI): `models/room.dart`, `services/room_channel.dart` (RoomChannel seam over web_socket_channel), `providers/room_state.dart` (reconnect with backoff, terminal close codes 4401/4403/4404), screens `play_online_screen.dart` (`/online`: create/join) and `room_screen.dart` (`/room`: lobby, countdown, race/duel match, results). Entry point is a "Play Online" banner on the Battle tab (Stage 6 should promote it in the nav). Flutter tests: 30 pass. Test tip: fake-socket events need two `pump()` calls.
+- Stage 6 done: shared UI primitives (`lib/ui/`: AppCard, SkeletonBox, ShakeOnDecrease), animated HP/XP bars, fade+slide page transitions, new bottom nav (Home, Practice, centered Play, Rank, Profile; Battle Arena reachable from Home), HUD skeleton before first load, fake loadout/energy/skill-point UI removed (profile shows the real online record), `run_server.ps1` (tested with -NoTunnel; tunnel path untested because cloudflared/ngrok are not installed here), README rewrite, CI workflow, `backend/scripts/smoke_rooms.py` (passes against a real uvicorn server). NOT verified visually: the Chrome extension was not connected, so screens were only covered by widget tests and analyze.
+- Remaining: whole-branch review and fixes, then merge decision (branch `feature/online` is not merged into main).

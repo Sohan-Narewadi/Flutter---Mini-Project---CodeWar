@@ -8,10 +8,13 @@ class NavItem {
   const NavItem(this.icon, this.label, this.route);
 }
 
+/// Index of the centered "Play" button (opens online play, never "active").
+const int kPlayIndex = 2;
+
 const List<NavItem> kNavItems = [
   NavItem(Icons.cottage, 'Home', '/home'),
-  NavItem(Icons.gavel, 'Battle', '/battle'),
   NavItem(Icons.terminal, 'Practice', '/practice'),
+  NavItem(Icons.bolt, 'Play', '/online'),
   NavItem(Icons.military_tech, 'Rank', '/rank'),
   NavItem(Icons.shield, 'Profile', '/profile'),
 ];
@@ -29,19 +32,67 @@ class BottomNavBar extends StatelessWidget {
         color: AppColors.surfaceContainerLow,
         border: Border(top: BorderSide(color: AppColors.outlineVariant)),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.only(top: 6, bottom: 4),
       child: SafeArea(
         top: false,
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             for (var i = 0; i < kNavItems.length; i++)
-              _NavButton(
-                item: kNavItems[i],
-                active: i == currentIndex,
-                onTap: () => onTap(i),
-              ),
+              if (i == kPlayIndex)
+                _PlayButton(item: kNavItems[i], onTap: () => onTap(i))
+              else
+                _NavButton(
+                  item: kNavItems[i],
+                  active: i == currentIndex,
+                  onTap: () => onTap(i),
+                ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PlayButton extends StatelessWidget {
+  const _PlayButton({required this.item, required this.onTap});
+  final NavItem item;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Play online',
+      child: GestureDetector(
+        key: const Key('navPlay'),
+        onTap: onTap,
+        child: Transform.translate(
+          offset: const Offset(0, -10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primaryContainer, AppColors.secondaryContainer],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(color: AppColors.primaryContainer.withValues(alpha: 0.45), blurRadius: 16, offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: Icon(item.icon, color: Colors.white, size: 30),
+              ),
+              const SizedBox(height: 2),
+              Text(item.label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: AppColors.primary)),
+            ],
+          ),
         ),
       ),
     );

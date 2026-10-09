@@ -83,12 +83,6 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
             const SizedBox(height: 16),
             _infoGrid(enemy),
             const SizedBox(height: 20),
-            const Text('Loadout', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.onSurface)),
-            const SizedBox(height: 10),
-            _loadoutSlot(Icons.gavel, 'Logic Blade Mk II', 'Primary Weapon', '+15% syntax speed, +20 critical test dmg', locked: false),
-            _loadoutSlot(Icons.shield, 'Debug Shield', 'Defense', 'Blocks 1 failed test penalty', locked: true),
-            _loadoutSlot(Icons.smart_toy, 'Byte Bot v1.4', 'Support', '1 hint w/o coin penalty', locked: false),
-            const SizedBox(height: 20),
             const Text('Language', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.onSurface)),
             const SizedBox(height: 10),
             Wrap(
@@ -110,7 +104,6 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
                 children: [
                   _rewardMini(Icons.bolt, '+${enemy.xpReward} XP', AppColors.secondary),
                   _rewardMini(Icons.monetization_on, '+${enemy.goldReward} Coins', AppColors.tertiary),
-                  _rewardMini(Icons.auto_awesome, '+1 Skill Pt', AppColors.primary),
                 ],
               ),
             ),
@@ -121,7 +114,7 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
                 onPressed: _starting ? null : () => _confirmAndFight(context, enemy.id),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text(_starting ? 'Loading Battle...' : 'Confirm Loadout & Fight (10 Energy)'),
+                  child: Text(_starting ? 'Loading Battle...' : 'Start Battle'),
                 ),
               ),
             ),
@@ -136,9 +129,9 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
       children: [
         Expanded(child: _infoTile('Weakness', enemy.vulnerability, AppColors.secondary)),
         const SizedBox(width: 10),
-        Expanded(child: _infoTile('Target', 'O(N)', AppColors.tertiary)),
+        Expanded(child: _infoTile('Tier', enemy.tier.isEmpty ? 'Minion' : '${enemy.tier[0].toUpperCase()}${enemy.tier.substring(1)}', AppColors.tertiary)),
         const SizedBox(width: 10),
-        Expanded(child: _infoTile('Time Limit', '5 min', AppColors.error)),
+        Expanded(child: _infoTile('Level', 'Lv.${enemy.level}', AppColors.error)),
       ],
     );
   }
@@ -158,43 +151,6 @@ class _BattlePreparationScreenState extends State<BattlePreparationScreen> {
           const SizedBox(height: 4),
           Text(value, style: AppTheme.mono(fontSize: 13, fontWeight: FontWeight.w800, color: color)),
         ],
-      ),
-    );
-  }
-
-  Widget _loadoutSlot(IconData icon, String name, String slot, String desc, {required bool locked}) {
-    return Opacity(
-      opacity: locked ? 0.5 : 1,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainer,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.outlineVariant),
-        ),
-        child: Row(
-          children: [
-            Icon(locked ? Icons.lock : icon, color: locked ? AppColors.outline : AppColors.primary, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.onSurface)),
-                      const SizedBox(width: 6),
-                      Text('· $slot', style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
-                    ],
-                  ),
-                  Text(desc, style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
-                ],
-              ),
-            ),
-            if (!locked) const Icon(Icons.check_circle, color: AppColors.secondary, size: 18),
-          ],
-        ),
       ),
     );
   }
