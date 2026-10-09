@@ -85,3 +85,13 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - Final review done (fresh opus reviewer, 12 findings, all fixed with tests): hidden judge cases (only 3 examples shown, rest "(hidden)"), ghost lobby members dropped at start, preparing flag cleared on failed start, 0% submit no longer outranks a non-submitter, lapsed streak shown as 0, deterministic check + PYTHONHASHSEED for LLM references, missing node runtime handled, socket reconnect (one failure = one retry slot, judging flag reset, close code 4000 terminal), sign-out clears practice/room state, judge request timeout 60s. Backend 177 tests, Flutter 34 tests.
 - Deferred (not done): `Language` enum used only in new code; model `copyWith`; LLM hint/problem quality and the tunnel path of run_server.ps1 untested here; no visual check of screens (Chrome extension unavailable).
 - Branch `feature/online` is NOT merged. Next step is the owner's choice: merge to main, open a PR, or keep iterating.
+
+## Stages 7-12: Launch polish (started 2026-10-09)
+**Detailed plan: `docs/superpowers/plans/2026-10-09-codewar-launch-polish.md`** (design tokens, per-task specs, API shapes, QA harness, gotchas). Read it before working; tick tasks there AND here.
+User feedback: UI "looks vibe coded / sticky"; wants launch-ready, industry-grade. Confirmed: Neon arcade style; extras = achievements, rank tiers, sound+haptics, match history. All data real.
+- [ ] 7 Design system (7.1 tokens/theme, 7.2 primitives, 7.3 backdrop/scaffold)
+- [ ] 8 Shell/nav (single header on Home only, nav restyle, /online as tab)
+- [ ] 9 Screens (Home, Practice, Rank podium, Profile, cleanup)
+- [ ] 10 Backend (badges, match history, tiers, public profile)
+- [ ] 11 Online/battle restyle, sound + haptics, accessibility
+- [ ] 12 Visual QA (Playwright at 4 widths), two-browser online test, final review
