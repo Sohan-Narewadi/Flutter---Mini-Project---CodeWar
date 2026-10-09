@@ -123,3 +123,12 @@ def test_ensure_columns_upgrades_an_old_database(tmp_path):
     with engine.begin() as c:
         assert tuple(c.execute(text("SELECT best_streak, rating FROM players")).one()) == (0, 1000)
     assert ensure_columns(engine) == []
+
+
+def test_player_payload_exposes_best_streak(auth_client):
+    db = auth_client.SessionLocal()
+    p = db.query(Player).filter(Player.id == auth_client.player_id).first()
+    p.best_streak = 9
+    db.commit()
+    db.close()
+    assert auth_client.get("/api/player").json()["best_streak"] == 9

@@ -55,6 +55,13 @@ MockClient _server(_Calls calls, {bool solve = true}) => MockClient((req) async 
               {'id': 'arrays', 'label': 'Arrays', 'solved': 0, 'mastery_percent': 0},
             ],
           });
+        case '/api/players/1/public':
+          return json({'id': 1, 'name': 'ByteReaper', 'level': 9, 'rating': 1320, 'tier': 'gold', 'wins': 4, 'losses': 2, 'total_xp': 900, 'badges': ['first_win']});
+        case '/api/badges':
+          return json([
+            {'key': 'first_win', 'name': 'Victor', 'description': 'Win an online match.', 'icon': 'emoji_events', 'earned_at': '2026-10-01T10:00:00Z'},
+            {'key': 'win_5', 'name': 'Contender', 'description': 'Win 5 online matches.', 'icon': 'workspace_premium', 'earned_at': null},
+          ]);
         case '/api/practice/next':
           return json({'practice_id': 5, 'daily': false, 'question': _question});
         case '/api/practice/5/hint':
@@ -85,7 +92,8 @@ void main() {
     await tester.tap(find.text('Rank').last);
     await tester.pumpAndSettle();
     expect(find.text('ByteReaper'), findsOneWidget);
-    expect(find.text('Ada (You)'), findsOneWidget);
+    expect(find.text('Ada'), findsOneWidget);
+    expect(find.text('YOU'), findsOneWidget);
     expect(find.text('900 XP'), findsOneWidget);
     expect(calls.paths.any((p) => p.startsWith('GET /api/leaderboard?scope=global')), isTrue);
 
@@ -136,5 +144,33 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('solvedCard')), findsNothing);
     expect(find.byKey(const Key('testSummary')), findsOneWidget);
+  });
+
+  testWidgets('Rank re-fetches every 15s while visible and stops after leaving the tab', (tester) async {
+    final calls = await _boot(tester);
+    await tester.tap(find.text('Rank').last);
+    await tester.pumpAndSettle();
+    int boards() => calls.paths.where((p) => p.startsWith('GET /api/leaderboard')).length;
+    final first = boards();
+    await tester.pump(const Duration(seconds: 16));
+    await tester.pump();
+    expect(boards(), first + 1);
+
+    await tester.tap(find.text('Home').last);
+    await tester.pumpAndSettle();
+    final after = boards();
+    await tester.pump(const Duration(seconds: 40));
+    expect(boards(), after, reason: 'the timer must be cancelled when the screen is disposed');
+  });
+
+  testWidgets('Tapping a leaderboard row opens the public profile of that player', (tester) async {
+    final calls = await _boot(tester);
+    await tester.tap(find.text('Rank').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('rank_1')));
+    await tester.pumpAndSettle();
+    expect(calls.paths, contains('GET /api/players/1/public'));
+    expect(find.text('GOLD'), findsOneWidget);
+    expect(find.text('4 / 2'), findsOneWidget);
   });
 }

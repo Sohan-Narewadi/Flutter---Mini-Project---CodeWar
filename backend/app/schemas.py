@@ -18,9 +18,15 @@ class PlayerOut(BaseModel):
     hp_max: int
     gold: int
     streak: int
+    best_streak: int = 0
     rating: int = 1000
     wins: int = 0
     losses: int = 0
+
+    @field_validator("best_streak", mode="before")
+    @classmethod
+    def _none_is_zero(cls, v):
+        return 0 if v is None else v
 
     @computed_field
     @property

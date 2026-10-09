@@ -7,6 +7,7 @@ class LeaderboardEntry {
     required this.rating,
     required this.value,
     required this.isMe,
+    this.tier = 'bronze',
   });
 
   final int rank;
@@ -16,6 +17,7 @@ class LeaderboardEntry {
   final int rating;
   final int value;
   final bool isMe;
+  final String tier;
 
   factory LeaderboardEntry.fromJson(Map<String, dynamic> json) => LeaderboardEntry(
         rank: json['rank'] ?? 0,
@@ -25,6 +27,7 @@ class LeaderboardEntry {
         rating: json['rating'] ?? 1000,
         value: json['value'] ?? 0,
         isMe: json['is_me'] == true,
+        tier: json['tier']?.toString() ?? 'bronze',
       );
 }
 

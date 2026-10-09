@@ -1,4 +1,5 @@
 import 'battle.dart';
+import 'profile_models.dart';
 import 'question.dart';
 
 class TopicStat {
@@ -84,6 +85,7 @@ class PracticeSubmitResult {
     required this.xpEarned,
     required this.goldEarned,
     required this.streak,
+    this.newBadges = const [],
   });
 
   final BattleResult run; // passed/total/results/correctness
@@ -92,12 +94,18 @@ class PracticeSubmitResult {
   final int goldEarned;
   final int streak;
 
+  /// Badges unlocked by this very submission.
+  final List<BadgeInfo> newBadges;
+
   factory PracticeSubmitResult.fromJson(Map<String, dynamic> json) => PracticeSubmitResult(
         run: BattleResult.fromRunJson(json),
         solved: json['solved'] == true,
         xpEarned: json['xp_earned'] ?? 0,
         goldEarned: json['gold_earned'] ?? 0,
         streak: json['streak'] ?? 0,
+        newBadges: (json['new_badges'] as List? ?? [])
+            .map((e) => BadgeInfo.fromJson(e as Map<String, dynamic>))
+            .toList(),
       );
 }
 

@@ -11,6 +11,7 @@ import '../models/level_node.dart';
 import '../models/enemy.dart';
 import '../models/leaderboard.dart';
 import '../models/practice.dart';
+import '../models/profile_models.dart';
 import '../models/room.dart';
 import 'settings_store.dart';
 
@@ -177,6 +178,20 @@ class ApiService {
   Future<void> addFriend(String name) async {
     await _request('POST', '/api/friends', body: {'name': name});
   }
+
+  // --- Profile ---------------------------------------------------------------
+
+  Future<List<BadgeInfo>> fetchBadges() async => (await _request('GET', '/api/badges') as List)
+      .map((e) => BadgeInfo.fromJson(e as Map<String, dynamic>))
+      .toList();
+
+  Future<List<MatchRecord>> fetchMatches({int limit = 20}) async =>
+      (await _request('GET', '/api/matches?limit=$limit') as List)
+          .map((e) => MatchRecord.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+  Future<PublicProfile> fetchPublicProfile(int playerId) async =>
+      PublicProfile.fromJson(await _request('GET', '/api/players/$playerId/public') as Map<String, dynamic>);
 
   // --- Practice -------------------------------------------------------------
 

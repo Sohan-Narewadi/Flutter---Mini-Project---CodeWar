@@ -12,6 +12,8 @@ class Player {
   final int rating;
   final int wins;
   final int losses;
+  final String tier;
+  final int bestStreak;
 
   const Player({
     required this.id,
@@ -27,6 +29,8 @@ class Player {
     this.rating = 1000,
     this.wins = 0,
     this.losses = 0,
+    this.tier = 'bronze',
+    this.bestStreak = 0,
   });
 
   double get xpProgress => xpToNext == 0 ? 0 : xp / xpToNext;
@@ -47,6 +51,8 @@ class Player {
       rating: json['rating'] ?? 1000,
       wins: json['wins'] ?? 0,
       losses: json['losses'] ?? 0,
+      tier: json['tier'] ?? 'bronze',
+      bestStreak: json['best_streak'] ?? 0,
     );
   }
 
@@ -65,6 +71,8 @@ class Player {
       rating: rating,
       wins: wins,
       losses: losses,
+      tier: tier,
+      bestStreak: bestStreak,
     );
   }
 }
