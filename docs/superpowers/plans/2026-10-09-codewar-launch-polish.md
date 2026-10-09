@@ -98,7 +98,7 @@ Motion: 180-240ms easeOutCubic for transitions; list items stagger-in (30ms step
 - [x] 12.2 Two-browser online test: script creates two players (two Playwright contexts), A creates a Race, B joins by code, both submit a solution, verify results and leaderboard update. Also run `backend/scripts/smoke_rooms.py`.
 - [x] 12.3 Review every screenshot against the audit list in section 2 and against: alignment on an 8px grid, consistent button colours, no clipped text, no empty dead zones, loading/empty/error states present. Fix and re-shoot until clean. Keep a short `docs/qa/CHECKLIST.md` with per-screen pass/fail.
 - [ ] 12.4 Performance: `flutter build web --release` size noted; no jank on leaderboard auto-refresh; dispose all timers/sockets (test: leaving Rank cancels the timer).
-- [ ] 12.5 Full verification: `cd backend && python -m pytest -q` (expect 177+ new), `cd frontend/codewar && flutter analyze && flutter test`. Update README (screens, badges, tiers, sound), PROGRESS.md, and CI if new steps are needed.
+- [x] 12.5 Full verification: `cd backend && python -m pytest -q` (expect 177+ new), `cd frontend/codewar && flutter analyze && flutter test`. Update README (screens, badges, tiers, sound), PROGRESS.md, and CI if new steps are needed.
 - [ ] 12.6 Final whole-branch review by a fresh opus reviewer (use `superpowers:requesting-code-review`), fix Critical/Important with tests first, then ask the user: merge to main, PR, or iterate. List remaining suggestions (section 7).
 
 ## 5. Conventions and gotchas (carry over)

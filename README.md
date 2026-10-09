@@ -17,6 +17,10 @@ A Flutter game where you fight enemies by solving coding problems. Climb a campa
 - **Endless Practice**: pick a topic and difficulty and get a fresh problem every time, with hints, per-topic mastery, a day streak and a daily challenge (double XP, same puzzle for everyone).
 - **Online rooms**: `Play` in the bottom bar. Create a Race (2-8 players) or a Duel (1v1), share the 6-character code, and compete live. Ratings (Elo), XP and friends are updated when the match ends.
 - **Leaderboard**: global, weekly and friends, by total XP or online rating. All real data.
+- **Rank tiers**: Iron to Diamond, derived from your online rating (shown on the leaderboard, profile and player cards).
+- **Badges**: 17 achievements earned only from real activity (solves, streaks, wins, ratings). Locked badges show how to earn them.
+- **Profile**: tier progress, win rate, best streak, match history with rating changes, topic mastery.
+- **Sound and haptics**: short original sound effects (synthesized by `tools/make_sfx.py`) with on/off switches in Settings.
 - **Accounts**: pick a name on first launch; your device keeps a secret token (no password, no email).
 - **Unlimited problems**: an LLM writes new problems when `ANTHROPIC_API_KEY` is set; otherwise a built-in generator with 34 templates and randomized inputs is used. Expected outputs always come from running a reference solution through the judge, never from the model.
 - In-app code editor (Python and TypeScript), judged server-side.
@@ -82,6 +86,20 @@ cd frontend/codewar && flutter analyze && flutter test
 # End-to-end room check against a running server (same machine)
 cd backend && .venv/Scripts/python scripts/smoke_rooms.py
 ```
+
+## Visual QA and end-to-end checks
+
+Prerequisites: backend on `:8000`, `flutter build web --dart-define=API_URL=http://localhost:8000`, `python -m http.server 8080` inside `frontend/codewar/build/web`, and `pip install playwright` (it drives your installed Chrome).
+
+```bash
+python tools/qa_shots.py --widths 360,768,1280   # every tab at several widths -> docs/qa/
+python tools/qa_flow.py                          # campaign battle, practice and room screens
+python tools/qa_online.py                        # two browsers play a real online match
+```
+
+## Upgrading
+
+New columns are added to an existing `backend/codewar.db` automatically on startup (`backend/app/migrate.py`), so upgrading no longer needs the database deleted. Delete it only to wipe test accounts before a public launch.
 
 ## Notes
 
