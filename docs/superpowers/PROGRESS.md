@@ -23,8 +23,8 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - [ ] Execution method chosen by user (subagent-driven vs native)
 
 ### Stage 1: Identity + fixes
-- [ ] 1.1 Player accounts + bearer auth (backend)
-- [ ] 1.2 Per-player progress, ownership, unlocks, HP regen, strict judge equality
+- [x] 1.1 Player accounts + bearer auth (backend)
+- [x] 1.2 Per-player progress, ownership, unlocks, HP regen, strict judge equality
 - [ ] 1.3 Configurable API URL, token storage, offline banner (app)
 - [ ] 1.4 Onboarding + settings screen
 - [ ] 1.5 Frontend gameplay fixes (language enum, no fake victory data, refresh after win)
@@ -67,3 +67,7 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - Existing `Level.status/stars` and enemy-defeated state are global; Task 1.2 moves them per-player.
 - Judge is not sandboxed (documented risk); fine for friends over a tunnel.
 - Working tree outside this repo (`C:\Users\sohan`) is itself a git repo with lots of untracked files; always run git commands from the project folder.
+- Branch: all work is on `feature/online` (not main).
+- Ruling (1.2): no PlayerEnemy table; `EnemyOut.defeated` is derived from the player's completed levels. Level status stays "current"/"locked"/"completed". Seed level statuses are now ignored (per-player `player_levels` rows override; first level of a world is current by default).
+- Old local `backend/codewar.db` predates the new columns: delete it once and restart the server (create_all does not migrate).
+- Edit tip: multi-line python heredocs with triple quotes break in the Bash tool; write a script file and run it instead.

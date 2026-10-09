@@ -34,3 +34,27 @@ def client():
         c.SessionLocal = TestingSessionLocal
         yield c
     app.dependency_overrides.clear()
+
+
+@pytest.fixture()
+def auth_client(client):
+    """client with a freshly created player's bearer token preset."""
+    body = client.post("/api/players", json={"name": "Tester"}).json()
+    client.headers["Authorization"] = f"Bearer {body['token']}"
+    client.player_id = body["player_id"]
+    # Older battle tests start level 3; open it for this player.
+    from app.models import PlayerLevel
+    db = client.SessionLocal()
+    db.add(PlayerLevel(player_id=body["player_id"], level_id=3, status="current", stars=0))
+    db.commit()
+    db.close()
+    return client
+
+
+@pytest.fixture()
+def make_player(client):
+    """Returns a function creating a player; result: (player_id, headers)."""
+    def _make(name):
+        body = client.post("/api/players", json={"name": name}).json()
+        return body["player_id"], {"Authorization": f"Bearer {body['token']}"}
+    return _make

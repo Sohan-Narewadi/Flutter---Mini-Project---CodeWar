@@ -25,6 +25,19 @@ console.log(JSON.stringify({entry_point}(...__args)));
 """
 
 
+def values_equal(actual, expected) -> bool:
+    """Type-strict JSON equality: bool never equals a number; int/float compare by value."""
+    if isinstance(actual, bool) or isinstance(expected, bool):
+        return isinstance(actual, bool) and isinstance(expected, bool) and actual == expected
+    if isinstance(actual, (int, float)) and isinstance(expected, (int, float)):
+        return actual == expected
+    if isinstance(actual, list) and isinstance(expected, list):
+        return len(actual) == len(expected) and all(values_equal(a, e) for a, e in zip(actual, expected))
+    if isinstance(actual, dict) and isinstance(expected, dict):
+        return actual.keys() == expected.keys() and all(values_equal(actual[k], expected[k]) for k in actual)
+    return type(actual) is type(expected) and actual == expected
+
+
 class UnsupportedLanguageError(Exception):
     pass
 
@@ -78,7 +91,7 @@ def run_case(language: str, code: str, entry_point: str, args: list, expected) -
         except json.JSONDecodeError:
             return {"actual": raw[:300], "passed": False, "duration_ms": duration_ms}
 
-        return {"actual": raw, "passed": actual_value == expected, "duration_ms": duration_ms}
+        return {"actual": raw, "passed": values_equal(actual_value, expected), "duration_ms": duration_ms}
 
 
 def run_all_cases(language: str, code: str, entry_point: str, judge_cases: list[dict]) -> list[dict]:

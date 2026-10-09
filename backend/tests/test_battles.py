@@ -1,10 +1,10 @@
-def test_start_battle_unknown_level(client):
-    res = client.post("/api/battles/start", json={"level_id": 999})
+def test_start_battle_unknown_level(auth_client):
+    res = auth_client.post("/api/battles/start", json={"level_id": 999})
     assert res.status_code == 404
 
 
-def test_start_battle_known_level(client):
-    res = client.post("/api/battles/start", json={"level_id": 3})
+def test_start_battle_known_level(auth_client):
+    res = auth_client.post("/api/battles/start", json={"level_id": 3})
     assert res.status_code == 200
     body = res.json()
     assert body["battle_id"] > 0
@@ -25,11 +25,11 @@ CORRECT_FIND_MAX = (
 )
 
 
-def test_run_battle_all_pass(client):
-    start = client.post("/api/battles/start", json={"level_id": 3})
+def test_run_battle_all_pass(auth_client):
+    start = auth_client.post("/api/battles/start", json={"level_id": 3})
     battle_id = start.json()["battle_id"]
 
-    res = client.post(f"/api/battles/{battle_id}/run", json={"code": CORRECT_FIND_MAX, "language": "python"})
+    res = auth_client.post(f"/api/battles/{battle_id}/run", json={"code": CORRECT_FIND_MAX, "language": "python"})
     assert res.status_code == 200
     body = res.json()
     assert body["passed_tests"] == 3
@@ -37,27 +37,27 @@ def test_run_battle_all_pass(client):
     assert body["correctness_percent"] == 100
 
 
-def test_run_battle_does_not_mutate_enemy_hp(client):
-    start = client.post("/api/battles/start", json={"level_id": 3})
+def test_run_battle_does_not_mutate_enemy_hp(auth_client):
+    start = auth_client.post("/api/battles/start", json={"level_id": 3})
     battle_id = start.json()["battle_id"]
 
-    client.post(f"/api/battles/{battle_id}/run", json={"code": CORRECT_FIND_MAX, "language": "python"})
+    auth_client.post(f"/api/battles/{battle_id}/run", json={"code": CORRECT_FIND_MAX, "language": "python"})
 
-    submit = client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"})
+    submit = auth_client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"})
     # If /run had already damaged the enemy, this first submit's damage would
     # land on a partially-depleted hp_remaining instead of the full hp_max.
     assert submit.json()["enemy_hp_remaining"] == 1000 - submit.json()["damage_dealt"]
 
 
-def test_run_battle_unknown_battle(client):
-    res = client.post("/api/battles/9999/run", json={"code": "x", "language": "python"})
+def test_run_battle_unknown_battle(auth_client):
+    res = auth_client.post("/api/battles/9999/run", json={"code": "x", "language": "python"})
     assert res.status_code == 404
 
 
-def test_run_battle_unsupported_language(client):
-    start = client.post("/api/battles/start", json={"level_id": 3})
+def test_run_battle_unsupported_language(auth_client):
+    start = auth_client.post("/api/battles/start", json={"level_id": 3})
     battle_id = start.json()["battle_id"]
-    res = client.post(f"/api/battles/{battle_id}/run", json={"code": "int x;", "language": "cpp"})
+    res = auth_client.post(f"/api/battles/{battle_id}/run", json={"code": "int x;", "language": "cpp"})
     assert res.status_code == 400
 
 
@@ -73,11 +73,11 @@ BUGGY_FIND_MAX = (
 )
 
 
-def test_submit_partial_credit_does_not_finalize_and_damages_player(client):
-    start = client.post("/api/battles/start", json={"level_id": 3})
+def test_submit_partial_credit_does_not_finalize_and_damages_player(auth_client):
+    start = auth_client.post("/api/battles/start", json={"level_id": 3})
     battle_id = start.json()["battle_id"]
 
-    res = client.post(f"/api/battles/{battle_id}/submit", json={"code": BUGGY_FIND_MAX, "language": "python"})
+    res = auth_client.post(f"/api/battles/{battle_id}/submit", json={"code": BUGGY_FIND_MAX, "language": "python"})
     assert res.status_code == 200
     body = res.json()
     assert body["passed_tests"] == 2
@@ -87,48 +87,48 @@ def test_submit_partial_credit_does_not_finalize_and_damages_player(client):
     assert body["damage_dealt"] > 0
 
 
-def test_submit_full_credit_repeated_wins_and_rejects_resubmit(client):
-    start = client.post("/api/battles/start", json={"level_id": 3})
+def test_submit_full_credit_repeated_wins_and_rejects_resubmit(auth_client):
+    start = auth_client.post("/api/battles/start", json={"level_id": 3})
     battle_id = start.json()["battle_id"]
 
     # e_array_beast hp_max=1000; damage per 100%-correct hit = ceil(1000/3) = 334
-    r1 = client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"}).json()
+    r1 = auth_client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"}).json()
     assert r1["outcome"] == "in_progress"
     assert r1["damage_dealt"] == 334
     assert r1["enemy_hp_remaining"] == 666
 
-    r2 = client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"}).json()
+    r2 = auth_client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"}).json()
     assert r2["enemy_hp_remaining"] == 332
 
-    r3 = client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"}).json()
+    r3 = auth_client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"}).json()
     assert r3["outcome"] == "won"
     assert r3["enemy_defeated"] is True
     assert r3["enemy_hp_remaining"] == 0
     assert r3["xp_earned"] == 100  # level 3 xp_reward
     assert r3["gold_earned"] == 40  # level 3 gold_reward
 
-    resubmit = client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"})
+    resubmit = auth_client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"})
     assert resubmit.status_code == 400
 
 
-def test_submit_after_deadline_expires(client):
+def test_submit_after_deadline_expires(auth_client):
     from datetime import datetime, timedelta, timezone
     from app.models.battle import Battle
 
-    start = client.post("/api/battles/start", json={"level_id": 3})
+    start = auth_client.post("/api/battles/start", json={"level_id": 3})
     battle_id = start.json()["battle_id"]
 
-    db = client.SessionLocal()
+    db = auth_client.SessionLocal()
     battle = db.query(Battle).filter(Battle.id == battle_id).first()
     battle.started_at = datetime.now(timezone.utc) - timedelta(seconds=400)
     db.commit()
     db.close()
 
-    res = client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"})
+    res = auth_client.post(f"/api/battles/{battle_id}/submit", json={"code": CORRECT_FIND_MAX, "language": "python"})
     assert res.status_code == 200
     assert res.json()["outcome"] == "expired"
 
 
-def test_submit_unknown_battle(client):
-    res = client.post("/api/battles/9999/submit", json={"code": "x", "language": "python"})
+def test_submit_unknown_battle(auth_client):
+    res = auth_client.post("/api/battles/9999/submit", json={"code": "x", "language": "python"})
     assert res.status_code == 404

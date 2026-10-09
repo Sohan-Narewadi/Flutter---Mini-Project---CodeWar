@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.auth import get_current_player
 from app.database import get_db
 from app.models.battle import Battle
 from app.models.level import Level
@@ -14,6 +15,7 @@ from app.schemas import (
     BattleStartIn, BattleStartOut, QuestionOut,
     CodeSubmitIn, BattleRunOut, BattleSubmitOut, TestResultOut,
 )
+from app.progress import complete_level, level_states, regen_hp
 from app.judge import run_all_cases, UnsupportedLanguageError
 
 router = APIRouter()
@@ -24,10 +26,13 @@ TIME_LIMIT_BY_DIFFICULTY = {"easy": 240, "medium": 300, "hard": 420, "boss": 600
 
 
 @router.post("/api/battles/start", response_model=BattleStartOut)
-def start_battle(body: BattleStartIn, db: Session = Depends(get_db)):
+def start_battle(body: BattleStartIn, player: Player = Depends(get_current_player), db: Session = Depends(get_db)):
     level = db.query(Level).filter(Level.id == body.level_id).first()
     if level is None:
         raise HTTPException(status_code=404, detail=f"Level {body.level_id} not found.")
+    siblings = db.query(Level).filter(Level.world_id == level.world_id).all()
+    if level_states(db, player, siblings)[level.id][0] == "locked":
+        raise HTTPException(status_code=403, detail="That level is still locked.")
     enemy = db.query(Enemy).filter(Enemy.id == level.enemy_id).first()
     question = db.query(Question).filter(Question.id == level.question_id).first()
     if enemy is None or question is None:
@@ -36,7 +41,7 @@ def start_battle(body: BattleStartIn, db: Session = Depends(get_db)):
     started_at = datetime.now(timezone.utc)
     time_limit_s = TIME_LIMIT_BY_DIFFICULTY.get(level.difficulty, 300)
     battle = Battle(
-        level_id=level.id, enemy_id=enemy.id, question_id=question.id,
+        player_id=player.id, level_id=level.id, enemy_id=enemy.id, question_id=question.id,
         status="in_progress", started_at=started_at, time_limit_s=time_limit_s,
         enemy_hp_remaining=enemy.hp_max, enemy_hp_max=enemy.hp_max, best_score_percent=0,
     )
@@ -51,6 +56,15 @@ def start_battle(body: BattleStartIn, db: Session = Depends(get_db)):
         started_at=started_at.isoformat(),
         question=QuestionOut.model_validate(question),
     )
+
+
+def _owned_battle(db: Session, battle_id: int, player: Player) -> Battle:
+    battle = db.query(Battle).filter(Battle.id == battle_id).first()
+    if battle is None:
+        raise HTTPException(status_code=404, detail=f"Battle {battle_id} not found.")
+    if battle.player_id != player.id:
+        raise HTTPException(status_code=403, detail="That battle belongs to another player.")
+    return battle
 
 
 def _judge(question: Question, code: str, language: str) -> tuple[list[TestResultOut], int, int]:
@@ -76,10 +90,10 @@ def _judge(question: Question, code: str, language: str) -> tuple[list[TestResul
 
 
 @router.post("/api/battles/{battle_id}/run", response_model=BattleRunOut)
-def run_battle(battle_id: int, body: CodeSubmitIn, db: Session = Depends(get_db)):
-    battle = db.query(Battle).filter(Battle.id == battle_id).first()
-    if battle is None:
-        raise HTTPException(status_code=404, detail=f"Battle {battle_id} not found.")
+def run_battle(battle_id: int, body: CodeSubmitIn, player: Player = Depends(get_current_player), db: Session = Depends(get_db)):
+    battle = _owned_battle(db, battle_id, player)
+    if battle.status != "in_progress":
+        raise HTTPException(status_code=400, detail=f"Battle {battle_id} is already {battle.status}.")
     question = db.query(Question).filter(Question.id == battle.question_id).first()
 
     results, passed_tests, total_tests = _judge(question, body.code, body.language)
@@ -92,10 +106,8 @@ def run_battle(battle_id: int, body: CodeSubmitIn, db: Session = Depends(get_db)
 
 
 @router.post("/api/battles/{battle_id}/submit", response_model=BattleSubmitOut)
-def submit_battle(battle_id: int, body: CodeSubmitIn, db: Session = Depends(get_db)):
-    battle = db.query(Battle).filter(Battle.id == battle_id).first()
-    if battle is None:
-        raise HTTPException(status_code=404, detail=f"Battle {battle_id} not found.")
+def submit_battle(battle_id: int, body: CodeSubmitIn, player: Player = Depends(get_current_player), db: Session = Depends(get_db)):
+    battle = _owned_battle(db, battle_id, player)
     if battle.status != "in_progress":
         raise HTTPException(status_code=400, detail=f"Battle {battle_id} is already {battle.status}.")
 
@@ -120,9 +132,10 @@ def submit_battle(battle_id: int, body: CodeSubmitIn, db: Session = Depends(get_
     battle.enemy_hp_remaining = max(0, battle.enemy_hp_remaining - damage_dealt)
     enemy_defeated = battle.enemy_hp_remaining == 0
 
-    player = db.query(Player).filter(Player.id == 1).first()
+    regen_hp(player)
     hp_lost = round((100 - correctness_percent) / 100 * 10)
     player.hp = max(0, player.hp - hp_lost)
+    player.hp_updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
 
     is_new_best = correctness_percent > battle.best_score_percent
     if is_new_best:
@@ -136,9 +149,8 @@ def submit_battle(battle_id: int, body: CodeSubmitIn, db: Session = Depends(get_
         battle.status = "won"
         level = db.query(Level).filter(Level.id == battle.level_id).first()
         stars = 3 if correctness_percent == 100 else (2 if correctness_percent >= 70 else 1)
-        level.status = "completed"
-        if stars > level.stars:
-            level.stars = stars
+        complete_level(db, player, level, stars)
+        player.wins += 1
         xp_earned = level.xp_reward
         gold_earned = level.gold_reward
         player.xp += xp_earned
@@ -150,6 +162,7 @@ def submit_battle(battle_id: int, body: CodeSubmitIn, db: Session = Depends(get_
     elif player.hp == 0:
         outcome = "lost"
         battle.status = "lost"
+        player.losses += 1
 
     db.commit()
 

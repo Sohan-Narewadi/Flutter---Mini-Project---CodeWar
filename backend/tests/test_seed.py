@@ -3,7 +3,7 @@ from app.models import Player, World, Level, Enemy, Question
 
 def test_seed_creates_expected_counts(client):
     db = client.SessionLocal()
-    assert db.query(Player).count() == 1
+    assert db.query(Player).count() == 0  # players register themselves
     assert db.query(World).count() == 1
     assert db.query(Level).count() == 8
     assert db.query(Enemy).count() == 6
@@ -14,7 +14,7 @@ def test_seed_creates_expected_counts(client):
 def test_seed_is_idempotent(client):
     from app.seed import seed_if_empty
     db = client.SessionLocal()
-    seed_if_empty(db)  # second call, DB already has a Player row
+    seed_if_empty(db)  # second call, DB already seeded
     assert db.query(Level).count() == 8  # unchanged, not doubled
     db.close()
 

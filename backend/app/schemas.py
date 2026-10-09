@@ -13,6 +13,19 @@ class PlayerOut(BaseModel):
     hp_max: int
     gold: int
     streak: int
+    rating: int = 1000
+    wins: int = 0
+    losses: int = 0
+
+
+class PlayerCreateIn(BaseModel):
+    name: str
+
+
+class PlayerCreateOut(BaseModel):
+    player_id: int
+    token: str
+    player: PlayerOut
 
 
 class WorldOut(BaseModel):
@@ -52,6 +65,7 @@ class EnemyOut(BaseModel):
     unlock_hint: str
     xp_reward: int
     gold_reward: int
+    defeated: bool = False
 
 
 class TestCaseOut(BaseModel):

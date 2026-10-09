@@ -20,6 +20,7 @@ def test_question_out_from_orm_object():
 
 def test_player_out_from_orm_object():
     p = Player(id=2, username="codeknight", display_name="CodeKnight", level=12,
-               xp=600, xp_to_next=1000, hp=800, hp_max=1000, gold=1240, streak=7)
+               xp=600, xp_to_next=1000, hp=800, hp_max=1000, gold=1240, streak=7,
+               rating=1000, wins=0, losses=0)
     out = PlayerOut.model_validate(p)
     assert out.username == "codeknight"

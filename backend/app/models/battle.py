@@ -6,6 +6,7 @@ class Battle(Base):
     __tablename__ = "battles"
 
     id = Column(Integer, primary_key=True)
+    player_id = Column(Integer, nullable=False, index=True)
     level_id = Column(Integer, nullable=False)
     enemy_id = Column(String, nullable=False)
     question_id = Column(String, nullable=False)

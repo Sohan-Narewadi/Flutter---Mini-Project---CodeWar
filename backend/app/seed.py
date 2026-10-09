@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
 
-from app.models.player import Player
 from app.models.world import World
 from app.models.level import Level
 from app.models.enemy import Enemy
@@ -8,13 +7,8 @@ from app.models.question import Question
 
 
 def seed_if_empty(db: Session) -> None:
-    if db.query(Player).first() is not None:
+    if db.query(World).first() is not None:
         return
-
-    db.add(Player(
-        id=1, username="codeknight", display_name="CodeKnight",
-        level=12, xp=600, xp_to_next=1000, hp=800, hp_max=1000, gold=1240, streak=7,
-    ))
 
     db.add(World(
         id="w2", name="Array Ruins", order=2,
