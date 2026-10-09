@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine, SessionLocal
 from app import models  # noqa: F401 (registers models with Base.metadata)
 from app.seed import seed_if_empty
-from app.routers import player, worlds, levels, enemies, questions, battles, leaderboard, practice
+from app.routers import player, worlds, levels, enemies, questions, battles, leaderboard, practice, rooms
 
 
 @asynccontextmanager
@@ -37,6 +37,7 @@ app.include_router(questions.router)
 app.include_router(battles.router)
 app.include_router(leaderboard.router)
 app.include_router(practice.router)
+app.include_router(rooms.router)
 
 
 @app.get("/health")

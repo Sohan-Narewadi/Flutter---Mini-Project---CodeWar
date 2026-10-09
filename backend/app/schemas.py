@@ -146,6 +146,12 @@ class BattleSubmitOut(BattleRunOut):
     best_score_percent: int = 0
 
 
+class RoomCreateIn(BaseModel):
+    mode: str = "race"
+    difficulty: str = "easy"
+    language: str = "python"
+
+
 class LeaderboardEntry(BaseModel):
     rank: int
     player_id: int

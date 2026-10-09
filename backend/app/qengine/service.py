@@ -55,6 +55,10 @@ def _mark_seen(db: Session, player_id: int, question_id: str) -> None:
         db.commit()
 
 
+def mark_seen(db: Session, player_id: int, question_id: str) -> None:
+    _mark_seen(db, player_id, question_id)
+
+
 def get_question(
     db: Session,
     player_id: int,
