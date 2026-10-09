@@ -292,7 +292,11 @@ class _TopicTile extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Text(topic.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTheme.display(fontSize: 17)),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(topic.label, maxLines: 1, style: AppTheme.display(fontSize: 17)),
+          ),
           const SizedBox(height: 2),
           Text(
             topic.masteryPercent >= 100 ? 'Mastered' : 'Mastery ${topic.masteryPercent}%',

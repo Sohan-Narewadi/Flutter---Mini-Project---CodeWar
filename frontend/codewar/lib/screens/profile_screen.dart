@@ -144,8 +144,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Row(
                     children: [
                       Text('LEVEL ${player.level}', style: AppTheme.display(fontSize: 18, color: AppColors.accent)),
-                      const Spacer(),
-                      Text('${player.xp} / ${player.xpToNext} XP', style: AppTheme.mono(fontSize: 12, color: AppColors.textDim)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text('${player.xp} / ${player.xpToNext} XP',
+                            maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.right, style: AppTheme.mono(fontSize: 12, color: AppColors.textDim)),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -153,11 +156,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Text(next == null ? '${tier.label.toUpperCase()} · TOP TIER' : '${tier.label.toUpperCase()} → ${next.label.toUpperCase()}',
-                          style: AppTheme.overline(color: tier.color)),
-                      const Spacer(),
-                      Text(next == null ? '${player.rating} RP' : '${player.rating} / ${next.minRating} RP',
-                          style: AppTheme.mono(fontSize: 12, color: AppColors.textDim)),
+                      Flexible(
+                        child: Text(next == null ? '${tier.label.toUpperCase()} · TOP TIER' : '${tier.label.toUpperCase()} → ${next.label.toUpperCase()}',
+                            maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTheme.overline(color: tier.color)),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(next == null ? '${player.rating} RP' : '${player.rating} / ${next.minRating} RP',
+                            maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.right, style: AppTheme.mono(fontSize: 12, color: AppColors.textDim)),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),

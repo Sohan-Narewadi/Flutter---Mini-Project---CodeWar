@@ -14,6 +14,7 @@ import '../ui/avatar.dart';
 import '../ui/neon_button.dart';
 import '../ui/segmented_tabs.dart';
 import '../ui/skeleton.dart';
+import '../utils/format.dart';
 import '../utils/theme.dart';
 import '../widgets/app_shell.dart';
 
@@ -63,7 +64,9 @@ class _RankScreenState extends State<RankScreen> {
     }
     try {
       final b = await api.fetchLeaderboard(scope: _scope, metric: _metric);
-      if (!mounted || id != _requestId) return; // a newer request superseded this one
+      if (!mounted || id != _requestId) {
+        return; // a newer request superseded this one
+      }
       setState(() {
         _board = b;
         _error = null;
@@ -99,8 +102,14 @@ class _RankScreenState extends State<RankScreen> {
           onSubmitted: (v) => Navigator.of(ctx).pop(v),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(controller.text), child: const Text('Add')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(controller.text),
+            child: const Text('Add'),
+          ),
         ],
       ),
     );
@@ -120,7 +129,8 @@ class _RankScreenState extends State<RankScreen> {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _ProfileSheet(entry: e, api: context.read<GameState>().api),
+      builder: (_) =>
+          _ProfileSheet(entry: e, api: context.read<GameState>().api),
     );
   }
 
@@ -157,7 +167,11 @@ class _RankScreenState extends State<RankScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   SegmentedTabs<String>(
-                    options: const {'global': 'Global', 'weekly': 'Weekly', 'friends': 'Friends'},
+                    options: const {
+                      'global': 'Global',
+                      'weekly': 'Weekly',
+                      'friends': 'Friends',
+                    },
                     value: _scope,
                     onChanged: (v) => _change(scope: v),
                   ),
@@ -165,13 +179,19 @@ class _RankScreenState extends State<RankScreen> {
                     const SizedBox(height: 10),
                     SegmentedTabs<String>(
                       height: 38,
-                      options: const {'xp': 'Total XP', 'rating': 'Online rating'},
+                      options: const {
+                        'xp': 'Total XP',
+                        'rating': 'Online rating',
+                      },
                       value: _metric,
                       onChanged: (v) => _change(metric: v),
                     ),
                   ],
                   const SizedBox(height: 14),
-                  _LiveRow(updatedAt: _updatedAt, error: _error != null && board != null),
+                  _LiveRow(
+                    updatedAt: _updatedAt,
+                    error: _error != null && board != null,
+                  ),
                   const SizedBox(height: 14),
                   ..._content(board),
                 ],
@@ -184,16 +204,27 @@ class _RankScreenState extends State<RankScreen> {
   }
 
   List<Widget> _content(Leaderboard? board) {
-    if (_loading && board == null) return const [SkeletonList(rows: 6, rowHeight: 64)];
+    if (_loading && board == null) {
+      return const [SkeletonList(rows: 6, rowHeight: 64)];
+    }
     if (_error != null && board == null) {
       return [
         AppCard(
           accent: AppColors.danger,
           child: Column(
             children: [
-              Text(_error!, style: const TextStyle(color: AppColors.text), textAlign: TextAlign.center),
+              Text(
+                _error!,
+                style: const TextStyle(color: AppColors.text),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 12),
-              NeonButton(label: 'Retry', compact: true, expanded: false, onPressed: _load),
+              NeonButton(
+                label: 'Retry',
+                compact: true,
+                expanded: false,
+                onPressed: _load,
+              ),
             ],
           ),
         ),
@@ -205,7 +236,12 @@ class _RankScreenState extends State<RankScreen> {
     final rest = entries.skip(3).toList();
     return [
       if (entries.isEmpty)
-        const AppCard(child: Text('Nobody here yet.', style: TextStyle(color: AppColors.textDim)))
+        const AppCard(
+          child: Text(
+            'Nobody here yet.',
+            style: TextStyle(color: AppColors.textDim),
+          ),
+        )
       else
         _Podium(entries: podium, unit: _unit, onTap: _openProfile),
       if (_scope == 'friends' && entries.length <= 1) ...[
@@ -216,8 +252,10 @@ class _RankScreenState extends State<RankScreen> {
               Icon(Icons.group_add_rounded, color: AppColors.accent),
               SizedBox(width: 12),
               Expanded(
-                child: Text('No friends yet. Add one with the button above, or play a room together.',
-                    style: TextStyle(color: AppColors.textDim, height: 1.35)),
+                child: Text(
+                  'No friends yet. Add one with the button above, or play a room together.',
+                  style: TextStyle(color: AppColors.textDim, height: 1.35),
+                ),
               ),
             ],
           ),
@@ -225,14 +263,24 @@ class _RankScreenState extends State<RankScreen> {
       ],
       if (rest.isNotEmpty) ...[
         const SizedBox(height: 18),
-        for (final e in rest) _RankRow(entry: e, unit: _unit, onTap: () => _openProfile(e)),
+        for (final e in rest)
+          _RankRow(entry: e, unit: _unit, onTap: () => _openProfile(e)),
       ],
       if (board.meOutsideList) ...[
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 6),
-          child: Center(child: Text('•  •  •', style: TextStyle(color: AppColors.textFaint, letterSpacing: 4))),
+          child: Center(
+            child: Text(
+              '•  •  •',
+              style: TextStyle(color: AppColors.textFaint, letterSpacing: 4),
+            ),
+          ),
         ),
-        _RankRow(entry: board.me, unit: _unit, onTap: () => _openProfile(board.me)),
+        _RankRow(
+          entry: board.me,
+          unit: _unit,
+          onTap: () => _openProfile(board.me),
+        ),
       ],
     ];
   }
@@ -251,7 +299,13 @@ class _LiveRow extends StatelessWidget {
         Container(
           width: 8,
           height: 8,
-          decoration: BoxDecoration(shape: BoxShape.circle, color: color, boxShadow: [BoxShadow(color: color.withValues(alpha: 0.7), blurRadius: 8)]),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: color,
+            boxShadow: [
+              BoxShadow(color: color.withValues(alpha: 0.7), blurRadius: 8),
+            ],
+          ),
         ),
         const SizedBox(width: 8),
         Text(
@@ -259,9 +313,15 @@ class _LiveRow extends StatelessWidget {
           style: AppTheme.overline(color: color),
         ),
         const SizedBox(width: 8),
-        Text(
-          error ? 'showing last known data' : 'refreshes every ${_refreshEvery.inSeconds}s',
-          style: const TextStyle(fontSize: 12, color: AppColors.textFaint),
+        Flexible(
+          child: Text(
+            error
+                ? 'showing last known data'
+                : 'refreshes every ${_refreshEvery.inSeconds}s',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 12, color: AppColors.textFaint),
+          ),
         ),
       ],
     );
@@ -269,14 +329,18 @@ class _LiveRow extends StatelessWidget {
 }
 
 Color _medal(int rank) => switch (rank) {
-      1 => AppColors.gold,
-      2 => AppColors.silver,
-      3 => AppColors.bronze,
-      _ => AppColors.textFaint,
-    };
+  1 => AppColors.gold,
+  2 => AppColors.silver,
+  3 => AppColors.bronze,
+  _ => AppColors.textFaint,
+};
 
 class _Podium extends StatelessWidget {
-  const _Podium({required this.entries, required this.unit, required this.onTap});
+  const _Podium({
+    required this.entries,
+    required this.unit,
+    required this.onTap,
+  });
   final List<LeaderboardEntry> entries;
   final String unit;
   final ValueChanged<LeaderboardEntry> onTap;
@@ -284,7 +348,8 @@ class _Podium extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Visual order: 2nd, 1st, 3rd.
-    LeaderboardEntry? at(int rank) => entries.where((e) => e.rank == rank).firstOrNull;
+    LeaderboardEntry? at(int rank) =>
+        entries.where((e) => e.rank == rank).firstOrNull;
     final slots = [at(2), at(1), at(3)];
     const heights = [92.0, 124.0, 74.0];
     return Row(
@@ -294,7 +359,12 @@ class _Podium extends StatelessWidget {
           Expanded(
             child: slots[i] == null
                 ? const SizedBox.shrink()
-                : _PodiumSlot(entry: slots[i]!, unit: unit, pillarHeight: heights[i], onTap: () => onTap(slots[i]!)),
+                : _PodiumSlot(
+                    entry: slots[i]!,
+                    unit: unit,
+                    pillarHeight: heights[i],
+                    onTap: () => onTap(slots[i]!),
+                  ),
           ),
       ],
     );
@@ -302,7 +372,12 @@ class _Podium extends StatelessWidget {
 }
 
 class _PodiumSlot extends StatelessWidget {
-  const _PodiumSlot({required this.entry, required this.unit, required this.pillarHeight, required this.onTap});
+  const _PodiumSlot({
+    required this.entry,
+    required this.unit,
+    required this.pillarHeight,
+    required this.onTap,
+  });
   final LeaderboardEntry entry;
   final String unit;
   final double pillarHeight;
@@ -321,11 +396,28 @@ class _PodiumSlot extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (first) const Icon(Icons.workspace_premium_rounded, color: AppColors.gold, size: 26),
-            PlayerAvatar(name: entry.name, tier: Tier.fromKey(entry.tier, rating: entry.rating), size: first ? 68 : 56, glow: first || entry.isMe),
+            if (first)
+              const Icon(
+                Icons.workspace_premium_rounded,
+                color: AppColors.gold,
+                size: 26,
+              ),
+            PlayerAvatar(
+              name: entry.name,
+              tier: Tier.fromKey(entry.tier, rating: entry.rating),
+              size: first ? 68 : 56,
+              glow: first || entry.isMe,
+            ),
             const SizedBox(height: 8),
-            Text(entry.name, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: AppTheme.display(fontSize: 14)),
-            if (entry.isMe) Text('YOU', style: AppTheme.overline(color: AppColors.accent)),
+            Text(
+              entry.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: AppTheme.display(fontSize: 14),
+            ),
+            if (entry.isMe)
+              Text('YOU', style: AppTheme.overline(color: AppColors.accent)),
             const SizedBox(height: 4),
             Container(
               height: pillarHeight,
@@ -333,20 +425,39 @@ class _PodiumSlot extends StatelessWidget {
               alignment: Alignment.topCenter,
               padding: const EdgeInsets.only(top: 10),
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.md)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(AppRadius.md),
+                ),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [color.withValues(alpha: 0.28), color.withValues(alpha: 0.04)],
+                  colors: [
+                    color.withValues(alpha: 0.28),
+                    color.withValues(alpha: 0.04),
+                  ],
                 ),
                 border: Border(top: BorderSide(color: color, width: 2)),
               ),
-              child: Column(
-                children: [
-                  Text('${entry.rank}', style: AppTheme.display(fontSize: 26, color: color)),
-                  const SizedBox(height: 2),
-                  Text('${entry.value} $unit', style: AppTheme.mono(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textDim)),
-                ],
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.topCenter,
+                child: Column(
+                  children: [
+                    Text(
+                      '${entry.rank}',
+                      style: AppTheme.display(fontSize: 26, color: color),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${compactNumber(entry.value)} $unit',
+                      style: AppTheme.mono(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDim,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -357,7 +468,11 @@ class _PodiumSlot extends StatelessWidget {
 }
 
 class _RankRow extends StatelessWidget {
-  const _RankRow({required this.entry, required this.unit, required this.onTap});
+  const _RankRow({
+    required this.entry,
+    required this.unit,
+    required this.onTap,
+  });
   final LeaderboardEntry entry;
   final String unit;
   final VoidCallback onTap;
@@ -375,7 +490,13 @@ class _RankRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(
           children: [
-            SizedBox(width: 34, child: Text('${e.rank}', style: AppTheme.display(fontSize: 18, color: _medal(e.rank)))),
+            SizedBox(
+              width: 34,
+              child: Text(
+                '${e.rank}',
+                style: AppTheme.display(fontSize: 18, color: _medal(e.rank)),
+              ),
+            ),
             PlayerAvatar(name: e.name, tier: tier, size: 38),
             const SizedBox(width: 12),
             Expanded(
@@ -384,19 +505,42 @@ class _RankRow extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Flexible(child: Text(e.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTheme.display(fontSize: 15))),
+                      Flexible(
+                        child: Text(
+                          e.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTheme.display(fontSize: 15),
+                        ),
+                      ),
                       if (e.isMe) ...[
                         const SizedBox(width: 6),
-                        Text('YOU', style: AppTheme.overline(color: AppColors.accent)),
+                        Text(
+                          'YOU',
+                          style: AppTheme.overline(color: AppColors.accent),
+                        ),
                       ],
                     ],
                   ),
                   const SizedBox(height: 2),
-                  Text('Level ${e.level}  ·  ${tier.label}', style: const TextStyle(fontSize: 12, color: AppColors.textDim)),
+                  Text(
+                    'Level ${e.level}  ·  ${tier.label}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textDim,
+                    ),
+                  ),
                 ],
               ),
             ),
-            Text('${e.value} $unit', style: AppTheme.mono(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.accent)),
+            Text(
+              '${compactNumber(e.value)} $unit',
+              style: AppTheme.mono(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppColors.accent,
+              ),
+            ),
           ],
         ),
       ),
@@ -427,7 +571,10 @@ class _ProfileSheetState extends State<_ProfileSheet> {
 
   Future<void> _fetch() async {
     try {
-      final results = await Future.wait([widget.api.fetchPublicProfile(widget.entry.playerId), widget.api.fetchBadges()]);
+      final results = await Future.wait([
+        widget.api.fetchPublicProfile(widget.entry.playerId),
+        widget.api.fetchBadges(),
+      ]);
       if (!mounted) return;
       setState(() {
         _profile = results[0] as PublicProfile;
@@ -445,7 +592,9 @@ class _ProfileSheetState extends State<_ProfileSheet> {
     final e = widget.entry;
     final p = _profile;
     final tier = Tier.fromKey(p?.tier ?? e.tier, rating: p?.rating ?? e.rating);
-    final earned = p == null ? <BadgeInfo>[] : _catalogue.where((b) => p.badges.contains(b.key)).toList();
+    final earned = p == null
+        ? <BadgeInfo>[]
+        : _catalogue.where((b) => p.badges.contains(b.key)).toList();
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(AppSpace.page, 0, AppSpace.page, 24),
@@ -473,10 +622,19 @@ class _ProfileSheetState extends State<_ProfileSheet> {
                 ],
               ),
               const SizedBox(height: 16),
-              Align(alignment: Alignment.centerLeft, child: Text('BADGES', style: AppTheme.overline())),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text('BADGES', style: AppTheme.overline()),
+              ),
               const SizedBox(height: 8),
               if (earned.isEmpty)
-                const Align(alignment: Alignment.centerLeft, child: Text('No badges yet.', style: TextStyle(color: AppColors.textDim)))
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'No badges yet.',
+                    style: TextStyle(color: AppColors.textDim),
+                  ),
+                )
               else
                 Align(
                   alignment: Alignment.centerLeft,
@@ -490,8 +648,18 @@ class _ProfileSheetState extends State<_ProfileSheet> {
                           child: Container(
                             width: 44,
                             height: 44,
-                            decoration: BoxDecoration(color: AppColors.gold.withValues(alpha: 0.14), shape: BoxShape.circle, border: Border.all(color: AppColors.gold.withValues(alpha: 0.6))),
-                            child: Icon(b.iconData, color: AppColors.gold, size: 22),
+                            decoration: BoxDecoration(
+                              color: AppColors.gold.withValues(alpha: 0.14),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.gold.withValues(alpha: 0.6),
+                              ),
+                            ),
+                            child: Icon(
+                              b.iconData,
+                              color: AppColors.gold,
+                              size: 22,
+                            ),
                           ),
                         ),
                     ],

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/game_state.dart';
 import '../ui/skeleton.dart';
+import '../utils/format.dart';
 import '../utils/theme.dart';
 
 /// Compact player header for the Home tab only: avatar with an XP ring, name,
@@ -92,7 +93,7 @@ class HomeHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          _Pill(icon: Icons.monetization_on_rounded, value: '${player.gold}', color: AppColors.gold, tooltip: 'Gold'),
+          _Pill(icon: Icons.monetization_on_rounded, value: compactNumber(player.gold), color: AppColors.gold, tooltip: 'Gold'),
           const SizedBox(width: 8),
           _Pill(
             icon: Icons.local_fire_department_rounded,
@@ -129,7 +130,7 @@ class _Pill extends StatelessWidget {
           children: [
             Icon(icon, size: 16, color: color),
             const SizedBox(width: 4),
-            Text(value, style: AppTheme.display(fontSize: 14)),
+            Text(value, textScaler: TextScaler.noScaling, style: AppTheme.display(fontSize: 14)),
           ],
         ),
       ),
