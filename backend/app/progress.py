@@ -1,5 +1,5 @@
 """Per-player progress helpers: HP regeneration, level status, unlocks."""
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy.orm import Session
 
@@ -7,6 +7,15 @@ from app.models.level import Level
 from app.models.progress import PlayerLevel
 
 HP_REGEN_SECONDS = 30
+
+
+def effective_streak(player, today: date | None = None) -> int:
+    """The streak to display: 0 once a day has been skipped."""
+    today = today or date.today()
+    last = player.last_solve_date
+    if last in (today.isoformat(), (today - timedelta(days=1)).isoformat()):
+        return player.streak
+    return 0
 
 
 def current_week(today: date | None = None) -> str:

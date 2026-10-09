@@ -21,7 +21,7 @@ Use this when building the Flutter side (Stage 5). Source of truth: `backend/app
 
 ### Server -> client
 - `{"type":"snapshot","room":{...}}` on connect, after every change, and about once a second while running.
-- `{"type":"question","question":{id,title,difficulty,tags,prompt,example_input,example_output,starter_code,test_cases,topic,source}}` when the match turns `running` (and again on reconnect). Judge data is never sent.
+- `{"type":"question","question":{id,title,difficulty,tags,prompt,example_input,example_output,starter_code,test_cases,topic,source}}` when the match turns `running` (and again on reconnect). Judge data is never sent; only the first 3 example test cases are visible and the rest are hidden (shown as "(hidden)" in results).
 - `{"type":"run_result","kind":"run"|"submit","passed_tests","total_tests","correctness_percent","results":[{input,expected,actual,passed,duration_ms}]}`
 - `{"type":"error","code","message"}` codes: `need_players`, `not_host`, `started`, `full`, `preparing`, `no_question`, `not_running`, `not_member`, `forfeited`, `busy`, `too_long`, `bad_language`, `bad_message`.
 

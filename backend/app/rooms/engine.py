@@ -129,11 +129,14 @@ class Room:
             raise RoomError("not_host", "Only the host can start the match.")
         if self.status != "lobby":
             raise RoomError("started", "The match has already started.")
-        if len(self.members) < 2:
+        if sum(1 for m in self.members.values() if m.connected) < 2:
             raise RoomError("need_players", "Wait for at least one more player.")
 
     def start(self, player_id: int, now: float) -> None:
         self.check_can_start(player_id)
+        # Players who joined by code but never opened their socket are not in the match.
+        for pid in [p for p, m in self.members.items() if not m.connected and p != self.host_id]:
+            del self.members[pid]
         self.status = "countdown"
         self.countdown_ends_at = now + self.countdown_s
 
@@ -179,7 +182,7 @@ class Room:
             raise RoomError("not_running", "Time is up.")
         pct = round(100 * passed / total) if total else 0
         member.submissions += 1
-        if member.best_at is None or pct > member.best_pct:
+        if pct > member.best_pct:
             member.best_pct = pct
             member.best_at = now
             member.passed = passed

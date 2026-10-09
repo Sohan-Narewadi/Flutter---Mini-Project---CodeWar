@@ -3,7 +3,7 @@ from fastapi import HTTPException
 
 from app.judge import UnsupportedLanguageError, run_all_cases
 from app.models.question import Question
-from app.schemas import TestResultOut
+from app.schemas import VISIBLE_TEST_CASES, TestResultOut
 
 
 def judge_question(question: Question, code: str, language: str) -> tuple[list[TestResultOut], int, int]:
@@ -20,9 +20,9 @@ def judge_question(question: Question, code: str, language: str) -> tuple[list[T
     display = question.test_cases
     out = [
         TestResultOut(
-            input=display[i]["input"],
-            expected=display[i]["expected_output"],
-            actual=results[i]["actual"],
+            input=display[i]["input"] if i < VISIBLE_TEST_CASES else "(hidden)",
+            expected=display[i]["expected_output"] if i < VISIBLE_TEST_CASES else "(hidden)",
+            actual=results[i]["actual"] if i < VISIBLE_TEST_CASES else "(hidden)",
             passed=results[i]["passed"],
             duration_ms=results[i]["duration_ms"],
         )

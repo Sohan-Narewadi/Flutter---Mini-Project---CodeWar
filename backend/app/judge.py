@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -73,7 +74,11 @@ def execute_case(language: str, code: str, entry_point: str, args: list) -> dict
         try:
             proc = subprocess.run(
                 command, capture_output=True, text=True, timeout=TIMEOUT_S, cwd=tmpdir,
+                # Fixed hash seed: set/dict iteration order is then the same on every run.
+                env={**os.environ, "PYTHONHASHSEED": "0"},
             )
+        except FileNotFoundError:
+            return fail(f"The {language} runtime is not available on the server.", 0.0)
         except subprocess.TimeoutExpired:
             return fail(f"Timed out after {TIMEOUT_S}s", (time.monotonic() - start) * 1000)
         duration_ms = (time.monotonic() - start) * 1000

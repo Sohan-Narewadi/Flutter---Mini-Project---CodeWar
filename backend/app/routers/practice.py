@@ -9,7 +9,7 @@ from app.judging import judge_question
 from app.models.player import Player
 from app.models.practice import PracticeAttempt, PracticeStat
 from app.models.question import Question
-from app.progress import award_xp
+from app.progress import award_xp, effective_streak
 from app.qengine import service
 from app.qengine.hints import get_hint
 from app.qengine.templates import DIFFICULTIES, TOPIC_LABELS, TOPICS
@@ -160,9 +160,7 @@ def practice_stats(player: Player = Depends(get_current_player), db: Session = D
         .count()
     )
     # A streak that was not extended yesterday or today has lapsed.
-    streak = player.streak
-    if player.last_solve_date not in (date.today().isoformat(), (date.today() - timedelta(days=1)).isoformat()):
-        streak = 0
+    streak = effective_streak(player)
     return PracticeStatsOut(
         streak=streak, solved_today=solved_today,
         topics=[

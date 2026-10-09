@@ -186,12 +186,13 @@ class RoomManager:
         try:
             await asyncio.to_thread(self._make_question, rt)
             room.start(player_id, _now())  # re-validates (roster may have changed)
-        except RoomError:
-            raise
-        except Exception:
-            raise RoomError("no_question", "Could not prepare a problem. Please try again.")
-        finally:
+        except Exception as exc:
             rt.preparing = False
+            await self.broadcast_snapshot(rt)  # un-stick every client's Start button
+            if isinstance(exc, RoomError):
+                raise
+            raise RoomError("no_question", "Could not prepare a problem. Please try again.")
+        rt.preparing = False
         rt.loop_task = asyncio.create_task(self._loop(rt))
         await self.broadcast_snapshot(rt)
 

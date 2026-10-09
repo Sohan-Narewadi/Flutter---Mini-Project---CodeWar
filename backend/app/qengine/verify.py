@@ -15,7 +15,9 @@ MIN_CASES = 3
 MAX_WORKERS = 6
 
 
-def build_judge_cases(entry_point: str, reference_solution: str, inputs: list[list]) -> list[dict] | None:
+def build_judge_cases(
+    entry_point: str, reference_solution: str, inputs: list[list], deterministic_check: bool = False,
+) -> list[dict] | None:
     """Returns [{"args": [...], "expected": value}] or None if the reference
     crashes/times out on any input, there are too few inputs, or every
     output is identical (which would make the problem trivially gameable)."""
@@ -27,6 +29,15 @@ def build_judge_cases(entry_point: str, reference_solution: str, inputs: list[li
         ))
     if any(not r["ok"] for r in results):
         return None
+    if deterministic_check:
+        # Run everything a second time: a reference that disagrees with itself
+        # (random, time, ...) would make correct answers fail at random.
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+            again = list(pool.map(
+                lambda args: execute_case("python", reference_solution, entry_point, args), inputs,
+            ))
+        if any(not r2["ok"] or r2["value"] != r1["value"] for r1, r2 in zip(results, again)):
+            return None
     cases = [{"args": args, "expected": r["value"]} for args, r in zip(inputs, results)]
     distinct = {json.dumps(c["expected"], sort_keys=True) for c in cases}
     if len(distinct) < 2:
@@ -58,7 +69,9 @@ def content_hash(gq: GeneratedQuestion) -> str:
 
 def finalize(gq: GeneratedQuestion) -> dict | None:
     """Verifies `gq` and returns Question column values (without id), or None."""
-    cases = build_judge_cases(gq.entry_python, gq.reference_solution, gq.inputs)
+    cases = build_judge_cases(
+        gq.entry_python, gq.reference_solution, gq.inputs, deterministic_check=(gq.source == "llm"),
+    )
     if cases is None:
         return None
     test_cases = [

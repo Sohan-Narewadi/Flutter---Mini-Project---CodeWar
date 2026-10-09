@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.auth import create_token, get_current_player, hash_token
 from app.database import get_db
 from app.models.player import Player
-from app.progress import regen_hp
+from app.progress import effective_streak, regen_hp
 from app.schemas import PlayerCreateIn, PlayerCreateOut, PlayerOut
 
 router = APIRouter()
@@ -30,4 +30,6 @@ def create_player(body: PlayerCreateIn, db: Session = Depends(get_db)):
 def get_player(player: Player = Depends(get_current_player), db: Session = Depends(get_db)):
     regen_hp(player)
     db.commit()
-    return player
+    out = PlayerOut.model_validate(player)
+    out.streak = effective_streak(player)
+    return out

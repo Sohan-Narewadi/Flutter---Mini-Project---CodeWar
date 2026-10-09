@@ -1,4 +1,8 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
+
+# Only this many example test cases are shown to players; the rest are
+# hidden judge cases so a lookup table of the examples cannot pass.
+VISIBLE_TEST_CASES = 3
 
 
 class PlayerOut(BaseModel):
@@ -84,6 +88,11 @@ class QuestionOut(BaseModel):
     example_output: str
     starter_code: dict[str, str]
     test_cases: list[TestCaseOut]
+
+    @field_validator("test_cases", mode="before")
+    @classmethod
+    def _only_visible(cls, v):
+        return list(v)[:VISIBLE_TEST_CASES]
 
 
 class GeneratedQuestionOut(QuestionOut):
