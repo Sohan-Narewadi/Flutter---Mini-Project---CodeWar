@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../utils/theme.dart';
 
-/// The one card style used across the app: rounded surface, hairline border,
-/// optional accent border/glow and tap ripple.
+/// The one card style used across the app. Plain by default; pass [accent]
+/// for a highlighted card (colored border + soft glow) and [onTap] to make it
+/// tappable with a ripple.
 class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
@@ -13,6 +14,7 @@ class AppCard extends StatelessWidget {
     this.accent,
     this.onTap,
     this.gradient,
+    this.flat = false,
   });
 
   final Widget child;
@@ -24,19 +26,27 @@ class AppCard extends StatelessWidget {
   final VoidCallback? onTap;
   final Gradient? gradient;
 
+  /// Flat cards have no border (for nesting inside another card).
+  final bool flat;
+
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(AppRadius.xl);
     final content = Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: gradient == null ? AppColors.surfaceContainer : null,
+        color: gradient == null ? (flat ? AppColors.surfaceHigh : AppColors.surface) : null,
         gradient: gradient,
         borderRadius: radius,
-        border: Border.all(color: accent ?? AppColors.outlineVariant, width: accent == null ? 1 : 1.5),
+        border: flat
+            ? null
+            : Border.all(
+                color: accent == null ? AppColors.line : accent!.withValues(alpha: 0.7),
+                width: accent == null ? 1 : 1.5,
+              ),
         boxShadow: accent == null
             ? null
-            : [BoxShadow(color: accent!.withValues(alpha: 0.18), blurRadius: 18, spreadRadius: 0)],
+            : [BoxShadow(color: accent!.withValues(alpha: 0.16), blurRadius: 24, spreadRadius: 0)],
       ),
       child: child,
     );
@@ -44,13 +54,17 @@ class AppCard extends StatelessWidget {
         ? content
         : Material(
             color: Colors.transparent,
+            borderRadius: radius,
             child: InkWell(borderRadius: radius, onTap: onTap, child: content),
           );
     return margin == null ? tappable : Padding(padding: margin!, child: tappable);
   }
 }
 
-/// Section heading with an optional trailing widget.
+/// Alias used by new code.
+typedef GlowCard = AppCard;
+
+/// Section heading: small caps overline with an optional trailing widget.
 class SectionTitle extends StatelessWidget {
   const SectionTitle(this.text, {super.key, this.trailing});
   final String text;
@@ -59,13 +73,10 @@ class SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12, top: 4),
       child: Row(
         children: [
-          Expanded(
-            child: Text(text,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.onSurface, letterSpacing: 0.2)),
-          ),
+          Expanded(child: Text(text.toUpperCase(), style: AppTheme.overline())),
           ?trailing,
         ],
       ),

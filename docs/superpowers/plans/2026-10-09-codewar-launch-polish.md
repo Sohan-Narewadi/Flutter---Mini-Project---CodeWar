@@ -61,9 +61,9 @@ Motion: 180-240ms easeOutCubic for transitions; list items stagger-in (30ms step
 ## 4. Stage tasks
 
 ### Stage 7: Design system
-- [ ] 7.1 New tokens + fonts in `theme.dart`; `AppTheme.darkTheme` rebuilt (buttons, inputs, chips, dialogs, snackbars, tooltip, page transitions). Old names kept as aliases. Verify: `flutter analyze` clean, `flutter test` still 34 pass.
-- [ ] 7.2 `lib/ui/neon_button.dart`, `glow_card.dart`, `segmented_tabs.dart`, `section_header.dart`, `stat_tile.dart` + tests (render, tap, disabled, loading).
-- [ ] 7.3 `lib/ui/arcade_backdrop.dart` + `lib/ui/app_scaffold.dart` + test. Commit: "feat(ui): neon arcade design system".
+- [x] 7.1 New tokens + fonts in `theme.dart`; `AppTheme.darkTheme` rebuilt (buttons, inputs, chips, dialogs, snackbars, tooltip, page transitions). Old names kept as aliases. Verify: `flutter analyze` clean, `flutter test` still 34 pass.
+- [x] 7.2 `lib/ui/neon_button.dart`, `glow_card.dart`, `segmented_tabs.dart`, `section_header.dart`, `stat_tile.dart` + tests (render, tap, disabled, loading).
+- [x] 7.3 `lib/ui/arcade_backdrop.dart` + `lib/ui/app_scaffold.dart` + test. Commit: "feat(ui): neon arcade design system".
 
 ### Stage 8: Shell and navigation
 - [ ] 8.1 Rewrite `widgets/app_shell.dart` to use `AppScaffold`; remove `AppHud` from Practice/Rank/Profile. Home gets a compact `HomeHeader` (avatar + name + level ring + gold + streak in ONE row, ~64px) instead of the 4-row HUD. Delete `app_hud.dart` once unused (keep `hudSkeleton` test intent in new header).

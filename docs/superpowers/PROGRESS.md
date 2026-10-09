@@ -89,7 +89,7 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 ## Stages 7-12: Launch polish (started 2026-10-09)
 **Detailed plan: `docs/superpowers/plans/2026-10-09-codewar-launch-polish.md`** (design tokens, per-task specs, API shapes, QA harness, gotchas). Read it before working; tick tasks there AND here.
 User feedback: UI "looks vibe coded / sticky"; wants launch-ready, industry-grade. Confirmed: Neon arcade style; extras = achievements, rank tiers, sound+haptics, match history. All data real.
-- [ ] 7 Design system (7.1 tokens/theme, 7.2 primitives, 7.3 backdrop/scaffold)
+- [x] 7 Design system (done: theme.dart tokens+aliases, lib/ui/{neon_button,app_card,segmented_tabs,stat_tile,arcade_backdrop,app_scaffold}.dart, test/ui/primitives_test.dart; 43 Flutter tests) (7.1 tokens/theme, 7.2 primitives, 7.3 backdrop/scaffold)
 - [ ] 8 Shell/nav (single header on Home only, nav restyle, /online as tab)
 - [ ] 9 Screens (Home, Practice, Rank podium, Profile, cleanup)
 - [ ] 10 Backend (badges, match history, tiers, public profile)
