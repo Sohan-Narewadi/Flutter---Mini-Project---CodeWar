@@ -1,6 +1,5 @@
 # CodeWar Backend Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build the FastAPI backend the Flutter frontend (`frontend/codewar/`) already expects, so battles can actually be played instead of throwing "no backend level to battle against".
 
@@ -8,7 +7,7 @@
 
 **Tech Stack:** Python (3.14 confirmed installed), FastAPI, SQLAlchemy 2.x, Pydantic v2, Uvicorn, pytest + httpx (for `TestClient`). Judge subprocess calls out to the system `python` and `node` (Node 24 confirmed installed, runs `.ts` files directly via native type stripping — no `tsc`/`ts-node` needed).
 
-**Spec:** `docs/superpowers/specs/2026-09-22-codewar-backend-design.md`
+**Spec:** `docs/design/specs/2026-09-22-codewar-backend-design.md`
 
 ## Global Constraints
 

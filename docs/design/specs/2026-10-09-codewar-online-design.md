@@ -51,7 +51,7 @@ OS-level judge sandboxing (documented risk; basic time/output limits only), co-o
 Backend: pytest for auth, generator (both paths, verification, dedupe), room state machine and scoring (incl. forfeit, ties), leaderboard, Elo. WebSocket tests via Starlette TestClient. Frontend: unit tests for GameState/ApiService with fakes, model tests, key widget tests.
 
 ## 7. Delivery in sessions
-Work is split into stages, each independently shippable and committed, so a session ending never leaves things half-done. Progress is tracked in `docs/superpowers/PROGRESS.md` (checklist updated and committed at the end of each stage).
+Work is split into stages, each independently shippable and committed, so a session ending never leaves things half-done. Progress was tracked stage by stage.
 
 1. **Stage 1: Identity + fixes.** Players/tokens, configurable API URL, onboarding, gameplay fixes.
 2. **Stage 2: Question engine.** Templates, LLM path, caching, verification.

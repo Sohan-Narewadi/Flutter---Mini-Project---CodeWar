@@ -1,4 +1,4 @@
-/// Mirrors the room snapshot documented in docs/superpowers/rooms-protocol.md.
+/// Mirrors the room snapshot documented in docs/rooms-protocol.md.
 class RoomPlayer {
   const RoomPlayer({
     required this.playerId,

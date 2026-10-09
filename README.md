@@ -1,118 +1,106 @@
 # CodeWar
 
-A Flutter game where you fight enemies by solving coding problems. Climb a campaign world map, grind endless Practice problems, and race or duel friends online with a room code. A FastAPI backend generates problems, judges your code, runs the rooms and keeps the leaderboard.
+**Fight enemies, race your friends and climb the ranks by solving coding problems.**
 
-## Project structure
+CodeWar is a coding game. Beat campaign enemies, grind endless practice problems, or create a room and race friends live with a 6-character code. A server writes fresh problems, judges your code in Python or TypeScript, and keeps a real leaderboard.
 
-| Path | Description |
-|------|-------------|
-| `frontend/codewar/` | Flutter app (screens, widgets, providers, services) |
-| `backend/` | FastAPI + SQLAlchemy (SQLite): accounts, question engine, judge, rooms, leaderboard |
-| `run_server.ps1` | One command to start the backend and a public tunnel for friends |
-| `docs/superpowers/` | Design specs, implementation plan, progress tracker and the rooms protocol |
+<p align="center">
+  <img src="docs/images/home.png" width="19%" alt="Home">
+  <img src="docs/images/practice.png" width="19%" alt="Practice">
+  <img src="docs/images/battle.png" width="19%" alt="Battle">
+  <img src="docs/images/lobby.png" width="19%" alt="Online room">
+  <img src="docs/images/profile.png" width="19%" alt="Profile">
+</p>
 
-## Features
+## Run it on your computer (about 5 minutes)
 
-- **Campaign**: world map (Array Ruins, 8 levels, 6 enemies). Winning unlocks the next level; progress is per player.
-- **Endless Practice**: pick a topic and difficulty and get a fresh problem every time, with hints, per-topic mastery, a day streak and a daily challenge (double XP, same puzzle for everyone).
-- **Online rooms**: `Play` in the bottom bar. Create a Race (2-8 players) or a Duel (1v1), share the 6-character code, and compete live. Ratings (Elo), XP and friends are updated when the match ends.
-- **Leaderboard**: global, weekly and friends, by total XP or online rating. All real data.
-- **Rank tiers**: Iron to Diamond, derived from your online rating (shown on the leaderboard, profile and player cards).
-- **Badges**: 17 achievements earned only from real activity (solves, streaks, wins, ratings). Locked badges show how to earn them.
-- **Profile**: tier progress, win rate, best streak, match history with rating changes, topic mastery.
-- **Sound and haptics**: short original sound effects (synthesized by `tools/make_sfx.py`) with on/off switches in Settings.
-- **Accounts**: pick a name on first launch; your device keeps a secret token (no password, no email).
-- **Unlimited problems**: an LLM writes new problems when `ANTHROPIC_API_KEY` is set; otherwise a built-in generator with 34 templates and randomized inputs is used. Expected outputs always come from running a reference solution through the judge, never from the model.
-- In-app code editor (Python and TypeScript), judged server-side.
+You do **not** need to host anything or pay for anything. Everything runs on your PC and opens in your browser.
 
-## Play locally in the browser (free, no hosting)
+### 1. Install the tools (once)
 
-Double-click **`play.bat`** (or run `.un_server.ps1 -NoTunnel`). It starts the server, which also serves the web app, and prints the addresses:
+| Tool | Why | Get it |
+|---|---|---|
+| **Python 3.10 or newer** | runs the game server | https://www.python.org/downloads/ (tick "Add Python to PATH") |
+| **Flutter SDK** | builds the game screen (only needed once) | https://docs.flutter.dev/get-started/install |
+| *Node.js 22.18 or newer* (optional) | only if you want to write answers in TypeScript | https://nodejs.org |
 
-- This PC: `http://127.0.0.1:8000`
-- Friends on the same Wi-Fi: `http://<your-PC-IP>:8000` (shown in the console; allow Python through Windows Firewall if asked)
+Check they work: open a terminal and run `python --version` and `flutter --version`.
 
-Everyone opens the address in a browser, picks a name, and joins rooms with the 6-character code. The web app must be built once: `cd frontend/codewar && flutter build web` (no extra flags). Close the console window to stop.
-
-## Getting started
-
-### Prerequisites
-
-- Flutter SDK (Dart `^3.12.2`)
-- Python 3.10+
-- Node 22.6+ (only needed to judge TypeScript submissions)
-- Optional: `cloudflared` (`winget install Cloudflare.cloudflared`) or `ngrok` for a public tunnel
-
-### 1. Start the server (Windows)
-
-```powershell
-.\run_server.ps1            # API + public tunnel, prints a URL for your friends
-.\run_server.ps1 -NoTunnel  # local / same Wi-Fi only
-```
-
-The first run creates the virtual environment and installs the requirements. To enable LLM-written problems set `ANTHROPIC_API_KEY` (and optionally `CODEWAR_LLM_MODEL`) before starting.
-
-Manual start (any OS):
-
-```bash
-cd backend
-python -m venv .venv
-.venv/Scripts/python -m pip install -r requirements.txt   # .venv/bin/python on macOS/Linux
-.venv/Scripts/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-If you upgraded from an older version, delete the old `backend/codewar.db` once: the schema changed and there is no migration step.
-
-### 2. Run the Flutter app
+### 2. Build the game screen (once)
 
 ```bash
 cd frontend/codewar
 flutter pub get
-flutter run                                              # emulator/desktop default URLs
-flutter run --dart-define=API_URL=https://xxxx.trycloudflare.com   # point at a tunnel
+flutter build web
+cd ../..
 ```
 
-You can also paste the server URL in the app: onboarding > Advanced, or Profile > Settings.
+### 3. Start the game
 
-### 3. Play with friends
+- **Windows:** double-click **`play.bat`**
+- **Mac / Linux:** run `./play.sh`
 
-1. Host: run `.\run_server.ps1` and copy the public URL it prints.
-2. Everyone: install/run the app, paste the URL in Settings, pick a name.
-3. Host: Play > Create room, share the 6-character code. Friends: Play > Join with a code.
-4. Host presses Start once everyone is in the lobby.
+The first start installs the server's Python packages by itself (about a minute). Your browser then opens **http://127.0.0.1:8000**. Pick a name and play. Close the window (or press `Ctrl+C`) to stop.
 
-The game only works while the host's PC and the script are running.
+That's it.
 
-## Tests
+### Play with friends
+
+- **On the same Wi-Fi:** the start-up window prints an address like `http://192.168.1.23:8000`. Friends open it in their browser, pick a name, then use **Play > Join with a code**. Allow Python through the Windows Firewall if it asks.
+- **Over the internet:** run `run_server.ps1` without `-NoTunnel` to get a free public link (needs `cloudflared`, see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)). Your computer must stay on while people play.
+
+### Something went wrong?
+
+| Problem | Fix |
+|---|---|
+| Browser shows "This site can't be reached" | The server is not running. Start `play.bat` / `play.sh` again and keep its window open. |
+| The page says the web app is not built | Do step 2 (`flutter build web`), then restart. |
+| `python` is not recognised | Reinstall Python and tick "Add Python to PATH", then open a new terminal. |
+| TypeScript answers fail with "runtime is not available" | Install Node.js 22.18 or newer, then restart the server. Python works without it. |
+| Friends can't open the Wi-Fi address | Same Wi-Fi? Firewall prompt allowed? Some guest/office networks block device-to-device traffic. |
+| "That name is taken" | Names are unique. Choose another. |
+| Start over with a clean game | Stop the server and delete `backend/codewar.db`. |
+
+## What's inside the game
+
+- **Campaign:** a level path of enemies, one coding problem each. Wrong answers cost HP, winning gives XP and gold.
+- **Endless Practice:** pick a topic and difficulty, get a fresh problem every time. Hints, per-topic mastery, a day streak and a daily challenge with double XP.
+- **Online rooms:** **Race** (2 to 8 players) or **Duel** (1v1). Share the room code, race the same problem live, and see progress bars update in real time. Ratings (Elo), XP and friends update when the match ends.
+- **Leaderboard:** global, weekly or friends, by total XP or online rating. Updates every 15 seconds and every row is a real player.
+- **Rank tiers and badges:** Iron to Diamond from your rating, plus 17 badges earned only by real achievements.
+- **Profile:** tier progress, win rate, best streak, match history with rating changes, topic mastery.
+- **Fair problems:** a built-in generator with 34 problem templates and random inputs. The correct answers always come from running a reference solution through the same judge that grades you.
+- **Sound and haptics** with on/off switches in Settings.
+
+Optional: set the `ANTHROPIC_API_KEY` environment variable before starting the server and an AI model will write extra, more varied problems (always verified by the judge). Without it, the built-in generator is used.
+
+## For developers
 
 ```bash
-# Backend (about a minute)
-cd backend && .venv/Scripts/python -m pytest -q
+# Server tests (about 40 seconds)
+cd backend && python -m pytest -q          # use .venv/Scripts/python on Windows after the first start
 
-# Frontend
+# App tests and lint
 cd frontend/codewar && flutter analyze && flutter test
-
-# End-to-end room check against a running server (same machine)
-cd backend && .venv/Scripts/python scripts/smoke_rooms.py
 ```
 
-## Visual QA and end-to-end checks
+| Folder | What it is |
+|---|---|
+| `frontend/codewar/` | the Flutter app (runs on web, Android, iOS, desktop) |
+| `backend/` | the FastAPI server: accounts, problems, code judge, rooms, leaderboard (SQLite database) |
+| `docs/` | architecture, API reference, development guide, design notes |
+| `tools/` | screenshot and end-to-end test scripts, sound generator |
+| `play.bat`, `play.sh`, `run_server.ps1` | start scripts |
 
-Prerequisites: backend on `:8000`, `flutter build web --dart-define=API_URL=http://localhost:8000`, `python -m http.server 8080` inside `frontend/codewar/build/web`, and `pip install playwright` (it drives your installed Chrome).
+More documentation:
 
-```bash
-python tools/qa_shots.py --widths 360,768,1280   # every tab at several widths -> docs/qa/
-python tools/qa_flow.py                          # campaign battle, practice and room screens
-python tools/qa_online.py                        # two browsers play a real online match
-```
+- [Architecture](docs/ARCHITECTURE.md): how the pieces fit together
+- [API reference](docs/API.md): every endpoint, and the [room protocol](docs/rooms-protocol.md) for live matches
+- [Development guide](docs/DEVELOPMENT.md): tests, tools, the code judge, the design system, running on a phone
+- [Design notes](docs/design/): the original specs
 
-## Upgrading
+## Good to know
 
-New columns are added to an existing `backend/codewar.db` automatically on startup (`backend/app/migrate.py`), so upgrading no longer needs the database deleted. Delete it only to wipe test accounts before a public launch.
-
-## Notes
-
-- Supported judge languages: `python`, `typescript`.
-- The code judge runs submissions in a timeout-bounded subprocess with **no OS-level sandboxing**, and LLM-written reference solutions are executed the same way (with a basic blocklist). That is acceptable for friends over a tunnel but do not expose the server to untrusted users.
-- Rooms live in memory: restarting the server ends live rooms. Finished results, ratings and XP are stored in SQLite.
-- More detail: [`docs/superpowers/PROGRESS.md`](docs/superpowers/PROGRESS.md), [`docs/superpowers/rooms-protocol.md`](docs/superpowers/rooms-protocol.md).
+- The code judge runs submissions in a time-limited subprocess on your computer **without a sandbox**. That is fine for you and friends you trust, but do not expose the server to strangers on the open internet.
+- Online rooms live in the server's memory, so restarting the server ends rooms in progress. Finished matches, ratings and XP are saved in the database.
+- Accounts are just a display name plus a secret key stored on your device (no email or password). Clearing the browser's site data means losing that account.

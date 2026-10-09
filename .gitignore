@@ -1,1 +1,4 @@
 docs/qa/
+
+# Local working notes (not part of the project)
+.dev-notes/
