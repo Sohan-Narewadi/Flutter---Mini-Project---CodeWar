@@ -9,11 +9,13 @@ import 'services/room_channel.dart';
 import 'routing/app_router.dart';
 import 'services/api_service.dart';
 import 'services/settings_store.dart';
+import 'services/sfx.dart';
 import 'utils/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final settings = await SettingsStore.open();
+  Sfx.player = AudioCuePlayer();
   runApp(CodeWarApp(settings: settings));
 }
 
@@ -39,6 +41,8 @@ class _CodeWarAppState extends State<CodeWarApp> {
   void initState() {
     super.initState();
     final api = widget.api ?? ApiService(settings: widget.settings ?? SettingsStore.memory());
+    Sfx.soundOn = api.settings.soundOn;
+    Sfx.hapticsOn = api.settings.hapticsOn;
     _state = GameState(api: api)..load();
     _practice = PracticeState(api, onProgress: _state.refreshProgress);
     _rooms = RoomState(api, channelFactory: widget.channelFactory, onFinished: _state.refreshProgress);

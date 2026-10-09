@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../services/sfx.dart';
 import '../utils/theme.dart';
 
 enum NeonVariant { primary, secondary, ghost, danger }
@@ -42,6 +43,11 @@ class _NeonButtonState extends State<NeonButton> {
   bool _down = false;
 
   bool get _enabled => widget.onPressed != null && !widget.loading;
+
+  void _fire() {
+    Sfx.play(Cue.tap);
+    widget.onPressed?.call();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +120,7 @@ class _NeonButtonState extends State<NeonButton> {
       enabled: _enabled,
       label: widget.label,
       excludeSemantics: true,
-      onTap: _enabled ? widget.onPressed : null,
+      onTap: _enabled ? _fire : null,
       child: Opacity(
         opacity: _enabled || widget.loading ? 1 : 0.5,
         child: GestureDetector(
@@ -122,7 +128,7 @@ class _NeonButtonState extends State<NeonButton> {
           onTapDown: _enabled ? (_) => setState(() => _down = true) : null,
           onTapCancel: _enabled ? () => setState(() => _down = false) : null,
           onTapUp: _enabled ? (_) => setState(() => _down = false) : null,
-          onTap: _enabled ? widget.onPressed : null,
+          onTap: _enabled ? _fire : null,
           child: AnimatedScale(
             scale: _down ? 0.97 : 1,
             duration: const Duration(milliseconds: 90),

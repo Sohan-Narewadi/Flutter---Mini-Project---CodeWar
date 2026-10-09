@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../services/sfx.dart';
 import '../utils/theme.dart';
 
 /// Equal-width segmented control with a sliding accent indicator.
@@ -61,7 +62,10 @@ class SegmentedTabs<T> extends StatelessWidget {
                         excludeSemantics: true,
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
-                          onTap: () => onChanged(k),
+                          onTap: () {
+                            if (k != value) Sfx.play(Cue.select);
+                            onChanged(k);
+                          },
                           child: Center(
                             child: Text(
                               options[k]!,

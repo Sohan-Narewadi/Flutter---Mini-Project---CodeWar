@@ -10,6 +10,8 @@ class SettingsStore {
     _apiUrl = _safeGet('api_url');
     _token = _safeGet('token');
     _playerName = _safeGet('player_name');
+    _soundOn = _safeGetBool('sound_on') ?? true;
+    _hapticsOn = _safeGetBool('haptics_on') ?? true;
   }
 
   SettingsStore.memory() : _prefs = null;
@@ -27,6 +29,20 @@ class SettingsStore {
   String? _apiUrl;
   String? _token;
   String? _playerName;
+  bool _soundOn = true;
+  bool _hapticsOn = true;
+
+  bool get soundOn => _soundOn;
+  set soundOn(bool v) {
+    _soundOn = v;
+    _safeSetBool('sound_on', v);
+  }
+
+  bool get hapticsOn => _hapticsOn;
+  set hapticsOn(bool v) {
+    _hapticsOn = v;
+    _safeSetBool('haptics_on', v);
+  }
 
   String? get apiUrl => _apiUrl;
   set apiUrl(String? v) {
@@ -59,6 +75,20 @@ class SettingsStore {
     } catch (_) {
       return null;
     }
+  }
+
+  bool? _safeGetBool(String key) {
+    try {
+      return _prefs?.getBool(key);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _safeSetBool(String key, bool value) {
+    try {
+      _prefs?.setBool(key, value);
+    } catch (_) {}
   }
 
   void _safeSet(String key, String? value) {

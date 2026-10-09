@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../services/sfx.dart';
 import '../utils/theme.dart';
 
 class NavItem {
@@ -87,7 +88,10 @@ class _PlayButton extends StatelessWidget {
       child: GestureDetector(
         key: const Key('navPlay'),
         behavior: HitTestBehavior.opaque,
-        onTap: onTap,
+        onTap: () {
+          Sfx.play(Cue.select);
+          onTap();
+        },
         child: OverflowBox(
           maxHeight: 90,
           alignment: Alignment.bottomCenter,
@@ -142,7 +146,10 @@ class _NavButton extends StatelessWidget {
       excludeSemantics: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: onTap,
+        onTap: () {
+          Sfx.play(Cue.select);
+          onTap();
+        },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
