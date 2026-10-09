@@ -31,11 +31,11 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - [x] 1.6 Close-out
 
 ### Stage 2: Question engine
-- [ ] 2.1 Model additions + cache
-- [ ] 2.2 Verification pipeline
-- [ ] 2.3 Template generators (25+)
-- [ ] 2.4 LLM generator + hints
-- [ ] 2.5 Service + endpoints
+- [x] 2.1 Model additions + cache
+- [x] 2.2 Verification pipeline
+- [x] 2.3 Template generators (25+)
+- [x] 2.4 LLM generator + hints
+- [x] 2.5 Service + endpoints
 
 ### Stage 3: Leaderboard + Practice
 - [ ] 3.1 Leaderboard API
@@ -75,3 +75,4 @@ Read this first when resuming. Update and commit it at the end of every task/sta
 - 1.3/1.4 done: `ApiService` no longer falls back to seed data (throws `ApiException`); `GameState` has `offline/error`, `register`, `signOut`, `refreshProgress`; router is `buildRouter(GameState)` with onboarding redirect.
 - Ruling (1.5): `Language` enum and model `copyWith` deferred (cosmetic; `_markDefeated` was removed in favor of `refreshProgress()`). C++ chip removed; victory/defeat now redirect home when there is no result (`NoResultRedirect`).
 - Stage 1 verified: backend 47 tests pass, `flutter analyze` clean, `flutter test` 19 pass.
+- Stage 2 done: `backend/app/qengine/` (types, verify, templates [34], llm, service). Endpoints: `POST /api/questions/generate {difficulty: easy|medium|hard, topic?}`, `GET /api/topics`. `anthropic` is optional (`ANTHROPIC_API_KEY`, `CODEWAR_LLM_MODEL`). Question rows gained source/topic/content_hash/reference_solution (delete old codewar.db). Judge now has `execute_case` (returns actual value) used for verification.

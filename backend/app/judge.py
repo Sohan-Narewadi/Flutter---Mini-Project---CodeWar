@@ -42,16 +42,18 @@ class UnsupportedLanguageError(Exception):
     pass
 
 
-def run_case(language: str, code: str, entry_point: str, args: list, expected) -> dict:
-    """Runs one test case in a fresh subprocess.
+def execute_case(language: str, code: str, entry_point: str, args: list) -> dict:
+    """Runs one call of `entry_point(*args)` in a fresh subprocess.
 
-    Returns {"actual": str, "passed": bool, "duration_ms": float}. Never
-    raises for a failing/crashing/timing-out submission — only for a
-    genuinely unsupported language, which the caller should turn into an
-    HTTP 400 before any subprocess is spawned.
+    Returns {"ok": bool, "value": parsed JSON or None, "raw": str,
+    "error": str | None, "duration_ms": float}. Never raises for a
+    crashing/timing-out program, only for an unsupported language.
     """
     if language not in SUPPORTED_LANGUAGES:
         raise UnsupportedLanguageError(f"Language '{language}' is not supported by the judge.")
+
+    def fail(error: str, duration_ms: float) -> dict:
+        return {"ok": False, "value": None, "raw": "", "error": error, "duration_ms": duration_ms}
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
@@ -73,25 +75,35 @@ def run_case(language: str, code: str, entry_point: str, args: list, expected) -
                 command, capture_output=True, text=True, timeout=TIMEOUT_S, cwd=tmpdir,
             )
         except subprocess.TimeoutExpired:
-            duration_ms = (time.monotonic() - start) * 1000
-            return {"actual": f"Timed out after {TIMEOUT_S}s", "passed": False, "duration_ms": duration_ms}
+            return fail(f"Timed out after {TIMEOUT_S}s", (time.monotonic() - start) * 1000)
         duration_ms = (time.monotonic() - start) * 1000
 
         if proc.returncode != 0:
             error_line = next((l for l in reversed(proc.stderr.splitlines()) if l.strip()), "Unknown error")
-            return {"actual": error_line[:300], "passed": False, "duration_ms": duration_ms}
+            return fail(error_line[:300], duration_ms)
 
         output_lines = [l for l in proc.stdout.splitlines() if l.strip()]
         if not output_lines:
-            return {"actual": "(no output)", "passed": False, "duration_ms": duration_ms}
+            return fail("(no output)", duration_ms)
 
         raw = output_lines[-1]
         try:
-            actual_value = json.loads(raw)
+            value = json.loads(raw)
         except json.JSONDecodeError:
-            return {"actual": raw[:300], "passed": False, "duration_ms": duration_ms}
+            return fail(raw[:300], duration_ms)
 
-        return {"actual": raw, "passed": values_equal(actual_value, expected), "duration_ms": duration_ms}
+        return {"ok": True, "value": value, "raw": raw, "error": None, "duration_ms": duration_ms}
+
+
+def run_case(language: str, code: str, entry_point: str, args: list, expected) -> dict:
+    """Runs one test case and compares to `expected`.
+
+    Returns {"actual": str, "passed": bool, "duration_ms": float}.
+    """
+    r = execute_case(language, code, entry_point, args)
+    if not r["ok"]:
+        return {"actual": r["error"], "passed": False, "duration_ms": r["duration_ms"]}
+    return {"actual": r["raw"], "passed": values_equal(r["value"], expected), "duration_ms": r["duration_ms"]}
 
 
 def run_all_cases(language: str, code: str, entry_point: str, judge_cases: list[dict]) -> list[dict]:

@@ -86,6 +86,21 @@ class QuestionOut(BaseModel):
     test_cases: list[TestCaseOut]
 
 
+class GeneratedQuestionOut(QuestionOut):
+    topic: str = ""
+    source: str = "seed"
+
+
+class GenerateIn(BaseModel):
+    difficulty: str
+    topic: str | None = None
+
+
+class TopicOut(BaseModel):
+    id: str
+    label: str
+
+
 class BattleStartIn(BaseModel):
     level_id: int
 
